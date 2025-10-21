@@ -1,0 +1,179 @@
+[
+  {
+    "id": "DOC-PLM-001",
+    "number": "РЗ-000045",
+    "date": "2024-10-17T10:30:00.000Z",
+    "status": "in_progress",
+    "syncStatus": "synced",
+    "warehouseId": "WH-001",
+    "sourceDocumentId": "DOC-RCV-001",
+    "items": [
+      {
+        "id": "1",
+        "documentId": "DOC-PLM-001",
+        "productId": "PROD-001",
+        "productName": "Ноутбук Lenovo ThinkPad X1",
+        "sku": "LEN-X1-2024",
+        "barcode": "4607112345678",
+        "quantity": 7,
+        "unit": "шт",
+        "cellId": "A-01-01",
+        "cellBarcode": "CELL-A0101",
+        "placed": 5,
+        "remaining": 2,
+        "status": "partial"
+      },
+      {
+        "id": "2",
+        "documentId": "DOC-PLM-001",
+        "productId": "PROD-002",
+        "productName": "Мышь Logitech MX Master 3",
+        "sku": "LOG-MX3-BLK",
+        "barcode": "4607123456789",
+        "quantity": 25,
+        "unit": "шт",
+        "cellId": "B-02-03",
+        "cellBarcode": "CELL-B0203",
+        "placed": 25,
+        "remaining": 0,
+        "status": "completed"
+      },
+      {
+        "id": "3",
+        "documentId": "DOC-PLM-001",
+        "productId": "PROD-003",
+        "productName": "Клавиатура Keychron K8",
+        "sku": "KEY-K8-RGB",
+        "barcode": "4607234567890",
+        "quantity": 0,
+        "unit": "шт",
+        "cellId": "B-02-04",
+        "cellBarcode": "CELL-B0204",
+        "placed": 0,
+        "remaining": 0,
+        "status": "pending"
+      }
+    ],
+    "createdAt": "2024-10-17T10:30:00.000Z",
+    "updatedAt": "2024-10-17T11:00:00.000Z"
+  },
+  {
+    "id": "DOC-PLM-002",
+    "number": "РЗ-000046",
+    "date": "2024-10-17T12:00:00.000Z",
+    "status": "pending",
+    "syncStatus": "synced",
+    "warehouseId": "WH-001",
+    "sourceDocumentId": "DOC-RCV-002",
+    "items": [
+      {
+        "id": "4",
+        "documentId": "DOC-PLM-002",
+        "productId": "PROD-004",
+        "productName": "Монитор Samsung 27\"",
+        "sku": "SAM-M27-4K",
+        "barcode": "4607345678901",
+        "quantity": 8,
+        "unit": "шт",
+        "cellId": "C-03-01",
+        "cellBarcode": "CELL-C0301",
+        "placed": 0,
+        "remaining": 8,
+        "status": "pending"
+      },
+      {
+        "id": "5",
+        "documentId": "DOC-PLM-002",
+        "productId": "PROD-005",
+        "productName": "Веб-камера Logitech C920",
+        "sku": "LOG-C920-HD",
+        "barcode": "4607456789012",
+        "quantity": 12,
+        "unit": "шт",
+        "cellId": "B-02-05",
+        "cellBarcode": "CELL-B0205",
+        "placed": 0,
+        "remaining": 12,
+        "status": "pending"
+      },
+      {
+        "id": "6",
+        "documentId": "DOC-PLM-002",
+        "productId": "PROD-006",
+        "productName": "Наушники Sony WH-1000XM5",
+        "sku": "SNY-WH1000-BLK",
+        "barcode": "4607567890123",
+        "quantity": 20,
+        "unit": "шт",
+        "cellId": "B-02-06",
+        "cellBarcode": "CELL-B0206",
+        "placed": 0,
+        "remaining": 20,
+        "status": "pending"
+      }
+    ],
+    "createdAt": "2024-10-17T12:00:00.000Z",
+    "updatedAt": "2024-10-17T12:00:00.000Z"
+  },
+  {
+    "id": "DOC-PLM-003",
+    "number": "РЗ-000047",
+    "date": "2024-10-17T12:30:00.000Z",
+    "status": "completed",
+    "syncStatus": "synced",
+    "warehouseId": "WH-001",
+    "sourceDocumentId": "DOC-RCV-003",
+    "items": [
+      {
+        "id": "7",
+        "documentId": "DOC-PLM-003",
+        "productId": "PROD-007",
+        "productName": "SSD Samsung 1TB",
+        "sku": "SAM-SSD-1TB",
+        "barcode": "4607678901234",
+        "quantity": 30,
+        "unit": "шт",
+        "cellId": "D-04-02",
+        "cellBarcode": "CELL-D0402",
+        "placed": 30,
+        "remaining": 0,
+        "status": "completed"
+      },
+      {
+        "id": "8",
+        "documentId": "DOC-PLM-003",
+        "productId": "PROD-008",
+        "productName": "RAM Kingston 16GB",
+        "sku": "KIN-RAM-16GB",
+        "barcode": "4607789012345",
+        "quantity": 40,
+        "unit": "шт",
+        "cellId": "D-04-03",
+        "cellBarcode": "CELL-D0403",
+        "placed": 40,
+        "remaining": 0,
+        "status": "completed"
+      },
+      {
+        "id": "9",
+        "documentId": "DOC-PLM-003",
+        "productId": "PROD-009",
+        "productName": "Блок питания Corsair 750W",
+        "sku": "COR-PSU-750W",
+        "barcode": "4607890123456",
+        "quantity": 15,
+        "unit": "шт",
+        "cellId": "D-04-04",
+        "cellBarcode": "CELL-D0404",
+        "placed": 15,
+        "remaining": 0,
+        "status": "completed"
+      }
+    ],
+    "createdAt": "2024-10-17T12:30:00.000Z",
+    "updatedAt": "2024-10-17T13:00:00.000Z"
+  }
+]
+
+
+
