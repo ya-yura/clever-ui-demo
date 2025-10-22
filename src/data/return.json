@@ -1,43 +1,92 @@
 {
   "documents": [
     {
-      "id": "RETURN-001",
+      "id": "RET-001",
       "type": "return",
       "status": "in_progress",
-      "totalLines": 2,
-      "responsible": "Иванов И.И.",
-      "createdAt": 1698912000000,
-      "updatedAt": 1698915600000
+      "reason": "Брак",
+      "customer": "ИП Петров А.В.",
+      "sourceDocument": "SHIP-001",
+      "totalLines": 5,
+      "completedLines": 3,
+      "createdAt": 1729670400000,
+      "updatedAt": 1729670400000
+    },
+    {
+      "id": "RET-002",
+      "type": "return",
+      "status": "completed",
+      "reason": "Истек срок годности",
+      "customer": "ООО Магнит",
+      "sourceDocument": "SHIP-002",
+      "totalLines": 3,
+      "completedLines": 3,
+      "createdAt": 1729584000000,
+      "updatedAt": 1729670400000
+    },
+    {
+      "id": "WRT-001",
+      "type": "writeoff",
+      "status": "in_progress",
+      "reason": "Повреждение",
+      "totalLines": 8,
+      "completedLines": 4,
+      "createdAt": 1729670400000,
+      "updatedAt": 1729670400000
+    },
+    {
+      "id": "WRT-002",
+      "type": "writeoff",
+      "status": "completed",
+      "reason": "Истек срок годности",
+      "totalLines": 6,
+      "completedLines": 6,
+      "createdAt": 1729584000000,
+      "updatedAt": 1729670400000
+    },
+    {
+      "id": "RET-003",
+      "type": "return",
+      "status": "pending",
+      "reason": "Несоответствие заказу",
+      "customer": "ООО Пятёрочка",
+      "sourceDocument": "SHIP-003",
+      "totalLines": 4,
+      "completedLines": 0,
+      "createdAt": 1729670400000,
+      "updatedAt": 1729670400000
     }
   ],
   "lines": [
-    {
-      "id": "RETURN-001-L1",
-      "documentId": "RETURN-001",
-      "productId": "P002",
-      "productName": "Чай Ahmad Earl Grey 100г",
-      "productSku": "AHM-100-EG",
-      "barcode": "5054881234567",
-      "quantity": 2,
-      "quantityPlan": 2,
-      "quantityFact": 2,
-      "status": "completed",
-      "reason": "damaged",
-      "addedAt": 1698912600000
-    },
-    {
-      "id": "RETURN-001-L2",
-      "documentId": "RETURN-001",
-      "productId": "P004",
-      "productName": "Молоко 3.2% 1л",
-      "productSku": "MLK-32-1L",
-      "barcode": "4607012345678",
-      "quantity": 5,
-      "quantityPlan": 5,
-      "quantityFact": 5,
-      "status": "completed",
-      "reason": "expired",
-      "addedAt": 1698913200000
-    }
+    { "id": "RET-001-L1", "documentId": "RET-001", "productId": "P004", "productName": "Молоко 3.2% 1л", "productSку": "MLK-32-1L", "barcode": "4607012345678", "cellId": "D-01-01", "quantity": 10, "quantityProcessed": 10, "reason": "Упаковка повреждена", "status": "completed" },
+    { "id": "RET-001-L2", "documentId": "RET-001", "productId": "P012", "productName": "Йогурт питьевой 250мл", "productSку": "YOG-DR-250", "barcode": "4607890123456", "cellId": "D-01-02", "quantity": 8, "quantityProcessed": 8, "reason": "Дефект крышки", "status": "completed" },
+    { "id": "RET-001-L3", "documentId": "RET-001", "productId": "P028", "productName": "Шоколад Milka 90г", "productSку": "CHOC-MILK-90", "barcode": "7622210123457", "cellId": "A-01-03", "quantity": 5, "quantityProcessed": 5, "reason": "Деформация", "status": "completed" },
+    { "id": "RET-001-L4", "documentId": "RET-001", "productId": "P005", "productName": "Печенье Oreo 95г", "productSку": "OREO-95", "barcode": "7622210123456", "cellId": "A-02-01", "quantity": 12, "quantityProcessed": 0, "reason": "Помятая упаковка", "status": "pending" },
+    { "id": "RET-001-L5", "documentId": "RET-001", "productId": "P015", "productName": "Сыр Российский 200г", "productSку": "CHE-RUS-200", "barcode": "4610123456789", "cellId": "D-01-02", "quantity": 6, "quantityProcessed": 0, "reason": "Близкий срок годности", "status": "pending" },
+    
+    { "id": "RET-002-L1", "documentId": "RET-002", "productId": "P017", "productName": "Хлеб белый нарезной 400г", "productSку": "BREAD-W-400", "barcode": "4612345678901", "cellId": "A-01-01", "quantity": 15, "quantityProcessed": 15, "reason": "Истек срок годности", "status": "completed" },
+    { "id": "RET-002-L2", "documentId": "RET-002", "productId": "P018", "productName": "Хлеб черный 500г", "productSку": "BREAD-B-500", "barcode": "4613456789012", "cellId": "A-01-02", "quantity": 10, "quantityProcessed": 10, "reason": "Истек срок годности", "status": "completed" },
+    { "id": "RET-002-L3", "documentId": "RET-002", "productId": "P019", "productName": "Батон нарезной 350г", "productSку": "BATON-350", "barcode": "4614567890123", "cellId": "A-01-03", "quantity": 8, "quantityProcessed": 8, "reason": "Истек срок годности", "status": "completed" },
+    
+    { "id": "WRT-001-L1", "documentId": "WRT-001", "productId": "P003", "productName": "Сахар 1кг", "productSку": "SUG-1000", "barcode": "4607001234567", "cellId": "C-01-01", "quantity": 5, "quantityProcessed": 5, "reason": "Рассыпана упаковка", "status": "completed" },
+    { "id": "WRT-001-L2", "documentId": "WRT-001", "productId": "P006", "productName": "Масло подсолнечное 1л", "productSку": "OIL-SUN-1L", "barcode": "4601234567890", "cellId": "B-01-01", "quantity": 3, "quantityProcessed": 3, "reason": "Протечка", "status": "completed" },
+    { "id": "WRT-001-L3", "documentId": "WRT-001", "productId": "P021", "productName": "Томатная паста 140г", "productSку": "TOM-PAST-140", "barcode": "4616789012345", "cellId": "B-02-01", "quantity": 8, "quantityProcessed": 8, "reason": "Вздутие банки", "status": "completed" },
+    { "id": "WRT-001-L4", "documentId": "WRT-001", "productId": "P025", "productName": "Сок яблочный 1л", "productSку": "JUICE-APP-1L", "barcode": "4620123456789", "cellId": "B-01-01", "quantity": 4, "quantityProcessed": 4, "reason": "Протечка", "status": "completed" },
+    { "id": "WRT-001-L5", "documentId": "WRT-001", "productId": "P027", "productName": "Coca-Cola 2л", "productSку": "COKE-2L", "barcode": "5449000000996", "cellId": "B-02-01", "quantity": 6, "quantityProcessed": 0, "reason": "Повреждение бутылки", "status": "pending" },
+    { "id": "WRT-001-L6", "documentId": "WRT-001", "productId": "P020", "productName": "Яйца куриные С1 10шт", "productSку": "EGG-C1-10", "barcode": "4615678901234", "cellId": "D-01-01", "quantity": 7, "quantityProcessed": 0, "reason": "Битые яйца", "status": "pending" },
+    { "id": "WRT-001-L7", "documentId": "WRT-001", "productId": "P034", "productName": "Чипсы Lays 150г", "productSку": "CHIPS-LAYS-150", "barcode": "4823063111867", "cellId": "A-02-02", "quantity": 10, "quantityProcessed": 0, "reason": "Порванная упаковка", "status": "pending" },
+    { "id": "WRT-001-L8", "documentId": "WRT-001", "productId": "P029", "productName": "Вафли Коломенские 220г", "productSку": "WAFF-KOL-220", "barcode": "4622345678901", "cellId": "A-02-01", "quantity": 5, "quantityProcessed": 0, "reason": "Разломанные", "status": "pending" },
+    
+    { "id": "WRT-002-L1", "documentId": "WRT-002", "productId": "P004", "productName": "Молоко 3.2% 1л", "productSку": "MLK-32-1L", "barcode": "4607012345678", "cellId": "D-01-01", "quantity": 20, "quantityProcessed": 20, "reason": "Истек срок годности", "status": "completed" },
+    { "id": "WRT-002-L2", "documentId": "WRT-002", "productId": "P012", "productName": "Йогурт питьевой 250мл", "productSку": "YOG-DR-250", "barcode": "4607890123456", "cellId": "D-01-02", "quantity": 15, "quantityProcessed": 15, "reason": "Истек срок годности", "status": "completed" },
+    { "id": "WRT-002-L3", "documentId": "WRT-002", "productId": "P013", "productName": "Сметана 20% 200г", "productSку": "SOUR-20-200", "barcode": "4608901234567", "cellId": "D-02-01", "quantity": 12, "quantityProcessed": 12, "reason": "Истек срок годности", "status": "completed" },
+    { "id": "WRT-002-L4", "documentId": "WRT-002", "productId": "P014", "productName": "Творог 9% 200г", "productSку": "COT-9-200", "barcode": "4609012345678", "cellId": "D-01-01", "quantity": 10, "quantityProcessed": 10, "reason": "Истек срок годности", "status": "completed" },
+    { "id": "WRT-002-L5", "documentId": "WRT-002", "productId": "P016", "productName": "Колбаса докторская 500г", "productSку": "SAUS-DOC-500", "barcode": "4611234567890", "cellId": "D-02-01", "quantity": 8, "quantityProcessed": 8, "reason": "Истек срок годности", "status": "completed" },
+    { "id": "WRT-002-L6", "documentId": "WRT-002", "productId": "P017", "productName": "Хлеб белый нарезной 400г", "productSку": "BREAD-W-400", "barcode": "4612345678901", "cellId": "A-01-01", "quantity": 18, "quantityProcessed": 18, "reason": "Истек срок годности", "status": "completed" },
+    
+    { "id": "RET-003-L1", "documentId": "RET-003", "productId": "P025", "productName": "Сок яблочный 1л", "productSку": "JUICE-APP-1L", "barcode": "4620123456789", "cellId": "B-01-01", "quantity": 20, "quantityProcessed": 0, "reason": "Неверный товар", "status": "pending" },
+    { "id": "RET-003-L2", "documentId": "RET-003", "productId": "P026", "productName": "Вода минеральная 1.5л", "productSку": "WATER-MIN-1.5", "barcode": "4621234567890", "cellId": "B-01-02", "quantity": 30, "quantityProcessed": 0, "reason": "Неверный товар", "status": "pending" },
+    { "id": "RET-003-L3", "documentId": "RET-003", "productId": "P001", "productName": "Кофе Lavazza 250г", "productSку": "LAV-250", "barcode": "8000070001234", "cellId": "A-01-01", "quantity": 15, "quantityProcessed": 0, "reason": "Неверная спецификация", "status": "pending" },
+    { "id": "RET-003-L4", "documentId": "RET-003", "productId": "P003", "productName": "Сахар 1кг", "productSку": "SUG-1000", "barcode": "4607001234567", "cellId": "C-01-01", "quantity": 25, "quantityProcessed": 0, "reason": "Излишек", "status": "pending" }
   ]
 }

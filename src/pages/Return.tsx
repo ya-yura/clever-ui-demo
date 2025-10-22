@@ -17,6 +17,7 @@ const Return: React.FC = () => {
 
   const [document, setDocument] = useState<ReturnDocument | null>(null);
   const [lines, setLines] = useState<ReturnLine[]>([]);
+  const [documents, setDocuments] = useState<ReturnDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTypeSelector, setShowTypeSelector] = useState(false);
   const [showReasonModal, setShowReasonModal] = useState(false);
@@ -46,7 +47,9 @@ const Return: React.FC = () => {
           setLines(docLines);
         }
       } else {
-        setShowTypeSelector(true);
+        // Load all documents
+        const allDocs = await db.returnDocuments.toArray();
+        setDocuments(allDocs);
       }
     } catch (error) {
       console.error('Error loading document:', error);
@@ -195,28 +198,92 @@ const Return: React.FC = () => {
     );
   }
 
-  if (showTypeSelector) {
+  // Show document list if no id specified
+  if (!id) {
     return (
       <div className="space-y-4">
-        <div className="card text-center py-12">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            Выберите тип документа
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            ♻️ Возвраты и списания
           </h2>
-          <div className="flex gap-4 justify-center">
-            <button
-              onClick={() => createDocument('return')}
-              className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-            >
-              ♻️ Возврат
-            </button>
-            <button
-              onClick={() => createDocument('writeoff')}
-              className="px-8 py-4 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
-            >
-              🗑️ Списание
-            </button>
-          </div>
+          <button
+            onClick={() => setShowTypeSelector(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          >
+            + Создать
+          </button>
         </div>
+
+        {showTypeSelector && (
+          <div className="card text-center py-12">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              Выберите тип документа
+            </h3>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => createDocument('return')}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              >
+                ♻️ Возврат
+              </button>
+              <button
+                onClick={() => createDocument('writeoff')}
+                className="px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+              >
+                🗑️ Списание
+              </button>
+              <button
+                onClick={() => setShowTypeSelector(false)}
+                className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        )}
+
+        {documents.length === 0 && !showTypeSelector ? (
+          <div className="card text-center py-12">
+            <p className="text-gray-600 dark:text-gray-400">
+              Нет документов возврата или списания
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {documents.map((doc) => (
+              <button
+                key={doc.id}
+                onClick={() => navigate(`/return/${doc.id}`)}
+                className="card hover:shadow-lg transition-shadow text-left p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {doc.type === 'return' ? '♻️' : '🗑️'} {doc.id}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {doc.type === 'return' ? 'Возврат' : 'Списание'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`status-badge ${
+                      doc.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      doc.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {doc.status === 'completed' ? 'Завершен' :
+                       doc.status === 'in_progress' ? 'В работе' :
+                       'Ожидает'}
+                    </span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      {doc.totalLines} {doc.totalLines === 1 ? 'строка' : doc.totalLines < 5 ? 'строки' : 'строк'}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   }

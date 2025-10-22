@@ -21,6 +21,7 @@ const Picking: React.FC = () => {
 
   const [document, setDocument] = useState<PickingDocument | null>(null);
   const [lines, setLines] = useState<PickingLine[]>([]);
+  const [documents, setDocuments] = useState<PickingDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentCell, setCurrentCell] = useState<string>('');
   const [activeLineId, setActiveLineId] = useState<string | null>(null);
@@ -64,19 +65,9 @@ const Picking: React.FC = () => {
           }
         }
       } else {
-        // Create new document
-        const newDoc: PickingDocument = {
-          id: `PICK-${Date.now()}`,
-          status: 'draft',
-          orderId: '',
-          orderNumber: '',
-          totalLines: 0,
-          completedLines: 0,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        };
-        await db.pickingDocuments.add(newDoc);
-        setDocument(newDoc);
+        // Load all documents
+        const allDocs = await db.pickingDocuments.toArray();
+        setDocuments(allDocs);
       }
     } catch (error) {
       console.error('Error loading document:', error);
@@ -269,6 +260,69 @@ const Picking: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
+
+  // Show document list if no id specified
+  if (!id) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            📋 Документы подбора
+          </h2>
+        </div>
+
+        {documents.length === 0 ? (
+          <div className="card text-center py-12">
+            <p className="text-gray-600 dark:text-gray-400">
+              Нет документов подбора
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {documents.map((doc) => (
+              <button
+                key={doc.id}
+                onClick={() => navigate(`/picking/${doc.id}`)}
+                className="card hover:shadow-lg transition-shadow text-left p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {doc.id}
+                    </h3>
+                    {doc.orderNumber && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Заказ: {doc.orderNumber}
+                      </p>
+                    )}
+                    {doc.customer && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Клиент: {doc.customer}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className={`status-badge ${
+                      doc.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      doc.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {doc.status === 'completed' ? 'Завершен' :
+                       doc.status === 'in_progress' ? 'В работе' :
+                       'Черновик'}
+                    </span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      {doc.completedLines} / {doc.totalLines} строк
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   }

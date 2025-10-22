@@ -18,6 +18,7 @@ const Receiving: React.FC = () => {
   const navigate = useNavigate();
   const [document, setDocument] = useState<ReceivingDocument | null>(null);
   const [lines, setLines] = useState<ReceivingLine[]>([]);
+  const [documents, setDocuments] = useState<ReceivingDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentCell, setCurrentCell] = useState<string>('');
 
@@ -36,38 +37,18 @@ const Receiving: React.FC = () => {
     setLoading(true);
     try {
       if (id) {
-        // Try to load from local DB first
-        let doc = await db.receivingDocuments.get(id);
-        let docLines = await db.receivingLines.where('documentId').equals(id).toArray();
-
-        // If not found locally, fetch from server
-        if (!doc) {
-          const response = await api.getReceivingDocument(id);
-          if (response.success && response.data) {
-            doc = response.data.document;
-            docLines = response.data.lines;
-            // Save to local DB
-            await db.receivingDocuments.put(doc);
-            await db.receivingLines.bulkPut(docLines);
-          }
-        }
+        // Load specific document
+        const doc = await db.receivingDocuments.get(id);
+        const docLines = await db.receivingLines.where('documentId').equals(id).toArray();
 
         if (doc) {
           setDocument(doc);
           setLines(docLines);
         }
       } else {
-        // Create new document
-        const newDoc: ReceivingDocument = {
-          id: `RCV-${Date.now()}`,
-          status: 'draft',
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          totalLines: 0,
-          completedLines: 0,
-        };
-        await db.receivingDocuments.add(newDoc);
-        setDocument(newDoc);
+        // Load all documents
+        const allDocs = await db.receivingDocuments.toArray();
+        setDocuments(allDocs);
       }
     } catch (error) {
       console.error('Error loading document:', error);
@@ -177,6 +158,69 @@ const Receiving: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Show document list if no id specified
+  if (!id) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            📦 Документы приёмки
+          </h2>
+        </div>
+
+        {documents.length === 0 ? (
+          <div className="card text-center py-12">
+            <p className="text-gray-600 dark:text-gray-400">
+              Нет документов приёмки
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {documents.map((doc) => (
+              <button
+                key={doc.id}
+                onClick={() => navigate(`/receiving/${doc.id}`)}
+                className="card hover:shadow-lg transition-shadow text-left p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {doc.id}
+                    </h3>
+                    {doc.supplier && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Поставщик: {doc.supplier}
+                      </p>
+                    )}
+                    {doc.deliveryNumber && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Номер поставки: {doc.deliveryNumber}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className={`status-badge ${
+                      doc.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      doc.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {doc.status === 'completed' ? 'Завершен' :
+                       doc.status === 'in_progress' ? 'В работе' :
+                       'Ожидает'}
+                    </span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      {doc.completedLines} / {doc.totalLines} строк
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   }

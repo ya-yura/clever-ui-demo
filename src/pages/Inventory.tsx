@@ -19,6 +19,7 @@ const Inventory: React.FC = () => {
 
   const [document, setDocument] = useState<InventoryDocument | null>(null);
   const [lines, setLines] = useState<InventoryLine[]>([]);
+  const [documents, setDocuments] = useState<InventoryDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentCell, setCurrentCell] = useState<string>('');
   const [showDiscrepancyModal, setShowDiscrepancyModal] = useState(false);
@@ -64,19 +65,9 @@ const Inventory: React.FC = () => {
           }
         }
       } else {
-        // Create new document
-        const newDoc: InventoryDocument = {
-          id: `INV-${Date.now()}`,
-          status: 'in_progress',
-          type: 'full',
-          totalLines: 0,
-          completedLines: 0,
-          discrepanciesCount: 0,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        };
-        await db.inventoryDocuments.add(newDoc);
-        setDocument(newDoc);
+        // Load all documents
+        const allDocs = await db.inventoryDocuments.toArray();
+        setDocuments(allDocs);
       }
     } catch (error) {
       console.error('Error loading document:', error);
@@ -248,6 +239,72 @@ const Inventory: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  // Show document list if no id specified
+  if (!id) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            📊 Документы инвентаризации
+          </h2>
+        </div>
+
+        {documents.length === 0 ? (
+          <div className="card text-center py-12">
+            <p className="text-gray-600 dark:text-gray-400">
+              Нет документов инвентаризации
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {documents.map((doc) => (
+              <button
+                key={doc.id}
+                onClick={() => navigate(`/inventory/${doc.id}`)}
+                className="card hover:shadow-lg transition-shadow text-left p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {doc.id}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      Тип: {doc.type === 'full' ? 'Полная' : doc.type === 'partial' ? 'Частичная' : 'Выборочная'}
+                    </p>
+                    {doc.warehouseZone && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Зона: {doc.warehouseZone}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className={`status-badge ${
+                      doc.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      doc.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {doc.status === 'completed' ? 'Завершен' :
+                       doc.status === 'in_progress' ? 'В работе' :
+                       'Ожидает'}
+                    </span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      {doc.completedLines} / {doc.totalLines} строк
+                    </p>
+                    {doc.discrepanciesCount > 0 && (
+                      <p className="text-sm text-red-600 dark:text-red-400 font-semibold">
+                        ⚠️ {doc.discrepanciesCount} расхождений
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   }

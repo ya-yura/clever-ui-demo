@@ -20,6 +20,7 @@ const Shipment: React.FC = () => {
 
   const [document, setDocument] = useState<ShipmentDocument | null>(null);
   const [lines, setLines] = useState<ShipmentLine[]>([]);
+  const [documents, setDocuments] = useState<ShipmentDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTtnModal, setShowTtnModal] = useState(false);
   const [ttnNumber, setTtnNumber] = useState('');
@@ -93,6 +94,10 @@ const Shipment: React.FC = () => {
           setDocument(newDoc);
           setLines(newLines);
         }
+      } else {
+        // Load all documents
+        const allDocs = await db.shipmentDocuments.toArray();
+        setDocuments(allDocs);
       }
     } catch (error) {
       console.error('Error loading document:', error);
@@ -194,6 +199,74 @@ const Shipment: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+      </div>
+    );
+  }
+
+  // Show document list if no id or source specified
+  if (!id && !sourceId) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            🚚 Документы отгрузки
+          </h2>
+        </div>
+
+        {documents.length === 0 ? (
+          <div className="card text-center py-12">
+            <p className="text-gray-600 dark:text-gray-400">
+              Нет документов отгрузки
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {documents.map((doc) => (
+              <button
+                key={doc.id}
+                onClick={() => navigate(`/shipment/${doc.id}`)}
+                className="card hover:shadow-lg transition-shadow text-left p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {doc.id}
+                    </h3>
+                    {doc.orderNumber && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Заказ: {doc.orderNumber}
+                      </p>
+                    )}
+                    {doc.customer && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Клиент: {doc.customer}
+                      </p>
+                    )}
+                    {doc.ttnNumber && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        ТТН: {doc.ttnNumber}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className={`status-badge ${
+                      doc.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      doc.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {doc.status === 'completed' ? 'Завершен' :
+                       doc.status === 'in_progress' ? 'В работе' :
+                       'Ожидает'}
+                    </span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      {doc.completedLines} / {doc.totalLines} строк
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   }

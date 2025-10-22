@@ -1,0 +1,23 @@
+{
+  "cells": [
+    { "id": "A-01-01", "zone": "A", "row": "01", "level": "01", "capacity": 100, "occupied": 45, "type": "standard" },
+    { "id": "A-01-02", "zone": "A", "row": "01", "level": "02", "capacity": 100, "occupied": 30, "type": "standard" },
+    { "id": "A-01-03", "zone": "A", "row": "01", "level": "03", "capacity": 100, "occupied": 60, "type": "standard" },
+    { "id": "A-02-01", "zone": "A", "row": "02", "level": "01", "capacity": 100, "occupied": 85, "type": "standard" },
+    { "id": "A-02-02", "zone": "A", "row": "02", "level": "02", "capacity": 100, "occupied": 20, "type": "standard" },
+    { "id": "A-02-03", "zone": "A", "row": "02", "level": "03", "capacity": 100, "occupied": 70, "type": "standard" },
+    { "id": "B-01-01", "zone": "B", "row": "01", "level": "01", "capacity": 150, "occupied": 90, "type": "large" },
+    { "id": "B-01-02", "zone": "B", "row": "01", "level": "02", "capacity": 150, "occupied": 110, "type": "large" },
+    { "id": "B-02-01", "zone": "B", "row": "02", "level": "01", "capacity": 150, "occupied": 45, "type": "large" },
+    { "id": "B-02-02", "zone": "B", "row": "02", "level": "02", "capacity": 150, "occupied": 130, "type": "large" },
+    { "id": "C-01-01", "zone": "C", "row": "01", "level": "01", "capacity": 200, "occupied": 150, "type": "bulk" },
+    { "id": "C-01-02", "zone": "C", "row": "01", "level": "02", "capacity": 200, "occupied": 80, "type": "bulk" },
+    { "id": "C-02-01", "zone": "C", "row": "02", "level": "01", "capacity": 200, "occupied": 180, "type": "bulk" },
+    { "id": "D-01-01", "zone": "D", "row": "01", "level": "01", "capacity": 50, "occupied": 25, "type": "cold" },
+    { "id": "D-01-02", "zone": "D", "row": "01", "level": "02", "capacity": 50, "occupied": 40, "type": "cold" },
+    { "id": "D-02-01", "zone": "D", "row": "02", "level": "01", "capacity": 50, "occupied": 15, "type": "cold" },
+    { "id": "E-01-01", "zone": "E", "row": "01", "level": "01", "capacity": 30, "occupied": 20, "type": "freezer" },
+    { "id": "E-01-02", "zone": "E", "row": "01", "level": "02", "capacity": 30, "occupied": 25, "type": "freezer" }
+  ]
+}
+

@@ -21,6 +21,7 @@ const Placement: React.FC = () => {
 
   const [document, setDocument] = useState<PlacementDocument | null>(null);
   const [lines, setLines] = useState<PlacementLine[]>([]);
+  const [documents, setDocuments] = useState<PlacementDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentCell, setCurrentCell] = useState<string>('');
   const [activeLineId, setActiveLineId] = useState<string | null>(null);
@@ -94,6 +95,10 @@ const Placement: React.FC = () => {
           setDocument(newDoc);
           setLines(newLines);
         }
+      } else if (!sourceId) {
+        // Load all documents
+        const allDocs = await db.placementDocuments.toArray();
+        setDocuments(allDocs);
       } else {
         // Create new document
         const newDoc: PlacementDocument = {
@@ -225,6 +230,64 @@ const Placement: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  // Show document list if no id specified
+  if (!id) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            🏷️ Документы размещения
+          </h2>
+        </div>
+
+        {documents.length === 0 ? (
+          <div className="card text-center py-12">
+            <p className="text-gray-600 dark:text-gray-400">
+              Нет документов размещения
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {documents.map((doc) => (
+              <button
+                key={doc.id}
+                onClick={() => navigate(`/placement/${doc.id}`)}
+                className="card hover:shadow-lg transition-shadow text-left p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {doc.id}
+                    </h3>
+                    {doc.sourceDocument && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Источник: {doc.sourceDocument}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className={`status-badge ${
+                      doc.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      doc.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {doc.status === 'completed' ? 'Завершен' :
+                       doc.status === 'in_progress' ? 'В работе' :
+                       'Черновик'}
+                    </span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      {doc.completedLines} / {doc.totalLines} строк
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   }

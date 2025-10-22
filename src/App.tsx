@@ -1,7 +1,7 @@
 // === 📁 src/App.tsx ===
 // Main application component
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -11,8 +11,14 @@ import Picking from './pages/Picking';
 import Shipment from './pages/Shipment';
 import Return from './pages/Return';
 import Inventory from './pages/Inventory';
+import { loadInitialData } from './utils/loadInitialData';
 
 function App() {
+  // Load initial data on app start
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
