@@ -157,7 +157,7 @@ const Receiving: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#86e0cb]"></div>
       </div>
     );
   }
@@ -167,14 +167,14 @@ const Receiving: React.FC = () => {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-[#e3e3dd]">
             📦 Документы приёмки
           </h2>
         </div>
 
         {documents.length === 0 ? (
           <div className="card text-center py-12">
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-[#a7a7a7]">
               Нет документов приёмки
             </p>
           </div>
@@ -184,35 +184,35 @@ const Receiving: React.FC = () => {
               <button
                 key={doc.id}
                 onClick={() => navigate(`/receiving/${doc.id}`)}
-                className="card hover:shadow-lg transition-shadow text-left p-6"
+                className="card hover:shadow-lg hover:border-[#86e0cb] transition-all text-left p-6"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    <h3 className="text-lg font-semibold text-[#e3e3dd]">
                       {doc.id}
                     </h3>
                     {doc.supplier && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <p className="text-sm text-[#a7a7a7] mt-1">
                         Поставщик: {doc.supplier}
                       </p>
                     )}
                     {doc.deliveryNumber && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-[#a7a7a7]">
                         Номер поставки: {doc.deliveryNumber}
                       </p>
                     )}
                   </div>
                   <div className="text-right">
-                    <span className={`status-badge ${
-                      doc.status === 'completed' ? 'bg-green-100 text-green-800' :
-                      doc.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span className={
+                      doc.status === 'completed' ? 'status-success' :
+                      doc.status === 'in_progress' ? 'status-warning' :
+                      'status-pending'
+                    }>
                       {doc.status === 'completed' ? 'Завершен' :
                        doc.status === 'in_progress' ? 'В работе' :
                        'Ожидает'}
                     </span>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    <p className="text-sm text-[#a7a7a7] mt-2">
                       {doc.completedLines} / {doc.totalLines} строк
                     </p>
                   </div>
@@ -228,7 +228,7 @@ const Receiving: React.FC = () => {
   if (!document) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600 dark:text-gray-400">Документ не найден</p>
+        <p className="text-[#a7a7a7]">Документ не найден</p>
       </div>
     );
   }

@@ -6,13 +6,13 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', 'Noto Sans', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: dark;
+  color: #e3e3dd;
+  background-color: #343436;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -33,27 +33,27 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 active:bg-blue-800 transition-colors min-h-[44px] min-w-[44px];
+    @apply px-4 py-2 bg-[#86e0cb] text-[#2d7a6b] rounded-lg font-bold hover:bg-[#91ed91] hover:text-[#2d6b2d] active:bg-[#f3a361] active:text-[#8b5931] transition-colors min-h-[44px] min-w-[44px];
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 active:bg-gray-800 transition-colors min-h-[44px] min-w-[44px];
+    @apply px-4 py-2 bg-[#474747] text-[#e3e3dd] rounded-lg font-semibold hover:bg-[#5a5a5a] active:bg-[#6a6a6a] transition-colors min-h-[44px] min-w-[44px];
   }
 
   .btn-success {
-    @apply px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 active:bg-green-800 transition-colors min-h-[44px] min-w-[44px];
+    @apply px-4 py-2 bg-[#91ed91] text-[#2d6b2d] rounded-lg font-bold hover:bg-[#a0f0a0] active:bg-[#7fd87f] transition-colors min-h-[44px] min-w-[44px];
   }
 
   .btn-danger {
-    @apply px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 active:bg-red-800 transition-colors min-h-[44px] min-w-[44px];
+    @apply px-4 py-2 bg-[#ba8f8e] text-[#6b3d3c] rounded-lg font-bold hover:bg-[#ca9f9e] active:bg-[#aa7f7e] transition-colors min-h-[44px] min-w-[44px];
   }
 
   .card {
-    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-4;
+    @apply bg-[#2a2a2c] border border-[#474747] rounded-lg shadow-md p-4;
   }
 
   .input-field {
-    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px];
+    @apply w-full px-3 py-2 border border-[#474747] rounded-lg bg-[#343436] text-[#e3e3dd] focus:outline-none focus:ring-2 focus:ring-[#86e0cb] focus:border-[#86e0cb] min-h-[44px] placeholder-[#a7a7a7];
   }
 
   .status-badge {
@@ -61,28 +61,26 @@ body {
   }
 
   .status-success {
-    @apply status-badge bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+    @apply status-badge bg-[#2d6b2d] text-[#91ed91] border border-[#91ed91];
   }
 
   .status-error {
-    @apply status-badge bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+    @apply status-badge bg-[#6b3d3c] text-[#ba8f8e] border border-[#ba8f8e];
   }
 
   .status-warning {
-    @apply status-badge bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+    @apply status-badge bg-[#8b5931] text-[#f0e78d] border border-[#f3a361];
   }
 
   .status-pending {
-    @apply status-badge bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200;
+    @apply status-badge bg-[#2a2a2c] text-[#a7a7a7] border border-[#474747];
   }
 }
 
-/* Light mode */
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
+/* Всегда темная тема */
+:root {
+  color: #e3e3dd;
+  background-color: #343436;
 }
 
 /* Touch targets */

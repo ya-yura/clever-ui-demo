@@ -11,10 +11,10 @@ interface Props {
 
 const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
   const statusColor = 
-    line.status === 'completed' ? 'bg-green-100 border-green-500 dark:bg-green-900' :
-    line.status === 'partial' ? 'bg-yellow-100 border-yellow-500 dark:bg-yellow-900' :
-    line.status === 'error' ? 'bg-red-100 border-red-500 dark:bg-red-900' :
-    'bg-gray-100 border-gray-300 dark:bg-gray-700';
+    line.status === 'completed' ? 'bg-[#2d6b2d] border-[#91ed91]' :
+    line.status === 'partial' ? 'bg-[#8b5931] border-[#f3a361]' :
+    line.status === 'error' ? 'bg-[#6b3d3c] border-[#ba8f8e]' :
+    'bg-[#2a2a2c] border-[#474747]';
 
   const statusIcon =
     line.status === 'completed' ? '🟢' :
@@ -32,14 +32,14 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
           <div className="flex items-center space-x-2 mb-2">
             <span className="text-2xl">{statusIcon}</span>
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">
+              <h3 className="font-semibold text-[#e3e3dd]">
                 {line.productName}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-[#a7a7a7]">
                 Артикул: {line.productSku}
               </p>
               {line.barcode && (
-                <p className="text-xs text-gray-500 dark:text-gray-500">
+                <p className="text-xs text-[#a7a7a7]">
                   ШК: {line.barcode}
                 </p>
               )}
@@ -47,26 +47,26 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center mt-4">
-            <div className="bg-white dark:bg-gray-800 rounded p-2">
-              <div className="text-xs text-gray-600 dark:text-gray-400">План</div>
-              <div className="text-lg font-bold text-gray-900 dark:text-white">
+            <div className="bg-[#343436] border border-[#474747] rounded p-2">
+              <div className="text-xs text-[#a7a7a7]">План</div>
+              <div className="text-lg font-bold text-[#e3e3dd]">
                 {line.quantityPlan}
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded p-2">
-              <div className="text-xs text-gray-600 dark:text-gray-400">Факт</div>
-              <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+            <div className="bg-[#343436] border border-[#474747] rounded p-2">
+              <div className="text-xs text-[#a7a7a7]">Факт</div>
+              <div className="text-lg font-bold text-[#86e0cb]">
                 {line.quantityFact}
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded p-2">
-              <div className="text-xs text-gray-600 dark:text-gray-400">Остаток</div>
+            <div className="bg-[#343436] border border-[#474747] rounded p-2">
+              <div className="text-xs text-[#a7a7a7]">Остаток</div>
               <div className={`text-lg font-bold ${
                 showDifference 
                   ? difference > 0 
-                    ? 'text-yellow-600 dark:text-yellow-400' 
-                    : 'text-red-600 dark:text-red-400'
-                  : 'text-green-600 dark:text-green-400'
+                    ? 'text-[#f0e78d]' 
+                    : 'text-[#ba8f8e]'
+                  : 'text-[#91ed91]'
               }`}>
                 {Math.abs(line.quantityPlan - line.quantityFact)}
               </div>
@@ -95,8 +95,8 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
       {showDifference && (
         <div className={`mt-2 p-2 rounded text-sm text-center ${
           difference > 0 
-            ? 'bg-yellow-50 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-            : 'bg-red-50 text-red-800 dark:bg-red-900 dark:text-red-200'
+            ? 'bg-[#8b5931] text-[#f0e78d]'
+            : 'bg-[#6b3d3c] text-[#ba8f8e]'
         }`}>
           {difference > 0 ? '⚠️ Излишки' : '⚠️ Недостача'}: {Math.abs(difference)} шт.
         </div>

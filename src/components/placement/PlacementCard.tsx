@@ -12,10 +12,10 @@ interface Props {
 
 const PlacementCard: React.FC<Props> = ({ line, isActive, onSelect }) => {
   const statusColor = 
-    line.status === 'completed' ? 'bg-green-100 border-green-500 dark:bg-green-900' :
-    line.status === 'partial' ? 'bg-yellow-100 border-yellow-500 dark:bg-yellow-900' :
-    isActive ? 'bg-blue-100 border-blue-500 dark:bg-blue-900' :
-    'bg-gray-100 border-gray-300 dark:bg-gray-700';
+    line.status === 'completed' ? 'bg-[#2d6b2d] border-[#91ed91]' :
+    line.status === 'partial' ? 'bg-[#8b5931] border-[#f3a361]' :
+    isActive ? 'bg-[#2d7a6b] border-[#86e0cb]' :
+    'bg-[#2a2a2c] border-[#474747]';
 
   const statusIcon =
     line.status === 'completed' ? '🟢' :
@@ -37,10 +37,10 @@ const PlacementCard: React.FC<Props> = ({ line, isActive, onSelect }) => {
           <div className="flex items-center space-x-2 mb-2">
             <span className="text-2xl">{statusIcon}</span>
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">
+              <h3 className="font-semibold text-[#e3e3dd]">
                 {line.productName}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-[#a7a7a7]">
                 Артикул: {line.productSku}
               </p>
             </div>
@@ -50,16 +50,16 @@ const PlacementCard: React.FC<Props> = ({ line, isActive, onSelect }) => {
           <div className="mt-3 space-y-2">
             {line.suggestedCellName && (
               <div className="flex items-center space-x-2 text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Рекомендуемая ячейка:</span>
-                <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded">
+                <span className="text-[#a7a7a7]">Рекомендуемая ячейка:</span>
+                <span className="font-semibold text-[#86e0cb] bg-[#2d7a6b] px-2 py-1 rounded">
                   📍 {line.suggestedCellName}
                 </span>
               </div>
             )}
             {line.cellName && (
               <div className="flex items-center space-x-2 text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Текущая ячейка:</span>
-                <span className="font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900 px-2 py-1 rounded">
+                <span className="text-[#a7a7a7]">Текущая ячейка:</span>
+                <span className="font-semibold text-[#91ed91] bg-[#2d6b2d] px-2 py-1 rounded">
                   ✓ {line.cellName}
                 </span>
               </div>
@@ -68,21 +68,21 @@ const PlacementCard: React.FC<Props> = ({ line, isActive, onSelect }) => {
 
           {/* Quantity */}
           <div className="grid grid-cols-3 gap-2 text-center mt-4">
-            <div className="bg-white dark:bg-gray-800 rounded p-2">
-              <div className="text-xs text-gray-600 dark:text-gray-400">Всего</div>
-              <div className="text-lg font-bold text-gray-900 dark:text-white">
+            <div className="bg-[#343436] border border-[#474747] rounded p-2">
+              <div className="text-xs text-[#a7a7a7]">Всего</div>
+              <div className="text-lg font-bold text-[#e3e3dd]">
                 {line.quantityPlan}
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded p-2">
-              <div className="text-xs text-gray-600 dark:text-gray-400">Размещено</div>
-              <div className="text-lg font-bold text-green-600 dark:text-green-400">
+            <div className="bg-[#343436] border border-[#474747] rounded p-2">
+              <div className="text-xs text-[#a7a7a7]">Размещено</div>
+              <div className="text-lg font-bold text-[#91ed91]">
                 {line.quantityFact}
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded p-2">
-              <div className="text-xs text-gray-600 dark:text-gray-400">Осталось</div>
-              <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+            <div className="bg-[#343436] border border-[#474747] rounded p-2">
+              <div className="text-xs text-[#a7a7a7]">Осталось</div>
+              <div className="text-lg font-bold text-[#86e0cb]">
                 {remaining}
               </div>
             </div>
@@ -93,9 +93,9 @@ const PlacementCard: React.FC<Props> = ({ line, isActive, onSelect }) => {
       {/* Progress bar */}
       {line.quantityPlan > 0 && (
         <div className="mt-4">
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div className="w-full bg-[#474747] rounded-full h-2">
             <div
-              className="bg-green-600 h-2 rounded-full transition-all"
+              className="bg-[#91ed91] h-2 rounded-full transition-all"
               style={{ width: `${(line.quantityFact / line.quantityPlan) * 100}%` }}
             />
           </div>

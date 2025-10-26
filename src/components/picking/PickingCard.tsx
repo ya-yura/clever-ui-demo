@@ -12,10 +12,10 @@ interface Props {
 
 const PickingCard: React.FC<Props> = ({ line, isActive, routeOrder }) => {
   const statusColor = 
-    line.status === 'completed' ? 'bg-green-100 border-green-500 dark:bg-green-900' :
-    line.status === 'partial' ? 'bg-yellow-100 border-yellow-500 dark:bg-yellow-900' :
-    isActive ? 'bg-blue-100 border-blue-500 dark:bg-blue-900' :
-    'bg-gray-100 border-gray-300 dark:bg-gray-700';
+    line.status === 'completed' ? 'bg-[#2d6b2d] border-[#91ed91]' :
+    line.status === 'partial' ? 'bg-[#8b5931] border-[#f3a361]' :
+    isActive ? 'bg-[#2d7a6b] border-[#86e0cb]' :
+    'bg-[#2a2a2c] border-[#474747]';
 
   const statusIcon =
     line.status === 'completed' ? '✅' :
@@ -41,10 +41,10 @@ const PickingCard: React.FC<Props> = ({ line, isActive, routeOrder }) => {
             )}
             <span className="text-2xl">{statusIcon}</span>
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 dark:text-white">
+              <h3 className="font-semibold text-[#e3e3dd]">
                 {line.productName}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-[#a7a7a7]">
                 Артикул: {line.productSku}
               </p>
             </div>
@@ -53,8 +53,8 @@ const PickingCard: React.FC<Props> = ({ line, isActive, routeOrder }) => {
           {/* Cell info */}
           <div className="mt-3">
             <div className="flex items-center space-x-2 text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Ячейка:</span>
-              <span className="font-bold text-lg text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900 px-3 py-1 rounded">
+              <span className="text-[#a7a7a7]">Ячейка:</span>
+              <span className="font-bold text-lg text-[#86e0cb] bg-[#2d7a6b] px-3 py-1 rounded">
                 📍 {line.cellName}
               </span>
             </div>
@@ -62,21 +62,21 @@ const PickingCard: React.FC<Props> = ({ line, isActive, routeOrder }) => {
 
           {/* Quantity */}
           <div className="grid grid-cols-3 gap-2 text-center mt-4">
-            <div className="bg-white dark:bg-gray-800 rounded p-2">
-              <div className="text-xs text-gray-600 dark:text-gray-400">План</div>
-              <div className="text-lg font-bold text-gray-900 dark:text-white">
+            <div className="bg-[#343436] border border-[#474747] rounded p-2">
+              <div className="text-xs text-[#a7a7a7]">План</div>
+              <div className="text-lg font-bold text-[#e3e3dd]">
                 {line.quantityPlan}
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded p-2">
-              <div className="text-xs text-gray-600 dark:text-gray-400">Подобрано</div>
-              <div className="text-lg font-bold text-green-600 dark:text-green-400">
+            <div className="bg-[#343436] border border-[#474747] rounded p-2">
+              <div className="text-xs text-[#a7a7a7]">Подобрано</div>
+              <div className="text-lg font-bold text-[#91ed91]">
                 {line.quantityFact}
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded p-2">
-              <div className="text-xs text-gray-600 dark:text-gray-400">Осталось</div>
-              <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+            <div className="bg-[#343436] border border-[#474747] rounded p-2">
+              <div className="text-xs text-[#a7a7a7]">Осталось</div>
+              <div className="text-lg font-bold text-[#86e0cb]">
                 {remaining}
               </div>
             </div>
@@ -87,9 +87,9 @@ const PickingCard: React.FC<Props> = ({ line, isActive, routeOrder }) => {
       {/* Progress bar */}
       {line.quantityPlan > 0 && (
         <div className="mt-4">
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div className="w-full bg-[#474747] rounded-full h-2">
             <div
-              className="bg-green-600 h-2 rounded-full transition-all"
+              className="bg-[#91ed91] h-2 rounded-full transition-all"
               style={{ width: `${(line.quantityFact / line.quantityPlan) * 100}%` }}
             />
           </div>
@@ -97,8 +97,8 @@ const PickingCard: React.FC<Props> = ({ line, isActive, routeOrder }) => {
       )}
 
       {isActive && (
-        <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded text-center">
-          <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+        <div className="mt-3 p-2 bg-[#2d7a6b] border border-[#86e0cb] rounded text-center">
+          <p className="text-sm font-semibold text-[#86e0cb]">
             👆 Отсканируйте товар из этой ячейки
           </p>
         </div>

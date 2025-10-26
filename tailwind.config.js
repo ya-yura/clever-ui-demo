@@ -6,7 +6,44 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Atkinson Hyperlegible', 'Noto Sans', 'system-ui', 'sans-serif'],
+      },
       colors: {
+        // Основная темная палитра из Figma
+        dark: {
+          bg: '#343436',
+          card: '#2a2a2c',
+          border: '#474747',
+          text: '#e3e3dd',
+        },
+        // Цвета модулей из Figma
+        modules: {
+          receiving: {
+            bg: '#daa420',
+            text: '#725a1e',
+          },
+          inventory: {
+            bg: '#fea079',
+            text: '#8c533b',
+          },
+          picking: {
+            bg: '#f3a361',
+            text: '#8b5931',
+          },
+          placement: {
+            bg: '#86e0cb',
+            text: '#2d7a6b',
+          },
+          shipment: {
+            bg: '#91ed91',
+            text: '#2d6b2d',
+          },
+          return: {
+            bg: '#ba8f8e',
+            text: '#6b3d3c',
+          },
+        },
         primary: {
           50: '#eff6ff',
           100: '#dbeafe',

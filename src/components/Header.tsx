@@ -13,14 +13,14 @@ const Header: React.FC = () => {
   const isHome = location.pathname === '/';
 
   return (
-    <header className="bg-blue-700 text-white shadow-lg sticky top-0 z-50">
+    <header className="bg-[#343436] text-[#e3e3dd] shadow-lg sticky top-0 z-50 border-b border-[#474747]">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             {!isHome && (
               <button
                 onClick={() => navigate(-1)}
-                className="p-2 hover:bg-blue-600 rounded-lg transition-colors"
+                className="p-2 hover:bg-[#474747] rounded-lg transition-colors"
                 aria-label="Назад"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -28,11 +28,18 @@ const Header: React.FC = () => {
                 </svg>
               </button>
             )}
+            {isHome && (
+              <div className="flex flex-col space-y-1">
+                <div className="w-6 h-1 bg-[#e3e3dd] rounded"></div>
+                <div className="w-6 h-1 bg-[#e3e3dd] rounded"></div>
+                <div className="w-6 h-1 bg-[#e3e3dd] rounded"></div>
+              </div>
+            )}
             <h1 
-              className="text-xl font-bold cursor-pointer"
+              className="text-2xl font-normal cursor-pointer tracking-wide"
               onClick={() => navigate('/')}
             >
-              Склад-15
+              Склад 15
             </h1>
           </div>
 

@@ -17,51 +17,51 @@ interface Module {
 const modules: Module[] = [
   {
     id: 'receiving',
-    title: 'Приёмка',
+    title: 'Приход',
     icon: '📦',
-    description: 'Приёмка товаров от поставщиков',
+    description: 'Перемещение товаров между ячейками',
     path: '/receiving',
-    color: 'bg-blue-500',
+    color: 'bg-[#daa420]',
   },
   {
-    id: 'placement',
-    title: 'Размещение',
-    icon: '🏷️',
-    description: 'Размещение товаров в ячейки',
-    path: '/placement',
-    color: 'bg-purple-500',
+    id: 'inventory',
+    title: 'Остатки',
+    icon: '📊',
+    description: 'Перемещение товаров между ячейками',
+    path: '/inventory',
+    color: 'bg-[#fea079]',
   },
   {
     id: 'picking',
     title: 'Подбор',
     icon: '🚚',
-    description: 'Комплектация заказов',
+    description: 'Перемещение товаров между ячейками',
     path: '/picking',
-    color: 'bg-green-500',
+    color: 'bg-[#f3a361]',
+  },
+  {
+    id: 'placement',
+    title: 'Учёт',
+    icon: '📝',
+    description: 'Перемещение товаров между ячейками',
+    path: '/placement',
+    color: 'bg-[#86e0cb]',
   },
   {
     id: 'shipment',
-    title: 'Отгрузка',
-    icon: '🧾',
-    description: 'Отгрузка заказов клиентам',
+    title: 'Документооборот',
+    icon: '📄',
+    description: 'Перемещение товаров между ячейками',
     path: '/shipment',
-    color: 'bg-orange-500',
+    color: 'bg-[#91ed91]',
   },
   {
     id: 'return',
-    title: 'Возврат',
-    icon: '♻️',
-    description: 'Возврат и списание товаров',
+    title: 'Штрихкоды',
+    icon: '📷',
+    description: 'Перемещение товаров между ячейками',
     path: '/return',
-    color: 'bg-red-500',
-  },
-  {
-    id: 'inventory',
-    title: 'Инвентаризация',
-    icon: '🧮',
-    description: 'Инвентаризация остатков',
-    path: '/inventory',
-    color: 'bg-indigo-500',
+    color: 'bg-[#ba8f8e]',
   },
 ];
 
@@ -103,75 +103,156 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center py-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Система управления складом
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Выберите модуль для работы
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {modules.map((module) => {
-          const count = stats[module.id as keyof typeof stats] || 0;
-          return (
-            <button
-              key={module.id}
-              onClick={() => navigate(module.path)}
-              className="card hover:shadow-xl transition-shadow p-6 text-left group"
-            >
-              <div className="flex items-start space-x-4">
-                <div className={`${module.color} text-white p-3 rounded-lg text-3xl relative`}>
-                  {module.icon}
-                  {count > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                      {count}
-                    </span>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                    {module.title}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">
-                    {module.description}
-                  </p>
-                  {count > 0 && (
-                    <p className="text-blue-600 dark:text-blue-400 mt-2 text-sm font-medium">
-                      📄 {count} {count === 1 ? 'документ' : count < 5 ? 'документа' : 'документов'}
-                    </p>
-                  )}
-                </div>
-                <svg
-                  className="w-6 h-6 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="card mt-8">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          📊 Статус системы
-        </h3>
-        <div className="grid grid-cols-2 gap-4 text-center">
-          <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">PWA</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Установлено</div>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Первая карточка - большая */}
+        <button
+          onClick={() => navigate(modules[0].path)}
+          className={`${modules[0].color} rounded-lg p-6 text-left hover:opacity-90 transition-all relative overflow-hidden h-64 flex flex-col justify-between`}
+        >
+          <div>
+            <h2 className="text-3xl font-bold text-[#725a1e] mb-3">
+              {modules[0].title}
+            </h2>
+            <p className="text-sm text-[#725a1e] opacity-90 max-w-[160px] leading-relaxed">
+              {modules[0].description}
+            </p>
           </div>
-          <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {navigator.onLine ? 'Онлайн' : 'Оффлайн'}
+          <div className="flex justify-between items-end">
+            <div>
+              <p className="text-xs text-[#725a1e] opacity-80">Документов:</p>
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Режим работы</div>
+            <p className="text-5xl font-normal text-white tracking-tight">
+              {stats.receiving}
+            </p>
+          </div>
+        </button>
+
+        {/* Вторая и третья карточки - справа */}
+        <div className="space-y-4">
+          <button
+            onClick={() => navigate(modules[1].path)}
+            className={`${modules[1].color} rounded-lg p-6 text-left hover:opacity-90 transition-all w-full h-[calc(50%-0.5rem)] flex flex-col justify-between`}
+          >
+            <div>
+              <h2 className="text-2xl font-bold text-[#8c533b] mb-2">
+                {modules[1].title}
+              </h2>
+              <p className="text-xs text-[#8c533b] opacity-80 max-w-[140px] leading-relaxed">
+                {modules[1].description}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-4xl font-normal text-white tracking-tight">
+                {stats.inventory}
+              </p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => navigate(modules[2].path)}
+            className={`${modules[2].color} rounded-lg p-6 text-left hover:opacity-90 transition-all w-full h-[calc(50%-0.5rem)] flex flex-col justify-between`}
+          >
+            <div>
+              <h2 className="text-2xl font-bold text-[#8b5931] mb-2">
+                {modules[2].title}
+              </h2>
+              <p className="text-xs text-[#8b5931] opacity-80 max-w-[140px] leading-relaxed">
+                {modules[2].description}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-4xl font-normal text-white tracking-tight">
+                {stats.picking}
+              </p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Средняя секция */}
+      <div className="grid grid-cols-2 gap-4">
+        <button
+          onClick={() => navigate(modules[3].path)}
+          className="border border-[#474747] rounded-lg p-5 text-left hover:bg-[#474747] hover:bg-opacity-20 transition-all h-24 flex justify-between items-start"
+        >
+          <div>
+            <h3 className="text-lg font-bold text-[#86e0cb] mb-1">
+              {modules[3].title}
+            </h3>
+            <p className="text-[10px] text-[#a7a7a7] leading-tight max-w-[130px]">
+              {modules[3].description}
+            </p>
+          </div>
+          <p className="text-2xl text-[#a7a7a7] font-normal">
+            {stats.placement}
+          </p>
+        </button>
+
+        <button
+          onClick={() => navigate(modules[4].path)}
+          className="border border-[#474747] rounded-lg p-5 text-left hover:bg-[#474747] hover:bg-opacity-20 transition-all h-24 flex justify-between items-start"
+        >
+          <div>
+            <h3 className="text-lg font-bold text-[#91ed91] mb-1">
+              {modules[4].title}
+            </h3>
+            <p className="text-[10px] text-[#a7a7a7] leading-tight max-w-[130px]">
+              {modules[4].description}
+            </p>
+          </div>
+          <p className="text-2xl text-[#a7a7a7] font-normal">
+            {stats.shipment}
+          </p>
+        </button>
+      </div>
+
+      {/* Нижняя секция */}
+      <div className="border border-[#474747] rounded-lg p-5">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-[#ba8f8e] mb-1">
+              {modules[5].title}
+            </h3>
+            <p className="text-[10px] text-[#a7a7a7] leading-tight">
+              {modules[5].description}
+            </p>
+          </div>
+          <button
+            onClick={() => navigate(modules[5].path)}
+            className="text-2xl text-[#a7a7a7] font-normal hover:text-white transition-colors"
+          >
+            {stats.return}
+          </button>
+        </div>
+      </div>
+
+      {/* Перемещения */}
+      <div>
+        <h3 className="text-xl text-[grey] mb-4">Перемещения</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="border border-[#474747] rounded-lg p-5 h-32 flex flex-col justify-between">
+            <div>
+              <h4 className="text-base font-bold text-[#f0e78d] mb-2">По складам</h4>
+              <p className="text-[10px] text-[#a7a7a7] leading-tight max-w-[130px]">
+                Перемещение товаров между ячейками
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl text-[#a7a7a7] font-normal">72</p>
+            </div>
+          </div>
+
+          <div className="border border-[#474747] rounded-lg p-5 h-32 flex flex-col justify-between">
+            <div>
+              <h4 className="text-base font-bold text-[burlywood] mb-2">По ячейкам</h4>
+              <p className="text-[10px] text-[#a7a7a7] leading-tight max-w-[130px]">
+                Перемещение товаров между ячейками
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl text-[#a7a7a7] font-normal">1</p>
+            </div>
           </div>
         </div>
       </div>
