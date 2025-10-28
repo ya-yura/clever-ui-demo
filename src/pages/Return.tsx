@@ -10,6 +10,7 @@ import { useSync } from '@/hooks/useSync';
 import { ReturnDocument, ReturnLine, ReturnType, ReturnReason } from '@/types/return';
 import { scanFeedback } from '@/utils/feedback';
 import ScanHint from '@/components/receiving/ScanHint';
+import ScannerInput from '@/components/ScannerInput';
 
 const Return: React.FC = () => {
   const { id } = useParams();
@@ -119,7 +120,7 @@ const Return: React.FC = () => {
     setShowReasonModal(true);
   };
 
-  const { lastScan } = useScanner({
+  const { handleScan: onScanWithFeedback, lastScan } = useScanner({
     mode: 'keyboard',
     onScan: handleScan,
   });
@@ -366,6 +367,13 @@ const Return: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Scanner Input */}
+      <ScannerInput 
+        onScan={onScanWithFeedback}
+        placeholder="Отсканируйте товар..."
+        hint="Отсканируйте штрих-код товара для добавления"
+      />
 
       {/* Scan Hint */}
       <ScanHint lastScan={lastScan} hint="Сканируйте товары для добавления" />

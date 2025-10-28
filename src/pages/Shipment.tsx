@@ -11,6 +11,7 @@ import { useSync } from '@/hooks/useSync';
 import { ShipmentDocument, ShipmentLine } from '@/types/shipment';
 import { scanFeedback } from '@/utils/feedback';
 import ScanHint from '@/components/receiving/ScanHint';
+import ScannerInput from '@/components/ScannerInput';
 
 const Shipment: React.FC = () => {
   const { id } = useParams();
@@ -134,7 +135,7 @@ const Shipment: React.FC = () => {
     }
   };
 
-  const { lastScan } = useScanner({
+  const { handleScan: onScanWithFeedback, lastScan } = useScanner({
     mode: 'keyboard',
     onScan: handleScan,
   });
@@ -355,6 +356,13 @@ const Shipment: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Scanner Input */}
+      <ScannerInput 
+        onScan={onScanWithFeedback}
+        placeholder="Отсканируйте упаковку..."
+        hint="Отсканируйте штрих-код упаковки для проверки"
+      />
 
       {/* Scan Hint */}
       <ScanHint lastScan={lastScan} hint="Сканируйте упаковки для проверки комплектности" />

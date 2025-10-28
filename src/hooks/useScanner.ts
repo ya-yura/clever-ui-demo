@@ -1,7 +1,7 @@
 // === 📁 src/hooks/useScanner.ts ===
 // Scanner hook for barcode/QR scanning
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
 import { playSound } from '@/utils/sound';
 
@@ -23,51 +23,14 @@ export const useScanner = ({
   const [isScanning, setIsScanning] = useState(false);
   const [lastScan, setLastScan] = useState<string>('');
   const scannerRef = useRef<Html5QrcodeScanner | Html5Qrcode | null>(null);
-  const bufferRef = useRef<string>('');
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Keyboard mode: capture keypresses
-  useEffect(() => {
-    if (mode !== 'keyboard') return;
-
-    const handleKeyPress = (event: KeyboardEvent) => {
-      // Ignore if focused on input
-      if (event.target instanceof HTMLInputElement || 
-          event.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-
-      if (event.key === 'Enter') {
-        if (bufferRef.current.length > 0) {
-          const code = bufferRef.current;
-          bufferRef.current = '';
-          setLastScan(code);
-          playSound('scan');
-          onScan(code);
-        }
-      } else if (event.key.length === 1) {
-        bufferRef.current += event.key;
-        
-        // Auto-submit after 100ms of no input
-        if (timerRef.current) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => {
-          if (bufferRef.current.length > 3) {
-            const code = bufferRef.current;
-            bufferRef.current = '';
-            setLastScan(code);
-            playSound('scan');
-            onScan(code);
-          }
-        }, 100);
-      }
-    };
-
-    window.addEventListener('keypress', handleKeyPress);
-    return () => {
-      window.removeEventListener('keypress', handleKeyPress);
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [mode, onScan]);
+  // Keyboard mode is now handled by ScannerInput component
+  // This hook wraps onScan to add sound and tracking
+  const handleScan = useCallback((code: string) => {
+    setLastScan(code);
+    playSound('scan');
+    onScan(code);
+  }, [onScan]);
 
   // Camera mode: use Html5Qrcode
   const startCameraScanner = useCallback(async (elementId: string) => {
@@ -129,15 +92,13 @@ export const useScanner = ({
       if (scannerRef.current) {
         stopScanner();
       }
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
     };
   }, [stopScanner]);
 
   return {
     isScanning,
     lastScan,
+    handleScan, // Use this for keyboard mode with ScannerInput component
     startCameraScanner,
     stopScanner,
     manualScan,

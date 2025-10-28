@@ -12,6 +12,7 @@ import { ReceivingDocument, ReceivingLine } from '@/types/receiving';
 import { scanFeedback } from '@/utils/feedback';
 import ReceivingCard from '@/components/receiving/ReceivingCard';
 import ScanHint from '@/components/receiving/ScanHint';
+import ScannerInput from '@/components/ScannerInput';
 
 const Receiving: React.FC = () => {
   const { id } = useParams();
@@ -94,7 +95,7 @@ const Receiving: React.FC = () => {
     }
   };
 
-  const { lastScan } = useScanner({
+  const { handleScan: onScanWithFeedback, lastScan } = useScanner({
     mode: 'keyboard',
     onScan: handleScan,
   });
@@ -300,6 +301,13 @@ const Receiving: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Scanner Input */}
+      <ScannerInput 
+        onScan={onScanWithFeedback}
+        placeholder="Отсканируйте товар или документ..."
+        hint="Наведите сканер на штрих-код товара"
+      />
 
       {/* Scan Hint */}
       <ScanHint lastScan={lastScan} />

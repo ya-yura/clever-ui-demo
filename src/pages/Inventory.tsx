@@ -12,6 +12,7 @@ import { InventoryDocument, InventoryLine } from '@/types/inventory';
 import { scanFeedback } from '@/utils/feedback';
 import { speak } from '@/utils/voice';
 import ScanHint from '@/components/receiving/ScanHint';
+import ScannerInput from '@/components/ScannerInput';
 
 const Inventory: React.FC = () => {
   const { id } = useParams();
@@ -187,7 +188,7 @@ const Inventory: React.FC = () => {
     updateDocumentProgress();
   };
 
-  const { lastScan } = useScanner({
+  const { handleScan: onScanWithFeedback, lastScan } = useScanner({
     mode: 'keyboard',
     onScan: handleScan,
   });
@@ -413,6 +414,13 @@ const Inventory: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Scanner Input */}
+      <ScannerInput 
+        onScan={onScanWithFeedback}
+        placeholder="Отсканируйте ячейку или товар..."
+        hint={currentCell ? `Пересчитайте товары в ячейке ${currentCellName}` : 'Сначала отсканируйте ячейку'}
+      />
 
       {/* Scan Hint */}
       <ScanHint

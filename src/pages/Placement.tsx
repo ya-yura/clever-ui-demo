@@ -12,6 +12,7 @@ import { PlacementDocument, PlacementLine } from '@/types/placement';
 import { scanFeedback } from '@/utils/feedback';
 import PlacementCard from '@/components/placement/PlacementCard';
 import ScanHint from '@/components/receiving/ScanHint';
+import ScannerInput from '@/components/ScannerInput';
 
 const Placement: React.FC = () => {
   const { id } = useParams();
@@ -185,7 +186,7 @@ const Placement: React.FC = () => {
     setTimeout(() => setActiveLineId(null), 2000);
   };
 
-  const { lastScan } = useScanner({
+  const { handleScan: onScanWithFeedback, lastScan } = useScanner({
     mode: 'keyboard',
     onScan: handleScan,
   });
@@ -372,6 +373,13 @@ const Placement: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Scanner Input */}
+      <ScannerInput 
+        onScan={onScanWithFeedback}
+        placeholder="Отсканируйте ячейку или товар..."
+        hint={currentCell ? 'Отсканируйте товар для размещения' : 'Сначала отсканируйте ячейку хранения'}
+      />
 
       {/* Scan Hint */}
       <ScanHint 

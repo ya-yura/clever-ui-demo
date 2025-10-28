@@ -14,6 +14,7 @@ import { speak } from '@/utils/voice';
 import PickingCard from '@/components/picking/PickingCard';
 import RouteProgress from '@/components/picking/RouteProgress';
 import ScanHint from '@/components/receiving/ScanHint';
+import ScannerInput from '@/components/ScannerInput';
 
 const Picking: React.FC = () => {
   const { id } = useParams();
@@ -205,7 +206,7 @@ const Picking: React.FC = () => {
     }
   };
 
-  const { lastScan } = useScanner({
+  const { handleScan: onScanWithFeedback, lastScan } = useScanner({
     mode: 'keyboard',
     onScan: handleScan,
   });
@@ -419,6 +420,13 @@ const Picking: React.FC = () => {
       {route.length > 0 && (
         <RouteProgress route={route} currentCellId={currentCell} />
       )}
+
+      {/* Scanner Input */}
+      <ScannerInput 
+        onScan={onScanWithFeedback}
+        placeholder="Отсканируйте ячейку или товар..."
+        hint={currentCell ? `Подберите товары из ячейки ${currentCellName}` : 'Сначала отсканируйте ячейку'}
+      />
 
       {/* Scan Hint */}
       <ScanHint
