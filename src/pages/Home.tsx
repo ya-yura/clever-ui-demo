@@ -74,6 +74,7 @@ const Home: React.FC = () => {
     shipment: 0,
     return: 0,
     inventory: 0,
+    total: 0,
   });
 
   useEffect(() => {
@@ -89,6 +90,9 @@ const Home: React.FC = () => {
       const returnCount = await db.returnDocuments.count();
       const inventoryCount = await db.inventoryDocuments.count();
 
+      const total = receivingCount + placementCount + pickingCount + 
+                    shipmentCount + returnCount + inventoryCount;
+
       setStats({
         receiving: receivingCount,
         placement: placementCount,
@@ -96,6 +100,7 @@ const Home: React.FC = () => {
         shipment: shipmentCount,
         return: returnCount,
         inventory: inventoryCount,
+        total,
       });
     } catch (error) {
       console.error('Error loading stats:', error);
@@ -104,6 +109,32 @@ const Home: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Карточка всех документов */}
+      <button
+        onClick={() => navigate('/documents')}
+        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-left hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg"
+      >
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-3">
+              <span className="text-3xl">📋</span>
+              Все документы
+            </h2>
+            <p className="text-sm text-blue-100 opacity-90">
+              Просмотр, поиск и фильтрация всех документов склада
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-5xl font-bold text-white">
+              {stats.total}
+            </div>
+            <div className="text-xs text-blue-100 opacity-80 mt-1">
+              документов
+            </div>
+          </div>
+        </div>
+      </button>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Первая карточка - большая */}
         <button

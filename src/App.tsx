@@ -1,10 +1,11 @@
 // === 📁 src/App.tsx ===
 // Main application component
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
+import Documents from './pages/Documents';
 import Receiving from './pages/Receiving';
 import Placement from './pages/Placement';
 import Picking from './pages/Picking';
@@ -24,6 +25,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+          <Route path="documents" element={<Documents />} />
           <Route path="receiving" element={<Receiving />} />
           <Route path="receiving/:id" element={<Receiving />} />
           <Route path="placement" element={<Placement />} />
