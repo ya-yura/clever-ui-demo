@@ -91,6 +91,7 @@ export class WarehouseDatabase extends Dexie {
   constructor() {
     super('WarehouseDB');
 
+    // Version 1 - Initial schema
     this.version(1).stores({
       // Receiving
       receivingDocuments: 'id, status, createdAt, updatedAt',
@@ -126,8 +127,11 @@ export class WarehouseDatabase extends Dexie {
       // Sync and errors
       syncActions: '++id, module, timestamp, synced',
       errorLogs: '++id, module, timestamp, resolved',
+    });
 
-      // Partner/Team work
+    // Version 2 - Added Partner/Team work module
+    this.version(2).stores({
+      // Add new tables
       employees: 'id, name, role, department, isActive, lastActiveAt',
       partnerSessions: 'id, userId, partnerId, startedAt, endedAt, status',
     });
