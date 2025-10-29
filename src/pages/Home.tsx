@@ -135,6 +135,29 @@ const Home: React.FC = () => {
         </div>
       </button>
 
+      {/* Карточка напарника */}
+      <button
+        onClick={() => navigate('/partner')}
+        className="w-full bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-left hover:from-green-600 hover:to-green-700 transition-all shadow-lg"
+      >
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-3">
+              <span className="text-3xl">🤝</span>
+              Работа с напарником
+            </h2>
+            <p className="text-sm text-green-100 opacity-90">
+              Выберите напарника для совместной работы
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-4xl font-bold text-white">
+              ✓
+            </div>
+          </div>
+        </div>
+      </button>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Первая карточка - большая */}
         <button

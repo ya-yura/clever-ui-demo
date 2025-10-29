@@ -28,6 +28,7 @@ import {
 } from '@/types/inventory';
 import { BarcodeRecord } from '@/types/barcode';
 import { LabelTemplate, PrintTask } from '@/types/label';
+import { Employee, PartnerSession } from '@/types/partner';
 
 export interface SyncAction {
   id?: number;
@@ -83,6 +84,10 @@ export class WarehouseDatabase extends Dexie {
   syncActions!: Table<SyncAction, number>;
   errorLogs!: Table<ErrorLog, number>;
 
+  // Partner/Team work
+  employees!: Table<Employee, string>;
+  partnerSessions!: Table<PartnerSession, string>;
+
   constructor() {
     super('WarehouseDB');
 
@@ -121,6 +126,10 @@ export class WarehouseDatabase extends Dexie {
       // Sync and errors
       syncActions: '++id, module, timestamp, synced',
       errorLogs: '++id, module, timestamp, resolved',
+
+      // Partner/Team work
+      employees: 'id, name, role, department, isActive, lastActiveAt',
+      partnerSessions: 'id, userId, partnerId, startedAt, endedAt, status',
     });
   }
 }

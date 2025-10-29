@@ -16,6 +16,11 @@ export const loadInitialData = async () => {
   try {
     console.log('🔄 Loading initial data from JSON files...');
 
+    // Load Employees data
+    const employeesData = await import('@/data/employees.json');
+    await db.employees.bulkAdd(employeesData.default);
+    console.log('✅ Employees loaded:', employeesData.default.length);
+
     // Load Receiving data
     const receivingData = await import('@/data/receiving.json');
     await db.receivingDocuments.bulkPut(receivingData.default.documents);
