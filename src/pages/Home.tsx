@@ -19,7 +19,7 @@ const modules: Module[] = [
     id: 'receiving',
     title: 'Приход',
     icon: '📦',
-    description: 'Перемещение товаров между ячейками',
+    description: 'Приёмка товара от поставщиков',
     path: '/receiving',
     color: 'bg-[#daa420]',
   },
@@ -27,7 +27,7 @@ const modules: Module[] = [
     id: 'inventory',
     title: 'Остатки',
     icon: '📊',
-    description: 'Перемещение товаров между ячейками',
+    description: 'Инвентаризация и учёт остатков',
     path: '/inventory',
     color: 'bg-[#fea079]',
   },
@@ -35,7 +35,7 @@ const modules: Module[] = [
     id: 'picking',
     title: 'Подбор',
     icon: '🚚',
-    description: 'Перемещение товаров между ячейками',
+    description: 'Комплектация заказов для отгрузки',
     path: '/picking',
     color: 'bg-[#f3a361]',
   },
@@ -43,7 +43,7 @@ const modules: Module[] = [
     id: 'placement',
     title: 'Учёт',
     icon: '📝',
-    description: 'Перемещение товаров между ячейками',
+    description: 'Размещение товара по ячейкам',
     path: '/placement',
     color: 'bg-[#86e0cb]',
   },
@@ -51,7 +51,7 @@ const modules: Module[] = [
     id: 'shipment',
     title: 'Документооборот',
     icon: '📄',
-    description: 'Перемещение товаров между ячейками',
+    description: 'Отгрузка товара клиентам',
     path: '/shipment',
     color: 'bg-[#91ed91]',
   },
@@ -59,7 +59,7 @@ const modules: Module[] = [
     id: 'return',
     title: 'Штрихкоды',
     icon: '📷',
-    description: 'Перемещение товаров между ячейками',
+    description: 'Сканирование и работа со штрихкодами',
     path: '/return',
     color: 'bg-[#ba8f8e]',
   },
@@ -289,7 +289,7 @@ const Home: React.FC = () => {
             <div>
               <h4 className="text-base font-bold text-[#f0e78d] mb-2">По складам</h4>
               <p className="text-[10px] text-[#a7a7a7] leading-tight max-w-[130px]">
-                Перемещение товаров между ячейками
+                Перемещение товаров между складами
               </p>
             </div>
             <div className="text-right">
