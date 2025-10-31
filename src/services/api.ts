@@ -66,18 +66,26 @@ class ApiService {
    */
   updateBaseURL() {
     try {
+      // FORCE relative path in development (for Vite proxy to work)
+      const isDevelopment = import.meta.env.DEV;
+      
+      if (isDevelopment) {
+        // ALWAYS use relative path in dev to enable Vite proxy
+        const devBaseUrl = '/MobileSMARTS/api/v1';
+        this.client.defaults.baseURL = devBaseUrl;
+        console.log('🔧 [DEV] Using relative path (via Vite proxy):', devBaseUrl);
+        console.log('🔧 [DEV] Proxy will forward to: http://localhost:9000');
+        return;
+      }
+      
+      // In production, use configured URL
       if (configService.isConfigured()) {
         const serverUrl = configService.getServerUrl();
-        // Server URL already contains /MobileSMARTS/api/v1
         this.client.defaults.baseURL = serverUrl;
-        console.log('✅ [API] baseURL updated from config:', this.client.defaults.baseURL);
+        console.log('✅ [PROD] baseURL from config:', this.client.defaults.baseURL);
       } else {
-        // Use relative path for Vite proxy to work
-        // In dev: proxy will forward to http://localhost:9000
-        // In prod: configure proper URL via Setup page
-        const defaultBaseUrl = '/MobileSMARTS/api/v1';
-        this.client.defaults.baseURL = defaultBaseUrl;
-        console.log('✅ [API] Config not configured, using relative path (via proxy):', defaultBaseUrl);
+        console.error('❌ [PROD] No server URL configured!');
+        throw new Error('Server URL not configured. Please go to Setup page.');
       }
     } catch (error) {
       console.error('❌ [API] Failed to update baseURL:', error);
