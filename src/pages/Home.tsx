@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { odataCache } from '@/services/odataCache';
 import { ODataDocumentType } from '@/types/odata';
+import { MOCK_DOC_TYPES } from '@/data/mockDocTypes';
 
 interface DocTypeCard {
   uni: string;
@@ -50,6 +51,7 @@ const Home: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalDocs, setTotalDocs] = useState(0);
+  const [usingMockData, setUsingMockData] = useState(false);
 
   useEffect(() => {
     loadDocTypes();
@@ -58,31 +60,43 @@ const Home: React.FC = () => {
   const loadDocTypes = async () => {
     setLoading(true);
     setError(null);
+    setUsingMockData(false);
 
     try {
       // Try to fetch doc types from cache/API
-      const types = await odataCache.getDocTypes();
-      console.log('✅ Loaded', types.length, 'doc types from API/cache');
+      let types: ODataDocumentType[] = [];
+      let isMockData = false;
+      
+      try {
+        types = await odataCache.getDocTypes();
+        console.log('✅ [API] Loaded', types.length, 'doc types');
+        console.log('📋 [API] DocTypes:', types);
+      } catch (apiError: any) {
+        console.warn('⚠️ [API] DocTypes failed:', apiError.message);
+        types = [];
+      }
 
-      // If no types available, show error
+      // If no types available, use mock data
       if (!types || types.length === 0) {
-        setError('На сервере нет доступных типов документов. Проверьте конфигурацию сервера.');
-        setLoading(false);
-        return;
+        console.warn('⚠️ [FALLBACK] No types from /DocTypes, using mock data');
+        types = MOCK_DOC_TYPES;
+        isMockData = true;
       }
 
       // Load document counts for each type
       const typesWithCounts = await Promise.all(
         types.map(async (type, index) => {
           let docsCount = 0;
-          try {
-            const docs = await odataCache.getDocsByType(type.uni);
-            docsCount = docs.length;
-            console.log(`✅ Loaded ${docsCount} documents for type: ${type.uni}`);
-          } catch (err) {
-            console.error(`❌ Failed to load docs count for ${type.uni}:`, err);
-            // Use 0 if failed to load
-            docsCount = 0;
+          
+          if (!isMockData) {
+            try {
+              const docs = await odataCache.getDocsByType(type.uni);
+              docsCount = docs.length;
+              console.log(`✅ [API] Type "${type.uni}": ${docsCount} documents`);
+            } catch (err: any) {
+              console.error(`❌ [API] Failed to load docs for "${type.uni}":`, err.message);
+              docsCount = 0;
+            }
           }
 
           return {
@@ -96,14 +110,32 @@ const Home: React.FC = () => {
         })
       );
 
+      setUsingMockData(isMockData);
+
       setDocTypes(typesWithCounts);
       setTotalDocs(typesWithCounts.reduce((sum, type) => sum + type.docsCount, 0));
       setError(null);  // Clear error if we successfully got data
       
+      console.log('✅ [FINAL] Loaded', typesWithCounts.length, 'types with', 
+                  typesWithCounts.reduce((sum, t) => sum + t.docsCount, 0), 'total documents');
+      
     } catch (error: any) {
-      console.error('❌ Critical error loading doc types:', error);
-      const errorMessage = error.message || error.toString();
-      setError(`Ошибка загрузки типов документов.\n\nДетали: ${errorMessage}\n\nПроверьте:\n1. API сервер запущен (http://localhost:9000/MobileSMARTS/api/v1/DocTypes)\n2. CORS настроен на сервере\n3. Консоль браузера (F12) для подробностей`);
+      console.error('❌ [CRITICAL] Error loading doc types:', error);
+      // Even if everything fails, use mock data
+      console.warn('⚠️ [FALLBACK] Using mock data due to critical error');
+      const mockTypes = MOCK_DOC_TYPES.map((type, index) => ({
+        uni: type.uni,
+        displayName: type.displayName || type.name,
+        description: `Работа с документами типа "${type.displayName || type.name}"`,
+        color: type.buttonColor || getColorForIndex(index),
+        icon: getIconForDocType(type.name),
+        docsCount: 0,
+      }));
+      
+      setDocTypes(mockTypes);
+      setTotalDocs(0);
+      setUsingMockData(true);
+      setError(null); // Don't show error, just use mock data
     } finally {
       setLoading(false);
     }
@@ -156,6 +188,29 @@ const Home: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Warning banner if using mock data */}
+      {usingMockData && (
+        <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">⚠️</span>
+            <div className="flex-1">
+              <h3 className="text-yellow-400 font-semibold mb-1">
+                Демо-режим
+              </h3>
+              <p className="text-sm text-yellow-200/90 mb-2">
+                API сервер недоступен. Показаны демонстрационные типы документов.
+              </p>
+              <p className="text-xs text-yellow-200/70">
+                Для работы с реальными данными запустите API сервер: <br />
+                <code className="bg-black/30 px-2 py-1 rounded mt-1 inline-block">
+                  http://localhost:9000/MobileSMARTS/api/v1/
+                </code>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Карточка всех документов */}
       <button
         onClick={() => navigate('/documents')}

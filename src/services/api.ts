@@ -226,11 +226,20 @@ class ApiService {
   }
 
   /**
+   * Get all documents
+   * GET /api/v1/Docs
+   */
+  async getAllDocs() {
+    return this.get('/Docs');
+  }
+
+  /**
    * Get documents by type
    * GET /api/v1/Docs/{DocType.uni}/
    * @param docTypeUni - Document type unique identifier
    */
   async getDocsByType(docTypeUni: string) {
+    // Try first as collection path (e.g. /Docs/PrihodNaSklad)
     return this.get(`/Docs/${docTypeUni}`);
   }
 
