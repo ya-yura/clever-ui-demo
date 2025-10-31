@@ -2,8 +2,10 @@
 // System diagnostics and health check page
 
 import React, { useEffect, useState } from 'react';
-import { Activity, Database, Wifi, Smartphone, HardDrive, RefreshCw } from 'lucide-react';
+import { Activity, Database, Wifi, Smartphone, HardDrive, RefreshCw, Trash2 } from 'lucide-react';
 import { db } from '@/services/db';
+import { odataCache } from '@/services/odataCache';
+import { configService } from '@/services/configService';
 
 interface DiagnosticCheck {
   id: string;
@@ -16,10 +18,66 @@ interface DiagnosticCheck {
 const Diagnostics: React.FC = () => {
   const [checks, setChecks] = useState<DiagnosticCheck[]>([]);
   const [running, setRunning] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     runDiagnostics();
   }, []);
+
+  const clearAllData = async () => {
+    if (!confirm('⚠️ Очистить ВСЕ данные?\n\nБудут удалены:\n- Все документы\n- Все строки\n- Весь кэш\n- Настройки сервера\n- Токен авторизации\n\nПриложение перезагрузится.')) {
+      return;
+    }
+
+    setClearing(true);
+
+    try {
+      console.log('🧹 Clearing all data...');
+
+      // Clear all IndexedDB tables
+      await Promise.all([
+        db.receivingDocuments.clear(),
+        db.receivingLines.clear(),
+        db.placementDocuments.clear(),
+        db.placementLines.clear(),
+        db.pickingDocuments.clear(),
+        db.pickingLines.clear(),
+        db.shipmentDocuments.clear(),
+        db.shipmentLines.clear(),
+        db.returnDocuments.clear(),
+        db.returnLines.clear(),
+        db.inventoryDocuments.clear(),
+        db.inventoryLines.clear(),
+        db.syncActions.clear(),
+        db.errorLogs.clear(),
+        db.employees.clear(),
+        db.partnerSessions.clear(),
+      ]);
+
+      // Clear OData cache
+      await odataCache.clearCache();
+
+      // Clear configuration
+      configService.resetConfig();
+
+      // Clear all localStorage
+      localStorage.clear();
+
+      console.log('✅ All data cleared');
+
+      // Show success message
+      alert('✅ Все данные успешно удалены!\n\nПриложение перезагрузится...');
+
+      // Reload app
+      setTimeout(() => {
+        window.location.href = '/setup';
+      }, 500);
+    } catch (error) {
+      console.error('❌ Error clearing data:', error);
+      alert('❌ Ошибка при очистке данных. См. консоль.');
+      setClearing(false);
+    }
+  };
 
   const runDiagnostics = async () => {
     setRunning(true);
@@ -126,19 +184,42 @@ const Diagnostics: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#e3e3dd] mb-2">🧠 Диагностика</h1>
-          <p className="text-gray-400">Проверка состояния системы</p>
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-[#e3e3dd] mb-2">🧠 Диагностика</h1>
+            <p className="text-gray-400">Проверка состояния системы</p>
+          </div>
+          <button
+            onClick={runDiagnostics}
+            disabled={running}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center gap-2 touch-manipulation"
+          >
+            <Activity className={`w-5 h-5 ${running ? 'animate-spin' : ''}`} />
+            {running ? 'Проверка...' : 'Запустить проверку'}
+          </button>
         </div>
-        <button
-          onClick={runDiagnostics}
-          disabled={running}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center gap-2 touch-manipulation"
-        >
-          <Activity className={`w-5 h-5 ${running ? 'animate-spin' : ''}`} />
-          {running ? 'Проверка...' : 'Запустить проверку'}
-        </button>
+
+        {/* Danger Zone */}
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <Trash2 className="w-5 h-5 text-red-400 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-red-400 mb-1">Опасная зона</h3>
+              <p className="text-xs text-gray-400 mb-3">
+                Очистить все данные, настройки и кэш. Используйте для сброса приложения к начальному состоянию.
+              </p>
+              <button
+                onClick={clearAllData}
+                disabled={clearing}
+                className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
+              >
+                <Trash2 className={`w-4 h-4 ${clearing ? 'animate-pulse' : ''}`} />
+                {clearing ? 'Очистка...' : 'Очистить все данные'}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Diagnostic Checks */}

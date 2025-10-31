@@ -7,7 +7,7 @@ import { configService } from '@/services/configService';
 
 const Setup: React.FC = () => {
   const navigate = useNavigate();
-  const [serverUrl, setServerUrl] = useState('http://localhost:9000');
+  const [serverUrl, setServerUrl] = useState('http://localhost:9000/MobileSMARTS/api/v1');
   const [error, setError] = useState('');
   const [isValidating, setIsValidating] = useState(false);
 
@@ -51,22 +51,27 @@ const Setup: React.FC = () => {
         return;
       }
 
-      // Try to fetch from server
-      const testUrl = `${serverUrl.trim().replace(/\/+$/, '')}/MobileSMARTS/api/v1/$metadata`;
+      // Try to fetch DocTypes from server
+      const testUrl = `${serverUrl.trim().replace(/\/+$/, '')}/DocTypes`;
+      console.log('🔍 Testing connection to:', testUrl);
+      
       const response = await fetch(testUrl, {
         method: 'GET',
         mode: 'cors',
         headers: {
-          'Accept': 'application/xml',
+          'Accept': 'application/json',
         },
       });
 
       if (response.ok) {
-        alert('✅ Соединение с сервером успешно установлено!');
+        const data = await response.json();
+        console.log('✅ Server response:', data);
+        alert(`✅ Соединение с сервером успешно установлено!\nНайдено типов документов: ${data.value?.length || 0}`);
       } else {
         setError(`Сервер вернул ошибку: ${response.status} ${response.statusText}`);
       }
     } catch (err: any) {
+      console.error('❌ Connection test failed:', err);
       setError(`Ошибка подключения: ${err.message}`);
     } finally {
       setIsValidating(false);
@@ -107,11 +112,11 @@ const Setup: React.FC = () => {
                 value={serverUrl}
                 onChange={(e) => setServerUrl(e.target.value)}
                 className="w-full px-4 py-3 bg-[#343436] border border-[#555] rounded-lg text-[#e3e3dd] placeholder-[#777] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                placeholder="http://localhost:9000"
+                placeholder="http://localhost:9000/MobileSMARTS/api/v1"
                 disabled={isValidating}
               />
               <p className="mt-2 text-xs text-[#a7a7a7]">
-                Примеры: http://192.168.1.100:9000 или http://localhost:9000
+                Пример: http://localhost:9000/MobileSMARTS/api/v1
               </p>
             </div>
 

@@ -44,48 +44,6 @@ const getColorForIndex = (index: number): string => {
   return colors[index % colors.length];
 };
 
-// Mock data for development when API is unavailable
-const getMockDocTypes = (): any[] => {
-  return [
-    {
-      uni: 'PrihodNaSklad',
-      name: 'PrihodNaSklad',
-      displayName: 'Приход на склад',
-      buttonColor: 'bg-[#daa420]',
-    },
-    {
-      uni: 'RazmeshhenieVYachejki',
-      name: 'RazmeshhenieVYachejki',
-      displayName: 'Размещение в ячейки',
-      buttonColor: 'bg-[#86e0cb]',
-    },
-    {
-      uni: 'PodborZakaza',
-      name: 'PodborZakaza',
-      displayName: 'Подбор заказа',
-      buttonColor: 'bg-[#f3a361]',
-    },
-    {
-      uni: 'Otgruzka',
-      name: 'Otgruzka',
-      displayName: 'Отгрузка',
-      buttonColor: 'bg-[#91ed91]',
-    },
-    {
-      uni: 'Inventarizaciya',
-      name: 'Inventarizaciya',
-      displayName: 'Инвентаризация',
-      buttonColor: 'bg-[#fea079]',
-    },
-    {
-      uni: 'Vozvrat',
-      name: 'Vozvrat',
-      displayName: 'Возврат',
-      buttonColor: 'bg-[#ba8f8e]',
-    },
-  ];
-};
-
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [docTypes, setDocTypes] = useState<DocTypeCard[]>([]);
@@ -102,21 +60,13 @@ const Home: React.FC = () => {
     setError(null);
 
     try {
-      let types: any[] = [];
+      // Try to fetch doc types from cache/API
+      const types = await odataCache.getDocTypes();
+      console.log('✅ Loaded', types.length, 'doc types from API/cache');
 
-      try {
-        // Try to fetch doc types from cache/API
-        types = await odataCache.getDocTypes();
-        console.log('✅ Loaded', types.length, 'doc types from API/cache');
-      } catch (apiError) {
-        console.warn('⚠️ Failed to load from API, using mock data:', apiError);
-        // Use mock data in dev mode
-        types = getMockDocTypes();
-      }
-
-      // If no types available at all, show error
+      // If no types available, show error
       if (!types || types.length === 0) {
-        setError('Ошибка загрузки типов документов. Проверьте подключение к серверу.');
+        setError('На сервере нет доступных типов документов. Проверьте конфигурацию сервера.');
         setLoading(false);
         return;
       }
@@ -128,10 +78,11 @@ const Home: React.FC = () => {
           try {
             const docs = await odataCache.getDocsByType(type.uni);
             docsCount = docs.length;
+            console.log(`✅ Loaded ${docsCount} documents for type: ${type.uni}`);
           } catch (err) {
-            console.warn(`Failed to load docs count for ${type.uni}:`, err);
-            // Use random count for mock data
-            docsCount = Math.floor(Math.random() * 20);
+            console.error(`❌ Failed to load docs count for ${type.uni}:`, err);
+            // Use 0 if failed to load
+            docsCount = 0;
           }
 
           return {

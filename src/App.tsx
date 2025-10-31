@@ -22,16 +22,18 @@ import Statistics from './pages/Statistics';
 import Diagnostics from './pages/Diagnostics';
 import About from './pages/About';
 import Feedback from './pages/Feedback';
-import { loadInitialData } from './utils/loadInitialData';
 import { MenuProvider } from './modules/menu';
 import { AuthProvider } from './contexts/AuthContext';
 import { DocumentHeaderProvider } from './contexts/DocumentHeaderContext';
 
 function App() {
-  // Load initial data on app start
-  useEffect(() => {
-    loadInitialData();
-  }, []);
+  // Initial data loading disabled - using API server data
+  // To load mock data for development, uncomment:
+  // useEffect(() => {
+  //   import('./utils/loadInitialData').then(({ loadInitialData }) => {
+  //     loadInitialData();
+  //   });
+  // }, []);
 
   return (
     <AuthProvider>

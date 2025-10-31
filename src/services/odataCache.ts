@@ -44,29 +44,29 @@ class ODataCacheService {
       }
     }
 
-    // Try to fetch from API if authenticated
-    if (api.isAuthenticated()) {
-      try {
-        const response = await api.getDocTypes();
-        if (response.success && response.data) {
-          const odataResponse = response.data as ODataCollection<ODataDocumentType>;
-          const types = odataResponse.value || [];
+    // Try to fetch from API (with or without auth)
+    try {
+      console.log('🌐 Fetching DocTypes from API...');
+      const response = await api.getDocTypes();
+      
+      if (response.success && response.data) {
+        const odataResponse = response.data as ODataCollection<ODataDocumentType>;
+        const types = odataResponse.value || [];
 
-          // Save to cache
-          if (types.length > 0) {
-            await db.odataDocTypes.clear();
-            await db.odataDocTypes.bulkAdd(types);
-            await this.updateCacheMetadata(cacheKey);
-            console.log(`✅ Fetched and cached ${types.length} DocTypes from API`);
-          }
-          
-          return types;
+        // Save to cache
+        if (types.length > 0) {
+          await db.odataDocTypes.clear();
+          await db.odataDocTypes.bulkAdd(types);
+          await this.updateCacheMetadata(cacheKey);
+          console.log(`✅ Fetched and cached ${types.length} DocTypes from API`);
         }
-      } catch (error) {
-        console.warn('⚠️ Failed to fetch DocTypes from API:', error);
+        
+        return types;
+      } else {
+        console.warn('⚠️ API returned no data for DocTypes:', response);
       }
-    } else {
-      console.warn('⚠️ Not authenticated, skipping API request for DocTypes');
+    } catch (error) {
+      console.error('❌ Failed to fetch DocTypes from API:', error);
     }
 
     // Fallback to stale cache
@@ -76,9 +76,8 @@ class ODataCacheService {
       return cached;
     }
 
-    // Return empty array instead of throwing error
-    // This allows the app to fall back to mock data
-    console.warn('⚠️ No DocTypes available (not authenticated and no cache)');
+    // Return empty array to signal no data available
+    console.warn('⚠️ No DocTypes available (API failed and no cache)');
     throw new Error('No DocTypes available');
   }
 
@@ -101,34 +100,34 @@ class ODataCacheService {
       }
     }
 
-    // Try to fetch from API if authenticated
-    if (api.isAuthenticated()) {
-      try {
-        const response = await api.getDocsByType(docTypeUni);
-        if (response.success && response.data) {
-          const odataResponse = response.data as ODataCollection<ODataDocument>;
-          const docs = odataResponse.value || [];
+    // Try to fetch from API (with or without auth)
+    try {
+      console.log(`🌐 Fetching documents from API for ${docTypeUni}...`);
+      const response = await api.getDocsByType(docTypeUni);
+      
+      if (response.success && response.data) {
+        const odataResponse = response.data as ODataCollection<ODataDocument>;
+        const docs = odataResponse.value || [];
 
-          // Save to cache (replace existing docs of this type)
-          await db.odataDocuments
-            .where('documentTypeName')
-            .equals(docTypeUni)
-            .delete();
-          
-          if (docs.length > 0) {
-            await db.odataDocuments.bulkAdd(docs);
-          }
-          
-          await this.updateCacheMetadata(cacheKey);
-
-          console.log(`✅ Fetched and cached ${docs.length} documents from API for ${docTypeUni}`);
-          return docs;
+        // Save to cache (replace existing docs of this type)
+        await db.odataDocuments
+          .where('documentTypeName')
+          .equals(docTypeUni)
+          .delete();
+        
+        if (docs.length > 0) {
+          await db.odataDocuments.bulkAdd(docs);
         }
-      } catch (error) {
-        console.warn(`⚠️ Failed to fetch documents from API for ${docTypeUni}:`, error);
+        
+        await this.updateCacheMetadata(cacheKey);
+
+        console.log(`✅ Fetched and cached ${docs.length} documents from API for ${docTypeUni}`);
+        return docs;
+      } else {
+        console.warn(`⚠️ API returned no data for ${docTypeUni}:`, response);
       }
-    } else {
-      console.log(`ℹ️ Not authenticated, skipping API request for ${docTypeUni}`);
+    } catch (error) {
+      console.error(`❌ Failed to fetch documents from API for ${docTypeUni}:`, error);
     }
 
     // Fallback to stale cache

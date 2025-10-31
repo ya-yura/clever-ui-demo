@@ -64,7 +64,8 @@ class ApiService {
     try {
       if (configService.isConfigured()) {
         const serverUrl = configService.getServerUrl();
-        this.client.defaults.baseURL = `${serverUrl}/MobileSMARTS/api/v1`;
+        // Server URL already contains /MobileSMARTS/api/v1
+        this.client.defaults.baseURL = serverUrl;
         console.log('✅ API baseURL updated:', this.client.defaults.baseURL);
       }
     } catch (error) {
