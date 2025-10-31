@@ -12,6 +12,7 @@ interface DocTypeCard {
   displayName: string;
   description: string;
   color: string;
+  backgroundColor?: string; // Inline style for arbitrary colors
   icon: string;
   docsCount: number;
 }
@@ -30,17 +31,17 @@ const getIconForDocType = (name: string): string => {
   return '📋';
 };
 
-// Color mapping based on index
+// Color mapping based on index (returns raw color values)
 const getColorForIndex = (index: number): string => {
   const colors = [
-    'bg-[#daa420]', // yellow
-    'bg-[#fea079]', // orange
-    'bg-[#f3a361]', // light orange
-    'bg-[#86e0cb]', // mint
-    'bg-[#91ed91]', // green
-    'bg-[#ba8f8e]', // rose
-    'bg-[#f0e78d]', // pale yellow
-    'bg-[burlywood]', // burlywood
+    '#daa420', // yellow
+    '#fea079', // orange
+    '#f3a361', // light orange
+    '#86e0cb', // mint
+    '#91ed91', // green
+    '#ba8f8e', // rose
+    '#f0e78d', // pale yellow
+    '#deb887', // burlywood (converted to hex)
   ];
   return colors[index % colors.length];
 };
@@ -106,20 +107,37 @@ const Home: React.FC = () => {
             }
           }
 
-          // Fix color format: if buttonColor is hex, wrap it in bg-[...]
-          let color = type.buttonColor || getColorForIndex(index);
-          if (color && !color.startsWith('bg-')) {
-            color = `bg-[${color}]`;
+          // Handle color: use inline style for arbitrary colors
+          const rawColor = type.buttonColor || getColorForIndex(index);
+          let bgClass = '';
+          let bgStyle = '';
+          
+          // If it's already a Tailwind class, use it
+          if (rawColor.startsWith('bg-')) {
+            bgClass = rawColor;
+          } 
+          // If it's a hex color, use inline style
+          else if (rawColor.startsWith('#')) {
+            bgStyle = rawColor;
+          }
+          // If it's a named CSS color (sandybrown, Orange, etc.), use inline style
+          else {
+            bgStyle = rawColor;
           }
 
-          return {
+          const result = {
             uni: type.uni,
             displayName: type.displayName || type.name,
             description: `Работа с документами типа "${type.displayName || type.name}"`,
-            color: color,
+            color: bgClass,
+            backgroundColor: bgStyle,
             icon: getIconForDocType(type.name),
             docsCount,
           };
+
+          console.log(`📦 [TYPE ${index}]`, result.displayName, '→ bgClass:', result.color, 'bgStyle:', result.backgroundColor, 'icon:', result.icon);
+
+          return result;
         })
       );
 
@@ -293,13 +311,21 @@ const Home: React.FC = () => {
       {/* Dynamic Document Type Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {console.log('🎨 [RENDER] Rendering docTypes grid, count:', docTypes.length)}
+        {console.log('🎨 [RENDER] Full docTypes array:', JSON.stringify(docTypes, null, 2))}
         {docTypes.map((docType, index) => {
-          console.log(`🎨 [MAP] Rendering docType [${index}]:`, docType);
+          console.log(`🎨 [MAP] Rendering tile [${index}]:`, {
+            uni: docType.uni,
+            displayName: docType.displayName,
+            color: docType.color,
+            icon: docType.icon,
+            className: `${docType.color} rounded-lg p-6 text-left hover:opacity-90 transition-all relative overflow-hidden flex flex-col justify-between min-h-[180px]`
+          });
           return (
           <button
             key={docType.uni}
             onClick={() => navigate(`/docs/${docType.uni}`)}
             className={`${docType.color} rounded-lg p-6 text-left hover:opacity-90 transition-all relative overflow-hidden flex flex-col justify-between min-h-[180px]`}
+            style={docType.backgroundColor ? { backgroundColor: docType.backgroundColor } : undefined}
           >
             <div>
               <h2 className="text-2xl font-bold text-[#343436] mb-2 flex items-center gap-2">

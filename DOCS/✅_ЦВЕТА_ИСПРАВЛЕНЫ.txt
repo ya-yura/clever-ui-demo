@@ -1,0 +1,93 @@
+✅ ИСПРАВЛЕНА ПРОБЛЕМА С ЦВЕТАМИ ПЛИТОК
+
+Дата: 31 октября 2025
+Задача: Исправить отображение цветных плиток типов документов
+
+═══════════════════════════════════════════════════════
+
+🐛 ПРОБЛЕМА:
+
+1. Плитки типов документов не отображались на главной странице
+2. В консоли видны логи рендеринга, но плитки невидимы
+3. Цвета приходят с сервера как:
+   - Именованные CSS цвета: sandybrown, Orange, Plum, khaki, etc.
+   - Hex-коды: #4fff75, #0eb887
+
+4. Код оборачивал ВСЕ цвета в `bg-[...]`:
+   - `bg-[sandybrown]` ❌ НЕ работает в Tailwind CSS!
+   - `bg-[#ff5733]` ✅ Работает только для hex
+
+═══════════════════════════════════════════════════════
+
+🔧 РЕШЕНИЕ:
+
+Используем **inline-стили** для произвольных цветов:
+
+1. Добавили поле `backgroundColor?: string` в интерфейс `DocTypeCard`
+
+2. Изменили логику формирования цвета:
+   ```typescript
+   const rawColor = type.buttonColor || getColorForIndex(index);
+   let bgClass = '';
+   let bgStyle = '';
+   
+   if (rawColor.startsWith('bg-')) {
+     bgClass = rawColor; // Tailwind class
+   } else {
+     bgStyle = rawColor; // Hex или именованный CSS цвет
+   }
+   ```
+
+3. Применяем inline-стиль в рендеринге:
+   ```typescript
+   <button
+     className={`${docType.color} rounded-lg ...`}
+     style={docType.backgroundColor ? { backgroundColor: docType.backgroundColor } : undefined}
+   >
+   ```
+
+4. Исправили `getColorForIndex`:
+   - Было: `'bg-[#daa420]'`
+   - Стало: `'#daa420'`
+
+═══════════════════════════════════════════════════════
+
+✅ РЕЗУЛЬТАТ:
+
+- ✅ Плитки теперь ВИДНЫ на главной странице
+- ✅ Поддержка hex-кодов (#ff5733)
+- ✅ Поддержка именованных CSS цветов (sandybrown, Orange)
+- ✅ Поддержка Tailwind классов (bg-blue-500)
+- ✅ Работает с любыми цветами с сервера
+
+═══════════════════════════════════════════════════════
+
+📁 Изменённые файлы:
+
+src/pages/Home.tsx:
+  - interface DocTypeCard: добавлено поле backgroundColor
+  - getColorForIndex: убраны обёртки bg-[...]
+  - loadDocTypes: новая логика обработки цветов
+  - render: добавлен inline style для backgroundColor
+
+═══════════════════════════════════════════════════════
+
+🎨 ПРИМЕРЫ ОБРАБОТКИ:
+
+Цвет с сервера → Результат:
+- "sandybrown"    → style={{ backgroundColor: 'sandybrown' }}
+- "#4fff75"       → style={{ backgroundColor: '#4fff75' }}
+- "bg-blue-500"   → className="bg-blue-500"
+- "Orange"        → style={{ backgroundColor: 'Orange' }}
+
+═══════════════════════════════════════════════════════
+
+📝 Важно:
+
+Inline-стили имеют приоритет над CSS классами, поэтому:
+- Сначала проверяем Tailwind классы (bg-*)
+- Для всех остальных используем inline style
+- Это работает и с hex, и с именованными CSS цветами
+
+═══════════════════════════════════════════════════════
+
