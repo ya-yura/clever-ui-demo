@@ -119,18 +119,33 @@ class ApiService {
   async get<T = any>(url: string, params?: any): Promise<ApiResponse<T>> {
     try {
       this.updateBaseURL(); // Ensure baseURL is current
-      const fullUrl = `${this.client.defaults.baseURL}${url}`;
-      console.log(`🌐 [API] GET ${fullUrl}`, params ? `with params: ${JSON.stringify(params)}` : '');
+      
+      // Build query string manually for OData parameters
+      let queryString = '';
+      if (params) {
+        const queryParams = new URLSearchParams();
+        for (const [key, value] of Object.entries(params)) {
+          queryParams.append(key, String(value));
+        }
+        queryString = queryParams.toString();
+      }
+      
+      const fullUrl = `${this.client.defaults.baseURL}${url}${queryString ? '?' + queryString : ''}`;
+      console.log(`🌐 [API] GET ${fullUrl}`);
       
       const response = await this.client.get(url, { params });
       
       console.log(`✅ [API] Response status: ${response.status}`);
+      console.log(`📦 [API] Response data type:`, Array.isArray(response.data) ? 'Array' : typeof response.data);
       console.log(`📦 [API] Response data:`, response.data);
       
       return { success: true, data: response.data };
     } catch (error: any) {
       console.error(`❌ [API] GET ${url} failed:`, error.message);
-      console.error(`❌ [API] Error details:`, error.response?.data || error);
+      if (error.response) {
+        console.error(`❌ [API] Response status: ${error.response.status}`);
+        console.error(`❌ [API] Response data:`, error.response.data);
+      }
       return { success: false, error: error.message };
     }
   }
@@ -247,18 +262,51 @@ class ApiService {
    * Get all documents
    * GET /api/v1/Docs
    */
-  async getAllDocs() {
-    return this.get('/Docs');
+  async getAllDocs(params?: any) {
+    return this.get('/Docs', params);
   }
 
   /**
-   * Get documents by type
-   * GET /api/v1/Docs/{DocType.uni}/
+   * Get documents by type - tries multiple approaches
    * @param docTypeUni - Document type unique identifier
    */
   async getDocsByType(docTypeUni: string) {
-    // Try first as collection path (e.g. /Docs/PrihodNaSklad)
-    return this.get(`/Docs/${docTypeUni}`);
+    console.log(`🔍 [API] Trying to get documents for type: ${docTypeUni}`);
+    
+    // Approach 1: Try specialized EntitySet (e.g. /Docs/PrihodNaSklad)
+    console.log(`🔍 [API] Approach 1: /Docs/${docTypeUni}`);
+    let response = await this.get(`/Docs/${docTypeUni}`);
+    
+    if (response.success && response.data) {
+      console.log(`✅ [API] Approach 1 succeeded`);
+      return response;
+    }
+    
+    // Approach 2: Try with $filter on documentTypeName
+    console.log(`🔍 [API] Approach 2: /Docs with $filter=documentTypeName eq '${docTypeUni}'`);
+    response = await this.get('/Docs', {
+      $filter: `documentTypeName eq '${docTypeUni}'`
+    });
+    
+    if (response.success && response.data) {
+      console.log(`✅ [API] Approach 2 succeeded`);
+      return response;
+    }
+    
+    // Approach 3: Get all docs and filter client-side
+    console.log(`🔍 [API] Approach 3: /Docs (get all, filter client-side)`);
+    response = await this.get('/Docs');
+    
+    if (response.success && response.data) {
+      console.log(`✅ [API] Approach 3 succeeded (will filter client-side)`);
+      // Add marker for client-side filtering
+      (response as any).needsClientFilter = true;
+      (response as any).filterType = docTypeUni;
+      return response;
+    }
+    
+    console.error(`❌ [API] All approaches failed for ${docTypeUni}`);
+    return { success: false, error: 'Failed to fetch documents' };
   }
 
   /**

@@ -105,7 +105,7 @@ class ODataCacheService {
     // Try to fetch from API (with or without auth)
     try {
       console.log(`🌐 [API] Fetching documents from /Docs/${docTypeUni}...`);
-      const response = await api.getDocsByType(docTypeUni);
+      const response: any = await api.getDocsByType(docTypeUni);
       
       console.log(`📡 [API] Response for ${docTypeUni}:`, response);
       
@@ -121,6 +121,13 @@ class ODataCacheService {
           docs = response.data.value;
         } else {
           console.warn(`⚠️ [API] Unexpected response format:`, response.data);
+        }
+
+        // If client-side filtering is needed
+        if (response.needsClientFilter && response.filterType) {
+          console.log(`🔍 [CACHE] Filtering ${docs.length} documents by documentTypeName=${response.filterType}`);
+          docs = docs.filter(doc => doc.documentTypeName === response.filterType);
+          console.log(`✅ [CACHE] After filtering: ${docs.length} documents`);
         }
 
         // Save to cache (replace existing docs of this type)
