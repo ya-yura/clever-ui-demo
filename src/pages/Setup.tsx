@@ -1,0 +1,175 @@
+// === 📁 src/pages/Setup.tsx ===
+// Initial setup page for server configuration
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { configService } from '@/services/configService';
+
+const Setup: React.FC = () => {
+  const navigate = useNavigate();
+  const [serverUrl, setServerUrl] = useState('http://localhost:9000');
+  const [error, setError] = useState('');
+  const [isValidating, setIsValidating] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    // Validate URL format
+    const validation = configService.validateServerUrl(serverUrl);
+    if (!validation.valid) {
+      setError(validation.error || 'Некорректный URL');
+      return;
+    }
+
+    setIsValidating(true);
+
+    try {
+      // Save configuration
+      configService.setServerUrl(serverUrl.trim().replace(/\/+$/, ''));
+      
+      console.log('✅ Server URL configured:', serverUrl);
+      
+      // Navigate to login
+      setTimeout(() => {
+        navigate('/login');
+      }, 500);
+    } catch (err: any) {
+      setError(err.message || 'Ошибка сохранения настроек');
+      setIsValidating(false);
+    }
+  };
+
+  const handleTestConnection = async () => {
+    setError('');
+    setIsValidating(true);
+
+    try {
+      const validation = configService.validateServerUrl(serverUrl);
+      if (!validation.valid) {
+        setError(validation.error || 'Некорректный URL');
+        return;
+      }
+
+      // Try to fetch from server
+      const testUrl = `${serverUrl.trim().replace(/\/+$/, '')}/MobileSMARTS/api/v1/$metadata`;
+      const response = await fetch(testUrl, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/xml',
+        },
+      });
+
+      if (response.ok) {
+        alert('✅ Соединение с сервером успешно установлено!');
+      } else {
+        setError(`Сервер вернул ошибку: ${response.status} ${response.statusText}`);
+      }
+    } catch (err: any) {
+      setError(`Ошибка подключения: ${err.message}`);
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#343436] flex items-center justify-center px-4">
+      <div className="max-w-md w-full space-y-8">
+        {/* Logo and Title */}
+        <div className="text-center">
+          <div className="text-6xl mb-4">📦</div>
+          <h1 className="text-3xl font-bold text-[#e3e3dd] mb-2">
+            Склад 15
+          </h1>
+          <h2 className="text-xl text-[#a7a7a7] mb-2">
+            Первоначальная настройка
+          </h2>
+          <p className="text-sm text-[#a7a7a7]">
+            Укажите адрес сервера для подключения
+          </p>
+        </div>
+
+        {/* Setup Form */}
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          <div className="bg-[#474747] rounded-lg p-6 space-y-4">
+            <div>
+              <label
+                htmlFor="serverUrl"
+                className="block text-sm font-medium text-[#e3e3dd] mb-2"
+              >
+                Адрес сервера
+              </label>
+              <input
+                id="serverUrl"
+                type="text"
+                required
+                value={serverUrl}
+                onChange={(e) => setServerUrl(e.target.value)}
+                className="w-full px-4 py-3 bg-[#343436] border border-[#555] rounded-lg text-[#e3e3dd] placeholder-[#777] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                placeholder="http://localhost:9000"
+                disabled={isValidating}
+              />
+              <p className="mt-2 text-xs text-[#a7a7a7]">
+                Примеры: http://192.168.1.100:9000 или http://localhost:9000
+              </p>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-500 bg-opacity-10 border border-red-500 rounded-lg p-3">
+                <p className="text-sm text-red-400">⚠️ {error}</p>
+              </div>
+            )}
+
+            {/* Hint */}
+            <div className="bg-blue-500 bg-opacity-10 border border-blue-500 rounded-lg p-3">
+              <p className="text-xs text-blue-400">
+                💡 Убедитесь, что сервер Cleverence Mobile SMARTS запущен и доступен по указанному адресу
+              </p>
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div className="space-y-3">
+            <button
+              type="submit"
+              disabled={isValidating || !serverUrl.trim()}
+              className="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
+            >
+              {isValidating ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Сохранение...
+                </>
+              ) : (
+                'Продолжить →'
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleTestConnection}
+              disabled={isValidating || !serverUrl.trim()}
+              className="w-full py-3 px-4 bg-[#474747] hover:bg-[#525252] text-[#e3e3dd] font-medium rounded-lg transition-colors disabled:bg-gray-700 disabled:cursor-not-allowed"
+            >
+              Проверить соединение
+            </button>
+          </div>
+        </form>
+
+        {/* Footer */}
+        <div className="text-center text-xs text-[#777]">
+          <p>Cleverence Mobile SMARTS</p>
+          <p className="mt-1">Версия 1.0.0</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Setup;
+

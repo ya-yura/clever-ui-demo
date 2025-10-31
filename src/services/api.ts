@@ -2,7 +2,7 @@
 // API service for server communication
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import serverConfig from '@/config/server.json';
+import { configService } from './configService';
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -17,12 +17,14 @@ class ApiService {
 
   constructor() {
     this.client = axios.create({
-      baseURL: serverConfig.apiBaseUrl,
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
       },
     });
+
+    // Update baseURL dynamically
+    this.updateBaseURL();
 
     // Request interceptor
     this.client.interceptors.request.use(
@@ -48,17 +50,39 @@ class ApiService {
     );
 
     // Load token from localStorage
-    this.token = localStorage.getItem('authToken');
+    this.token = localStorage.getItem('auth_token');
+  }
+
+  /**
+   * Update baseURL from config
+   */
+  updateBaseURL() {
+    try {
+      if (configService.isConfigured()) {
+        const serverUrl = configService.getServerUrl();
+        this.client.defaults.baseURL = `${serverUrl}/MobileSMARTS/api/v1`;
+        console.log('✅ API baseURL updated:', this.client.defaults.baseURL);
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to update API baseURL:', error);
+    }
   }
 
   setToken(token: string) {
     this.token = token;
-    localStorage.setItem('authToken', token);
+    localStorage.setItem('auth_token', token);
   }
 
   clearToken() {
     this.token = null;
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('auth_token');
+  }
+
+  /**
+   * Get current baseURL
+   */
+  getBaseURL(): string {
+    return this.client.defaults.baseURL || '';
   }
 
   // Generic request methods
