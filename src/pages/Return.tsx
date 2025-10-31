@@ -8,8 +8,8 @@ import { useScanner } from '@/hooks/useScanner';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 import { useSync } from '@/hooks/useSync';
 import { ReturnDocument, ReturnLine, ReturnType, ReturnReason } from '@/types/return';
-import { scanFeedback } from '@/utils/feedback';
-import ScanHint from '@/components/receiving/ScanHint';
+import { scanFeedback, feedback } from '@/utils/feedback';
+import { STATUS_LABELS } from '@/types/document';
 import ScannerInput from '@/components/ScannerInput';
 
 const Return: React.FC = () => {
@@ -148,6 +148,16 @@ const Return: React.FC = () => {
     setSelectedLineId(null);
     setSelectedReason('');
     setCustomReason('');
+    
+    // Check if all lines now have reasons - auto-complete if yes
+    const allHaveReasons = lines.every(l => 
+      l.id === selectedLineId ? true : l.reason
+    );
+    
+    if (allHaveReasons && lines.length > 0 && document?.status !== 'completed') {
+      // Автоматически завершаем документ
+      setTimeout(() => completeDocument(), 300);
+    }
   };
 
   const completeDocument = async () => {
@@ -172,8 +182,8 @@ const Return: React.FC = () => {
     setDocument(updatedDoc);
     sync();
 
-    scanFeedback(true, 'Документ завершён!');
-    setTimeout(() => navigate('/'), 2000);
+    feedback.success('Документ завершён!');
+    setTimeout(() => navigate('/return'), 500);
   };
 
   const removeProduct = async (lineId: string) => {
@@ -203,10 +213,7 @@ const Return: React.FC = () => {
   if (!id) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            ♻️ Возвраты и списания
-          </h2>
+        <div className="flex justify-end">
           <button
             onClick={() => setShowTypeSelector(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
@@ -311,9 +318,6 @@ const Return: React.FC = () => {
       <div className="card">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {document.type === 'return' ? '♻️ Возврат' : '🗑️ Списание'}
-            </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Документ: {document.id}
             </p>
@@ -328,13 +332,13 @@ const Return: React.FC = () => {
               document.status === 'completed' ? 'bg-green-100 text-green-800' :
               'bg-red-100 text-red-800'
             }`}>
-              {document.status}
+              {STATUS_LABELS[document.status] || document.status}
             </span>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-4">
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {lines.length}
@@ -348,35 +352,13 @@ const Return: React.FC = () => {
             <div className="text-sm text-gray-600 dark:text-gray-400">С причиной</div>
           </div>
         </div>
-
-        {/* Actions */}
-        <div className="flex gap-2">
-          <button
-            onClick={completeDocument}
-            disabled={lines.length === 0 || lines.some(l => !l.reason)}
-            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-700"
-          >
-            ✅ Завершить документ
-          </button>
-          <button
-            onClick={() => sync()}
-            disabled={isSyncing || pendingCount === 0}
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-semibold hover:bg-gray-300"
-          >
-            {isSyncing ? '⏳' : '🔄'}
-          </button>
-        </div>
       </div>
 
       {/* Scanner Input */}
       <ScannerInput 
         onScan={onScanWithFeedback}
         placeholder="Отсканируйте товар..."
-        hint="Отсканируйте штрих-код товара для добавления"
       />
-
-      {/* Scan Hint */}
-      <ScanHint lastScan={lastScan} hint="Сканируйте товары для добавления" />
 
       {/* Lines */}
       <div className="space-y-2">

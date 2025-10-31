@@ -92,12 +92,14 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
         <div className="relative">
           <input
             type="text"
-            placeholder="🔍 Поиск по номеру, контрагенту, примечаниям..."
+            placeholder="Найти"
             value={filter.searchQuery || ''}
             onChange={handleSearchChange}
             className="w-full px-4 py-3 pl-10 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
-          <span className="absolute left-3 top-3.5 text-xl">🔍</span>
+          {!filter.searchQuery && (
+            <span className="absolute left-3 top-3.5 text-xl pointer-events-none">🔍</span>
+          )}
           
           {filter.searchQuery && (
             <button

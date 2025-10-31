@@ -1,12 +1,38 @@
 // === 📁 src/components/Header.tsx ===
 // Header component with navigation and sync status
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 import { useMenu } from '@/modules/menu';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
+
+// Route to title mapping
+const getPageTitle = (pathname: string): { title: string; subtitle?: string } => {
+  // Remove trailing slash
+  const path = pathname.replace(/\/$/, '') || '/';
+  
+  // Check specific routes
+  if (path === '/') return { title: 'Склад 15' };
+  if (path.startsWith('/documents')) return { title: 'Документы', subtitle: 'Все документы склада' };
+  if (path.startsWith('/receiving')) return { title: 'Приёмка' }; // subtitle from document context
+  if (path.startsWith('/placement')) return { title: 'Размещение' }; // subtitle from document context
+  if (path.startsWith('/picking')) return { title: 'Подбор' }; // subtitle from document context
+  if (path.startsWith('/shipment')) return { title: 'Отгрузка' }; // subtitle from document context
+  if (path.startsWith('/return')) return { title: 'Возврат' }; // subtitle from document context
+  if (path.startsWith('/inventory')) return { title: 'Инвентаризация' }; // subtitle from document context
+  if (path.startsWith('/docs/')) return { title: 'Документы', subtitle: 'Список документов' };
+  if (path.startsWith('/settings')) return { title: 'Настройки', subtitle: 'Конфигурация системы' };
+  if (path.startsWith('/partner')) return { title: 'Напарник', subtitle: 'Совместная работа' };
+  if (path.startsWith('/statistics')) return { title: 'Статистика', subtitle: 'KPI и аналитика' };
+  if (path.startsWith('/diagnostics')) return { title: 'Диагностика', subtitle: 'Проверка системы' };
+  if (path.startsWith('/about')) return { title: 'О программе' };
+  if (path.startsWith('/feedback')) return { title: 'Обратная связь' };
+  
+  return { title: 'Склад 15' };
+};
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -15,8 +41,17 @@ const Header: React.FC = () => {
   const { openMenu } = useMenu();
   const { user, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const { documentInfo } = useDocumentHeader();
 
   const isHome = location.pathname === '/';
+  
+  // Get dynamic page title
+  const pageInfo = useMemo(() => getPageTitle(location.pathname), [location.pathname]);
+  
+  // Calculate progress percentage
+  const progress = documentInfo && documentInfo.total > 0 
+    ? (documentInfo.completed / documentInfo.total) * 100 
+    : 0;
 
   const handleLogout = () => {
     if (confirm('Выйти из системы?')) {
@@ -50,12 +85,40 @@ const Header: React.FC = () => {
                 <Menu className="w-6 h-6" />
               </button>
             )}
-            <h1 
-              className="text-2xl font-normal cursor-pointer tracking-wide"
+            <div 
+              className="cursor-pointer flex-1"
               onClick={() => navigate('/')}
             >
-              Склад 15
-            </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-medium tracking-wide">
+                  {pageInfo.title}
+                </h1>
+                {documentInfo && (
+                  <span className="text-sm text-[#a7a7a7]">
+                    {documentInfo.documentId}
+                  </span>
+                )}
+              </div>
+              {documentInfo ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="flex-1 max-w-[200px] bg-gray-700 rounded-full h-1">
+                    <div
+                      className="bg-[#86e0cb] h-1 rounded-full transition-all"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-[#a7a7a7] min-w-[50px]">
+                    {documentInfo.completed}/{documentInfo.total}
+                  </span>
+                </div>
+              ) : (
+                pageInfo.subtitle && (
+                  <p className="text-xs text-[#a7a7a7] mt-1">
+                    {pageInfo.subtitle}
+                  </p>
+                )
+              )}
+            </div>
           </div>
 
           <div className="flex items-center space-x-4">

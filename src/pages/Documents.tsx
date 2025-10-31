@@ -72,27 +72,6 @@ const Documents: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">📋 Документы</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Все документы склада в одном месте
-          </p>
-        </div>
-        
-        <button
-          onClick={handleRefresh}
-          disabled={loading}
-          className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-          title="Обновить список"
-        >
-          <span className={loading ? 'animate-spin inline-block' : ''}>
-            🔄
-          </span>
-        </button>
-      </div>
-
       {/* Error Message */}
       {error && (
         <div className="bg-red-50 border-l-4 border-red-500 p-4 m-4">

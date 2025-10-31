@@ -42,8 +42,12 @@ class ApiService {
       (response) => response,
       (error: AxiosError) => {
         if (error.response?.status === 401) {
-          // Handle unauthorized
+          // Handle unauthorized - trigger logout
+          console.warn('⚠️ Unauthorized (401) - clearing auth');
           this.clearToken();
+          
+          // Trigger logout event for AuthContext
+          window.dispatchEvent(new CustomEvent('auth:unauthorized'));
         }
         return Promise.reject(error);
       }
@@ -85,9 +89,26 @@ class ApiService {
     return this.client.defaults.baseURL || '';
   }
 
+  /**
+   * Check if user is authenticated
+   */
+  isAuthenticated(): boolean {
+    return !!this.token;
+  }
+
+  /**
+   * Require authentication before making request
+   */
+  private requireAuth() {
+    if (!this.isAuthenticated()) {
+      throw new Error('Authentication required');
+    }
+  }
+
   // Generic request methods
   async get<T = any>(url: string, params?: any): Promise<ApiResponse<T>> {
     try {
+      this.updateBaseURL(); // Ensure baseURL is current
       const response = await this.client.get(url, { params });
       return { success: true, data: response.data };
     } catch (error: any) {

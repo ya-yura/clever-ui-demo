@@ -9,9 +9,9 @@ import { useScanner } from '@/hooks/useScanner';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 import { useSync } from '@/hooks/useSync';
 import { InventoryDocument, InventoryLine } from '@/types/inventory';
-import { scanFeedback } from '@/utils/feedback';
+import { scanFeedback, feedback } from '@/utils/feedback';
 import { speak } from '@/utils/voice';
-import ScanHint from '@/components/receiving/ScanHint';
+import { STATUS_LABELS } from '@/types/document';
 import ScannerInput from '@/components/ScannerInput';
 
 const Inventory: React.FC = () => {
@@ -197,17 +197,35 @@ const Inventory: React.FC = () => {
     if (!document) return;
 
     const completedLines = lines.filter(l => l.status === 'completed').length;
+    const totalLines = lines.length;
     const discrepancies = lines.filter(l => Math.abs(l.discrepancy) > 0).length;
+    
+    // Check if all lines are completed
+    const allCompleted = totalLines > 0 && completedLines === totalLines;
 
     const updatedDoc = {
       ...document,
       completedLines,
       discrepanciesCount: discrepancies,
+      status: allCompleted ? 'completed' as const : document.status,
       updatedAt: Date.now(),
     };
 
     await db.inventoryDocuments.update(document.id, updatedDoc);
     setDocument(updatedDoc);
+    
+    // Auto-complete and navigate when all done
+    if (allCompleted && document.status !== 'completed') {
+      await addSyncAction('complete', updatedDoc);
+      sync();
+      
+      // Show success feedback
+      feedback.success('Инвентаризация завершена!');
+      speak('Инвентаризация завершена');
+      
+      // Navigate after short delay
+      setTimeout(() => navigate('/inventory'), 500);
+    }
   };
 
   const showDiscrepanciesReport = () => {
@@ -231,9 +249,9 @@ const Inventory: React.FC = () => {
     setDocument(updatedDoc);
     sync();
 
-    scanFeedback(true, 'Инвентаризация завершена!');
+    feedback.success('Инвентаризация завершена!');
     speak('Инвентаризация завершена');
-    setTimeout(() => navigate('/'), 2000);
+    setTimeout(() => navigate('/inventory'), 500);
   };
 
   if (loading) {
@@ -248,12 +266,6 @@ const Inventory: React.FC = () => {
   if (!id) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            📊 Документы инвентаризации
-          </h2>
-        </div>
-
         {documents.length === 0 ? (
           <div className="card text-center py-12">
             <p className="text-gray-600 dark:text-gray-400">
@@ -330,9 +342,6 @@ const Inventory: React.FC = () => {
       <div className="card">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              🧮 Инвентаризация
-            </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Документ: {document.id}
             </p>
@@ -352,7 +361,7 @@ const Inventory: React.FC = () => {
               document.status === 'completed' ? 'bg-green-100 text-green-800' :
               'bg-indigo-100 text-indigo-800'
             }`}>
-              {document.status}
+              {STATUS_LABELS[document.status] || document.status}
             </span>
           </div>
         </div>
@@ -380,7 +389,7 @@ const Inventory: React.FC = () => {
         </div>
 
         {/* Progress */}
-        <div className="mb-4">
+        <div className="mb-3">
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
               className="bg-indigo-600 h-2 rounded-full transition-all"
@@ -389,43 +398,21 @@ const Inventory: React.FC = () => {
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-2">
-          <button
-            onClick={completeDocument}
-            disabled={document.completedLines < document.totalLines}
-            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-700"
-          >
-            ✅ Завершить пересчёт
-          </button>
+        {/* Discrepancies Button */}
+        {document.discrepanciesCount > 0 && (
           <button
             onClick={showDiscrepanciesReport}
-            disabled={document.discrepanciesCount === 0}
-            className="px-4 py-2 bg-yellow-600 text-white rounded-lg font-semibold disabled:opacity-50 hover:bg-yellow-700"
+            className="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 flex items-center justify-center gap-2"
           >
-            🧾 Расхождения
+            🧾 Расхождения ({document.discrepanciesCount})
           </button>
-          <button
-            onClick={() => sync()}
-            disabled={isSyncing || pendingCount === 0}
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-semibold hover:bg-gray-300"
-          >
-            {isSyncing ? '⏳' : '🔄'}
-          </button>
-        </div>
+        )}
       </div>
 
       {/* Scanner Input */}
       <ScannerInput 
         onScan={onScanWithFeedback}
-        placeholder="Отсканируйте ячейку или товар..."
-        hint={currentCell ? `Пересчитайте товары в ячейке ${currentCellName}` : 'Сначала отсканируйте ячейку'}
-      />
-
-      {/* Scan Hint */}
-      <ScanHint
-        lastScan={lastScan}
-        hint={currentCell ? `Пересчитайте товары в ячейке ${currentCellName}` : 'Сканируйте ячейку для начала пересчёта'}
+        placeholder={currentCell ? `Ячейка ${currentCellName} - сканируйте товар...` : 'Отсканируйте ячейку...'}
       />
 
       {/* Lines */}

@@ -116,12 +116,14 @@ export const PartnerSelector: React.FC<PartnerSelectorProps> = ({
         <div className="relative mb-3">
           <input
             type="text"
-            placeholder="🔍 Поиск по имени, табельному, роли..."
+            placeholder="Найти"
             value={filter.searchQuery || ''}
             onChange={(e) => setFilter({ ...filter, searchQuery: e.target.value })}
             className="w-full px-4 py-3 pl-10 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
-          <span className="absolute left-3 top-3.5 text-xl">🔍</span>
+          {!filter.searchQuery && (
+            <span className="absolute left-3 top-3.5 text-xl pointer-events-none">🔍</span>
+          )}
           {filter.searchQuery && (
             <button
               onClick={() => setFilter({ ...filter, searchQuery: '' })}

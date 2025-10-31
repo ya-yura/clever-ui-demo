@@ -16,6 +16,17 @@ export type LineStatus =
   | 'error'
   | 'mismatch';
 
+/**
+ * Line status labels for UI (Russian)
+ */
+export const LINE_STATUS_LABELS: Record<LineStatus, string> = {
+  pending: 'Ожидает',
+  completed: 'Завершено',
+  partial: 'Частично',
+  error: 'Ошибка',
+  mismatch: 'Несоответствие',
+};
+
 export interface BaseDocument {
   id: string;
   status: DocumentStatus;

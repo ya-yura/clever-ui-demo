@@ -25,6 +25,7 @@ import Feedback from './pages/Feedback';
 import { loadInitialData } from './utils/loadInitialData';
 import { MenuProvider } from './modules/menu';
 import { AuthProvider } from './contexts/AuthContext';
+import { DocumentHeaderProvider } from './contexts/DocumentHeaderContext';
 
 function App() {
   // Load initial data on app start
@@ -35,8 +36,9 @@ function App() {
   return (
     <AuthProvider>
       <MenuProvider>
-        <BrowserRouter>
-          <Routes>
+        <DocumentHeaderProvider>
+          <BrowserRouter>
+            <Routes>
             {/* Public routes */}
             <Route path="/setup" element={<Setup />} />
             <Route path="/login" element={<Login />} />
@@ -75,8 +77,9 @@ function App() {
 
             {/* Redirect unknown routes */}
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
+            </Routes>
+          </BrowserRouter>
+        </DocumentHeaderProvider>
       </MenuProvider>
     </AuthProvider>
   );

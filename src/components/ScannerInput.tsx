@@ -8,7 +8,6 @@ interface ScannerInputProps {
   placeholder?: string;
   autoFocus?: boolean;
   className?: string;
-  hint?: string;
 }
 
 const ScannerInput: React.FC<ScannerInputProps> = ({
@@ -16,7 +15,6 @@ const ScannerInput: React.FC<ScannerInputProps> = ({
   placeholder = 'Отсканируйте штрих-код...',
   autoFocus = true,
   className = '',
-  hint,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -78,36 +76,19 @@ const ScannerInput: React.FC<ScannerInputProps> = ({
 
   return (
     <div className={`scanner-input-wrapper ${className}`}>
-      <div className="card bg-[#2d7a6b] border-2 border-[#86e0cb]">
-        <div className="flex items-center space-x-3">
-          <div className="flex-shrink-0 text-3xl">
-            📷
-          </div>
-          <div className="flex-1">
-            <label htmlFor="scanner-input" className="block text-xs font-semibold text-[#86e0cb] mb-1">
-              СКАНЕР
-            </label>
-            <input
-              ref={inputRef}
-              id="scanner-input"
-              type="text"
-              placeholder={placeholder}
-              onKeyDown={handleKeyDown}
-              onBlur={handleBlur}
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-              className="w-full bg-[#343436] border border-[#474747] rounded px-3 py-2 text-[#e3e3dd] placeholder-[#a7a7a7] focus:outline-none focus:ring-2 focus:ring-[#86e0cb] focus:border-transparent"
-            />
-            {hint && (
-              <p className="text-xs text-[#86e0cb] mt-1">
-                💡 {hint}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
+      <input
+        ref={inputRef}
+        id="scanner-input"
+        type="text"
+        placeholder={placeholder}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
+        className="w-full bg-[#343436] border border-[#474747] rounded px-4 py-3 text-[#e3e3dd] placeholder-[#a7a7a7] focus:outline-none focus:ring-2 focus:ring-[#86e0cb] focus:border-transparent text-lg"
+      />
     </div>
   );
 };

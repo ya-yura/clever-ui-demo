@@ -9,8 +9,8 @@ import { useScanner } from '@/hooks/useScanner';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 import { useSync } from '@/hooks/useSync';
 import { ShipmentDocument, ShipmentLine } from '@/types/shipment';
-import { scanFeedback } from '@/utils/feedback';
-import ScanHint from '@/components/receiving/ScanHint';
+import { scanFeedback, feedback } from '@/utils/feedback';
+import { STATUS_LABELS } from '@/types/document';
 import ScannerInput from '@/components/ScannerInput';
 
 const Shipment: React.FC = () => {
@@ -144,6 +144,8 @@ const Shipment: React.FC = () => {
     if (!document) return;
 
     const completedLines = lines.filter(l => l.status === 'completed').length;
+    const totalLines = lines.length;
+    
     const updatedDoc = {
       ...document,
       completedLines,
@@ -152,6 +154,12 @@ const Shipment: React.FC = () => {
 
     await db.shipmentDocuments.update(document.id, updatedDoc);
     setDocument(updatedDoc);
+    
+    // Auto-complete when all lines are done
+    if (totalLines > 0 && completedLines === totalLines && document.status !== 'completed') {
+      // Automatically trigger completion
+      await completeDocument();
+    }
   };
 
   const completeDocument = async () => {
@@ -175,8 +183,8 @@ const Shipment: React.FC = () => {
     setDocument(updatedDoc);
     sync();
 
-    scanFeedback(true, 'Отгрузка завершена!');
-    setTimeout(() => navigate('/'), 2000);
+    feedback.success('Отгрузка завершена!');
+    setTimeout(() => navigate('/shipment'), 500);
   };
 
   const saveTtn = async () => {
@@ -208,12 +216,6 @@ const Shipment: React.FC = () => {
   if (!id && !sourceId) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            🚚 Документы отгрузки
-          </h2>
-        </div>
-
         {documents.length === 0 ? (
           <div className="card text-center py-12">
             <p className="text-gray-600 dark:text-gray-400">
@@ -290,9 +292,6 @@ const Shipment: React.FC = () => {
       <div className="card">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              🧾 Отгрузка
-            </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Заказ: {document.orderNumber || document.id}
             </p>
@@ -317,13 +316,13 @@ const Shipment: React.FC = () => {
               document.status === 'completed' ? 'bg-green-100 text-green-800' :
               'bg-orange-100 text-orange-800'
             }`}>
-              {document.status}
+              {STATUS_LABELS[document.status] || document.status}
             </span>
           </div>
         </div>
 
         {/* Progress */}
-        <div className="mb-4">
+        <div>
           <div className="flex justify-between text-sm mb-1">
             <span className="text-gray-600 dark:text-gray-400">Прогресс проверки</span>
             <span className="font-semibold text-gray-900 dark:text-white">
@@ -337,35 +336,13 @@ const Shipment: React.FC = () => {
             />
           </div>
         </div>
-
-        {/* Actions */}
-        <div className="flex gap-2">
-          <button
-            onClick={completeDocument}
-            disabled={document.completedLines < document.totalLines}
-            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-700"
-          >
-            ✅ Завершить отгрузку
-          </button>
-          <button
-            onClick={() => sync()}
-            disabled={isSyncing || pendingCount === 0}
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-semibold hover:bg-gray-300"
-          >
-            {isSyncing ? '⏳' : '🔄'}
-          </button>
-        </div>
       </div>
 
       {/* Scanner Input */}
       <ScannerInput 
         onScan={onScanWithFeedback}
         placeholder="Отсканируйте упаковку..."
-        hint="Отсканируйте штрих-код упаковки для проверки"
       />
-
-      {/* Scan Hint */}
-      <ScanHint lastScan={lastScan} hint="Сканируйте упаковки для проверки комплектности" />
 
       {/* Lines */}
       <div className="space-y-2">

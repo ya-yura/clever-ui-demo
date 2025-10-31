@@ -52,3 +52,10 @@ export const scanFeedback = (success: boolean, message?: string) => {
     provideFeedback('error', message || 'Товар не найден', { voice: true });
   }
 };
+
+// Feedback object with shorthand methods
+export const feedback = {
+  success: (message?: string) => provideFeedback('success', message, { voice: true }),
+  error: (message?: string) => provideFeedback('error', message, { voice: true }),
+  warning: (message?: string) => provideFeedback('warning', message, { voice: true }),
+};

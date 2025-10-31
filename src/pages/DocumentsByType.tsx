@@ -6,6 +6,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { odataCache } from '@/services/odataCache';
 import { ODataDocument } from '@/types/odata';
 
+// Mapping of document type uni to display names (fallback)
+const DOC_TYPE_DISPLAY_NAMES: Record<string, string> = {
+  'PrihodNaSklad': 'Приход на склад',
+  'RazmeshhenieVYachejki': 'Размещение в ячейки',
+  'PodborZakaza': 'Подбор заказа',
+  'Otgruzka': 'Отгрузка',
+  'Inventarizaciya': 'Инвентаризация',
+  'Vozvrat': 'Возврат',
+};
+
 const DocumentsByType: React.FC = () => {
   const { docTypeUni } = useParams<{ docTypeUni: string }>();
   const navigate = useNavigate();
@@ -28,16 +38,25 @@ const DocumentsByType: React.FC = () => {
       setLoading(true);
       setError(null);
 
+      // Try to get display name from cached doc types
+      let displayName = DOC_TYPE_DISPLAY_NAMES[docTypeUni] || docTypeUni;
+      
+      try {
+        const docTypes = await odataCache.getDocTypes();
+        const docType = docTypes.find(dt => dt.uni === docTypeUni);
+        if (docType && docType.displayName) {
+          displayName = docType.displayName;
+        }
+      } catch (err) {
+        console.warn('Could not load doc type info:', err);
+      }
+
+      setDocTypeName(displayName);
+
       // Fetch documents from cache/API
       const docs = await odataCache.getDocsByType(docTypeUni);
       setDocuments(docs);
       
-      // Set doc type name from first document or from uni
-      if (docs.length > 0) {
-        setDocTypeName(docs[0].documentTypeName || docTypeUni);
-      } else {
-        setDocTypeName(docTypeUni);
-      }
     } catch (error: any) {
       console.error('Error loading documents:', error);
       setError('Ошибка загрузки документов. Проверьте подключение к серверу.');

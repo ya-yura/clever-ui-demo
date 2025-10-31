@@ -9,9 +9,9 @@ import { useScanner } from '@/hooks/useScanner';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 import { useSync } from '@/hooks/useSync';
 import { PlacementDocument, PlacementLine } from '@/types/placement';
-import { scanFeedback } from '@/utils/feedback';
+import { scanFeedback, feedback } from '@/utils/feedback';
+import { STATUS_LABELS } from '@/types/document';
 import PlacementCard from '@/components/placement/PlacementCard';
-import ScanHint from '@/components/receiving/ScanHint';
 import ScannerInput from '@/components/ScannerInput';
 
 const Placement: React.FC = () => {
@@ -191,40 +191,39 @@ const Placement: React.FC = () => {
     onScan: handleScan,
   });
 
-  // Update document progress
+  // Update document progress and auto-complete if all lines are done
   const updateDocumentProgress = async () => {
     if (!document) return;
 
     const completedLines = lines.filter(l => l.status === 'completed').length;
+    const totalLines = lines.length;
+    
+    // Check if all lines are completed
+    const allCompleted = totalLines > 0 && completedLines === totalLines;
+    
     const updatedDoc = {
       ...document,
       completedLines,
+      status: allCompleted ? 'completed' as const : document.status,
       updatedAt: Date.now(),
     };
 
     await db.placementDocuments.update(document.id, updatedDoc);
     setDocument(updatedDoc);
-  };
-
-  // Complete document
-  const completeDocument = async () => {
-    if (!document) return;
-
-    const updatedDoc = {
-      ...document,
-      status: 'completed' as const,
-      updatedAt: Date.now(),
-    };
-
-    await db.placementDocuments.update(document.id, updatedDoc);
-    await addSyncAction('complete', updatedDoc);
-
-    setDocument(updatedDoc);
-    sync();
-
-    setTimeout(() => {
-      navigate('/');
-    }, 1500);
+    
+    // Auto-complete and navigate when all done
+    if (allCompleted && document.status !== 'completed') {
+      await addSyncAction('complete', updatedDoc);
+      sync();
+      
+      // Show success feedback
+      feedback.success('Размещение завершено!');
+      
+      // Navigate after short delay
+      setTimeout(() => {
+        navigate('/placement');
+      }, 500);
+    }
   };
 
   if (loading) {
@@ -239,12 +238,6 @@ const Placement: React.FC = () => {
   if (!id) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            🏷️ Документы размещения
-          </h2>
-        </div>
-
         {documents.length === 0 ? (
           <div className="card text-center py-12">
             <p className="text-gray-600 dark:text-gray-400">
@@ -306,85 +299,57 @@ const Placement: React.FC = () => {
     : 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-4">
+      <div className="card-compact">
+        <div className="flex items-center justify-between mb-2">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              🏷️ Размещение
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               Документ: {document.id}
             </p>
             {currentCell && (
-              <p className="text-sm font-semibold text-purple-600 dark:text-purple-400 mt-1">
-                📍 Текущая ячейка: {currentCell}
+              <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 mt-0.5">
+                📍 {currentCell}
               </p>
             )}
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5">
             {pendingCount > 0 && (
-              <span className="px-2 py-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded text-sm">
-                {pendingCount} не синхр.
+              <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded text-xs">
+                {pendingCount}
               </span>
             )}
-            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+            <span className={`px-2 py-0.5 rounded text-xs font-medium ${
               document.status === 'completed' ? 'bg-green-100 text-green-800' :
               document.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
               'bg-gray-100 text-gray-800'
             }`}>
-              {document.status}
+              {STATUS_LABELS[document.status] || document.status}
             </span>
           </div>
         </div>
 
         {/* Progress */}
-        <div className="mb-4">
-          <div className="flex justify-between text-sm mb-1">
+        <div>
+          <div className="flex justify-between text-xs mb-1">
             <span className="text-gray-600 dark:text-gray-400">Прогресс</span>
             <span className="font-semibold text-gray-900 dark:text-white">
               {document.completedLines} / {document.totalLines}
             </span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
             <div
-              className="bg-purple-600 h-2 rounded-full transition-all"
+              className="bg-purple-600 h-1.5 rounded-full transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2">
-          <button
-            onClick={completeDocument}
-            disabled={document.completedLines < document.totalLines}
-            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-700 transition-colors"
-          >
-            ✅ Завершить размещение
-          </button>
-          <button
-            onClick={() => sync()}
-            disabled={isSyncing || pendingCount === 0}
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-          >
-            {isSyncing ? '⏳' : '🔄'}
-          </button>
         </div>
       </div>
 
       {/* Scanner Input */}
       <ScannerInput 
         onScan={onScanWithFeedback}
-        placeholder="Отсканируйте ячейку или товар..."
-        hint={currentCell ? 'Отсканируйте товар для размещения' : 'Сначала отсканируйте ячейку хранения'}
-      />
-
-      {/* Scan Hint */}
-      <ScanHint 
-        lastScan={lastScan}
-        hint={currentCell ? 'Сканируйте товар для размещения' : 'Сканируйте ячейку хранения'}
+        placeholder={currentCell ? 'Отсканируйте товар...' : 'Отсканируйте ячейку...'}
       />
 
       {/* Lines */}
@@ -405,7 +370,7 @@ const Placement: React.FC = () => {
       </div>
 
       {lines.length === 0 && (
-        <div className="card text-center py-12">
+        <div className="card text-center py-8">
           <p className="text-gray-600 dark:text-gray-400">
             Нет товаров для размещения
           </p>

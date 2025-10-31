@@ -9,10 +9,11 @@ import { useScanner } from '@/hooks/useScanner';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 import { useSync } from '@/hooks/useSync';
 import { ReceivingDocument, ReceivingLine } from '@/types/receiving';
-import { scanFeedback } from '@/utils/feedback';
+import { scanFeedback, feedback } from '@/utils/feedback';
+import { STATUS_LABELS } from '@/types/document';
 import ReceivingCard from '@/components/receiving/ReceivingCard';
-import ScanHint from '@/components/receiving/ScanHint';
 import ScannerInput from '@/components/ScannerInput';
+import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
 
 const Receiving: React.FC = () => {
   const { id } = useParams();
@@ -22,12 +23,30 @@ const Receiving: React.FC = () => {
   const [documents, setDocuments] = useState<ReceivingDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentCell, setCurrentCell] = useState<string>('');
+  const { setDocumentInfo } = useDocumentHeader();
 
   const { addSyncAction } = useOfflineStorage('receiving');
   const { sync, isSyncing, pendingCount } = useSync({
     module: 'receiving',
     syncEndpoint: '/receiving/sync',
   });
+
+  // Update header with document info
+  useEffect(() => {
+    if (document && id) {
+      setDocumentInfo({
+        documentId: document.id,
+        completed: document.completedLines || 0,
+        total: document.totalLines || 0,
+      });
+    } else {
+      setDocumentInfo(null);
+    }
+    
+    return () => {
+      setDocumentInfo(null);
+    };
+  }, [document, id, setDocumentInfo]);
 
   // Load document
   useEffect(() => {
@@ -100,40 +119,42 @@ const Receiving: React.FC = () => {
     onScan: handleScan,
   });
 
-  // Update document progress
+  // Update document progress and auto-complete if all lines are done
   const updateDocumentProgress = async () => {
     if (!document) return;
 
     const completedLines = lines.filter(l => l.status === 'completed').length;
+    const totalLines = lines.length;
+    
+    // Check if all lines are completed
+    const allCompleted = totalLines > 0 && completedLines === totalLines;
+    
     const updatedDoc = {
       ...document,
       completedLines,
+      status: allCompleted ? 'completed' as const : document.status,
       updatedAt: Date.now(),
     };
 
     await db.receivingDocuments.update(document.id, updatedDoc);
     setDocument(updatedDoc);
-  };
-
-  // Complete document
-  const completeDocument = async () => {
-    if (!document) return;
-
-    const updatedDoc = {
-      ...document,
-      status: 'completed' as const,
-      updatedAt: Date.now(),
-    };
-
-    await db.receivingDocuments.update(document.id, updatedDoc);
-    await addSyncAction('complete', updatedDoc);
     
-    setDocument(updatedDoc);
-    sync();
-
-    // Navigate to placement
-    if (confirm('Документ завершён. Перейти к размещению?')) {
-      navigate(`/placement?source=${document.id}`);
+    // Auto-complete and navigate when all done
+    if (allCompleted && document.status !== 'completed') {
+      await addSyncAction('complete', updatedDoc);
+      sync();
+      
+      // Show success feedback
+      feedback.success('Приёмка завершена!');
+      
+      // Navigate after short delay
+      setTimeout(() => {
+        if (confirm('Документ завершён. Перейти к размещению?')) {
+          navigate(`/placement?source=${document.id}`);
+        } else {
+          navigate('/receiving');
+        }
+      }, 500);
     }
   };
 
@@ -167,12 +188,6 @@ const Receiving: React.FC = () => {
   if (!id) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-[#e3e3dd]">
-            📦 Документы приёмки
-          </h2>
-        </div>
-
         {documents.length === 0 ? (
           <div className="card text-center py-12">
             <p className="text-[#a7a7a7]">
@@ -239,78 +254,12 @@ const Receiving: React.FC = () => {
     : 0;
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              📦 Приёмка
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Документ: {document.id}
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            {pendingCount > 0 && (
-              <span className="status-warning">
-                {pendingCount} не синхр.
-              </span>
-            )}
-            <span className={`status-badge ${
-              document.status === 'completed' ? 'bg-green-100 text-green-800' :
-              document.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
-              {document.status}
-            </span>
-          </div>
-        </div>
-
-        {/* Progress */}
-        <div className="mb-4">
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-600 dark:text-gray-400">Прогресс</span>
-            <span className="font-semibold text-gray-900 dark:text-white">
-              {document.completedLines} / {document.totalLines}
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full transition-all"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2">
-          <button
-            onClick={completeDocument}
-            disabled={document.completedLines < document.totalLines}
-            className="btn-success flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            ✅ Завершить приёмку
-          </button>
-          <button
-            onClick={() => sync()}
-            disabled={isSyncing || pendingCount === 0}
-            className="btn-secondary"
-          >
-            {isSyncing ? '⏳' : '🔄'}
-          </button>
-        </div>
-      </div>
-
+    <div className="space-y-3">
       {/* Scanner Input */}
       <ScannerInput 
         onScan={onScanWithFeedback}
         placeholder="Отсканируйте товар или документ..."
-        hint="Наведите сканер на штрих-код товара"
       />
-
-      {/* Scan Hint */}
-      <ScanHint lastScan={lastScan} />
 
       {/* Lines */}
       <div className="space-y-2">
@@ -324,7 +273,7 @@ const Receiving: React.FC = () => {
       </div>
 
       {lines.length === 0 && (
-        <div className="card text-center py-12">
+        <div className="card text-center py-8">
           <p className="text-gray-600 dark:text-gray-400">
             Нет товаров в документе. Отсканируйте документ для загрузки.
           </p>
