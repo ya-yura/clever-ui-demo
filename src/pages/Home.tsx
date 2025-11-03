@@ -394,10 +394,10 @@ const Home: React.FC = () => {
           <button
             key={`${tVozvrat.uni}-small`}
             onClick={() => navigate(`/docs/${tVozvrat.uni}`)}
-            className="tile-secondary tone-medium col-span-2 bg-palette-5"
+            className="tile-secondary tone-medium tile-outline col-span-2"
           >
             <div>
-              <h2 className="tile-title-sm text-white">{tVozvrat.displayName}</h2>
+              <h2 className="tile-title-sm text-[#86E0CB]">{tVozvrat.displayName}</h2>
               <p className="tile-subtext text-white">{tVozvrat.description}</p>
             </div>
             <div className="tile-footer">
@@ -410,10 +410,10 @@ const Home: React.FC = () => {
           <button
             key={`${tPlacement.uni}-small`}
             onClick={() => navigate(`/docs/${tPlacement.uni}`)}
-            className="tile-secondary tone-medium col-span-2 bg-palette-4"
+            className="tile-secondary tone-medium tile-outline col-span-2"
           >
             <div>
-              <h2 className="tile-title-sm text-white">{tPlacement.displayName}</h2>
+              <h2 className="tile-title-sm text-[#91ED91]">{tPlacement.displayName}</h2>
               <p className="tile-subtext text-white">{tPlacement.description}</p>
             </div>
             <div className="tile-footer">
@@ -429,10 +429,10 @@ const Home: React.FC = () => {
           <button
             key={`${tInvent.uni}-full`}
             onClick={() => navigate(`/docs/${tInvent.uni}`)}
-            className="tile-secondary tone-medium col-span-4 bg-palette-3"
+            className="tile-secondary tone-medium tile-outline col-span-4"
           >
             <div>
-              <h2 className="tile-title-md text-white">{tInvent.displayName}</h2>
+              <h2 className="tile-title-md text-[#BA8F8E]">{tInvent.displayName}</h2>
               <p className="tile-subtext text-white">{tInvent.description}</p>
             </div>
             <div className="tile-footer">
