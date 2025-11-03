@@ -286,6 +286,15 @@ class ApiService {
   }
 
   /**
+   * Get document with items (expanded)
+   * GET /api/v1/Docs('id')?$expand=declaredItems,currentItems
+   */
+  async getDocumentById(docId: string, expand?: string[]) {
+    const expandParam = expand && expand.length > 0 ? `?$expand=${expand.join(',')}` : '';
+    return this.get(`/Docs('${docId}')${expandParam}`);
+  }
+
+  /**
    * Get documents by type - tries multiple approaches
    * @param docTypeUni - Document type unique identifier
    */

@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import Documents from './pages/Documents';
 import DocumentsByType from './pages/DocumentsByType';
+import DocumentDetails from './pages/DocumentDetails';
 import PartnerManagement from './pages/PartnerManagement';
 import Receiving from './pages/Receiving';
 import Placement from './pages/Placement';
@@ -58,6 +59,7 @@ function App() {
               <Route index element={<Home />} />
               <Route path="documents" element={<Documents />} />
               <Route path="docs/:docTypeUni" element={<DocumentsByType />} />
+              <Route path="docs/:docTypeUni/:docId" element={<DocumentDetails />} />
               <Route path="partner" element={<PartnerManagement />} />
               <Route path="receiving" element={<Receiving />} />
               <Route path="receiving/:id" element={<Receiving />} />

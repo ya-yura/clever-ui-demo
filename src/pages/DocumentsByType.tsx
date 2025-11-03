@@ -1,10 +1,10 @@
 // === 📁 src/pages/DocumentsByType.tsx ===
 // Documents list for a specific document type
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { odataCache } from '@/services/odataCache';
-import { ODataDocument } from '@/types/odata';
+import { ODataDocument, ODataDocumentType } from '@/types/odata';
 import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
 
 // Short, human-friendly titles per document type
@@ -36,6 +36,8 @@ const DocumentsByType: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [docTypeName, setDocTypeName] = useState<string>('');
+  const [allDocTypes, setAllDocTypes] = useState<ODataDocumentType[]>([]);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'new' | 'in_process' | 'finished'>('all');
 
   useEffect(() => {
     if (docTypeUni) {
@@ -43,19 +45,40 @@ const DocumentsByType: React.FC = () => {
     }
   }, [docTypeUni]);
 
+  // Load all doc types for quick switching chips
+  useEffect(() => {
+    (async () => {
+      try {
+        const types = await odataCache.getDocTypes();
+        setAllDocTypes(types);
+      } catch (e) {
+        // ignore
+      }
+    })();
+  }, []);
+
+  // Calculate filtered documents by status
+  const filteredDocuments = useMemo(() => {
+    if (statusFilter === 'all') return documents;
+    if (statusFilter === 'finished') return documents.filter((d: any) => d.finished === true);
+    if (statusFilter === 'in_process') return documents.filter((d: any) => d.inProcess === true);
+    // 'new'
+    return documents.filter((d: any) => !d.finished && !d.inProcess);
+  }, [documents, statusFilter]);
+
   // Update header with list info (short title)
   useEffect(() => {
     if (docTypeName) {
       setListInfo({
         title: docTypeName,
-        count: documents.length,
+        count: filteredDocuments.length,
       });
     }
     
     return () => {
       setListInfo(null);
     };
-  }, [docTypeName, documents.length, setListInfo]);
+  }, [docTypeName, filteredDocuments.length, setListInfo]);
 
   const loadDocuments = async () => {
     if (!docTypeUni) return;
@@ -169,8 +192,44 @@ const DocumentsByType: React.FC = () => {
 
   return (
     <div className="space-y-3">
+      {/* Quick type chips */}
+      {allDocTypes.length > 0 && (
+        <div className="flex gap-[8px] overflow-x-auto pb-[4px] -mt-1 items-center">
+          {allDocTypes.map((t) => {
+            const short = SHORT_TITLES[t.uni] || toShortTitle(String(t.displayName || t.name || t.uni));
+            const isActive = t.uni === docTypeUni;
+            return (
+              <button
+                key={t.uni}
+                onClick={() => navigate(`/docs/${t.uni}`)}
+                className={`chip ${isActive ? 'chip-active' : ''}`}
+              >
+                {short}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Status filter chips */}
+      <div className="flex gap-[8px] overflow-x-auto pb-[4px] items-center">
+        {[
+          { key: 'all', label: 'Все' },
+          { key: 'new', label: 'Новые' },
+          { key: 'in_process', label: 'В работе' },
+          { key: 'finished', label: 'Завершён' },
+        ].map((s) => (
+          <button
+            key={s.key}
+            onClick={() => setStatusFilter(s.key as any)}
+            className={`chip ${statusFilter === s.key ? 'chip-active' : ''}`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
       {/* Documents list */}
-      {documents.length === 0 ? (
+      {filteredDocuments.length === 0 ? (
         <div className="text-center py-12 bg-[#474747] rounded-lg">
           <div className="text-6xl mb-4">📋</div>
           <h3 className="text-xl text-[#a7a7a7] mb-2">Нет документов</h3>
@@ -180,10 +239,13 @@ const DocumentsByType: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-3">
-          {documents.map((doc) => (
+          {filteredDocuments.map((doc) => (
             <button
               key={doc.id}
-              onClick={() => navigate(`/docs/${docTypeUni}/${doc.id}`)}
+              onClick={() => {
+                console.log(`📄 [DOCS] Navigating to document details: /docs/${docTypeUni}/${doc.id}`);
+                navigate(`/docs/${docTypeUni}/${doc.id}`);
+              }}
               className="w-full bg-[#474747] hover:bg-[#525252] rounded-lg p-4 text-left transition-all border border-[#474747] hover:border-[#666]"
             >
               <div className="flex justify-between items-start mb-3">

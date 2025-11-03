@@ -173,6 +173,16 @@ body {
 
   .border-palette-4 { border-color: #7A3900; }
   .border-palette-5 { border-color: #3F1C00; }
+
+  /* === Chips (compact pills) === */
+  .chip {
+    @apply inline-flex items-center rounded-sm px-1.5 py-0.5 text-[10px] leading-tight whitespace-nowrap min-w-0 shrink-0 select-none
+           border border-[#474747] bg-transparent text-[#e3e3dd] transition-colors;
+  }
+
+  .chip:hover:not(.chip-active) { @apply bg-[#2a2a2c]; }
+
+  .chip-active { @apply bg-[#FEA079] text-[#2d2d2d] border-[#FEA079]; }
 }
 
 /* Всегда темная тема */

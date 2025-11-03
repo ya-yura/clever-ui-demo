@@ -92,6 +92,9 @@ export interface ODataDocumentItem {
   productBarcode?: string;
   packingName?: string;
   packingUnitsQuantity: number;
+  // Optional enrichments (when expanded)
+  product?: ODataProduct;
+  [key: string]: any;
 }
 
 /**
