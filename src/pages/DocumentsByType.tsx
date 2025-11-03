@@ -7,14 +7,24 @@ import { odataCache } from '@/services/odataCache';
 import { ODataDocument } from '@/types/odata';
 import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
 
-// Mapping of document type uni to display names (fallback)
-const DOC_TYPE_DISPLAY_NAMES: Record<string, string> = {
-  'PrihodNaSklad': 'Приход на склад',
-  'RazmeshhenieVYachejki': 'Размещение в ячейки',
-  'PodborZakaza': 'Подбор заказа',
-  'Otgruzka': 'Отгрузка',
-  'Inventarizaciya': 'Инвентаризация',
-  'Vozvrat': 'Возврат',
+// Short, human-friendly titles per document type
+const SHORT_TITLES: Record<string, string> = {
+  PrihodNaSklad: 'Приход',
+  RazmeshhenieVYachejki: 'Размещение',
+  PodborZakaza: 'Подбор',
+  Otgruzka: 'Отгрузка',
+  Inventarizaciya: 'Инвентаризация',
+  Vozvrat: 'Возврат',
+};
+
+const toShortTitle = (raw: string): string => {
+  if (!raw) return '';
+  const spaced = raw
+    .replace(/([A-Z])([a-z]+)/g, ' $1$2')
+    .replace(/([А-ЯЁ])([а-яё]+)/g, ' $1$2')
+    .trim();
+  const first = spaced.split(/\s+/)[0];
+  return first ? first.charAt(0).toUpperCase() + first.slice(1).toLowerCase() : raw;
 };
 
 const DocumentsByType: React.FC = () => {
@@ -33,7 +43,7 @@ const DocumentsByType: React.FC = () => {
     }
   }, [docTypeUni]);
 
-  // Update header with list info
+  // Update header with list info (short title)
   useEffect(() => {
     if (docTypeName) {
       setListInfo({
@@ -56,14 +66,15 @@ const DocumentsByType: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // Try to get display name from cached doc types
-      let displayName = DOC_TYPE_DISPLAY_NAMES[docTypeUni] || docTypeUni;
+      // Try to resolve short title
+      let displayName = SHORT_TITLES[docTypeUni] || toShortTitle(docTypeUni);
       
       try {
         const docTypes = await odataCache.getDocTypes();
         const docType = docTypes.find(dt => dt.uni === docTypeUni);
-        if (docType && docType.displayName) {
-          displayName = docType.displayName;
+        if (docType) {
+          const source = docType.displayName || docType.name || docType.uni;
+          displayName = SHORT_TITLES[docType.uni] || toShortTitle(String(source));
         }
         console.log(`📄 [DOCS] Display name: ${displayName}`);
       } catch (err) {
