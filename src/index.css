@@ -140,6 +140,10 @@ body {
     @apply text-xs font-semibold text-[#e3e3dd]/80;
   }
 
+  .tile-count-hero {
+    @apply text-2xl md:text-3xl font-bold text-[#343436];
+  }
+
   .tile-title-lg {
     @apply text-xl md:text-[20px] font-bold mb-1 tracking-tight;
   }

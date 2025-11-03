@@ -348,7 +348,7 @@ const Home: React.FC = () => {
               <p className="tile-subtext text-[#343436]">{tPrihod.description}</p>
             </div>
             <div className="tile-footer">
-              <span className="tile-count-dark">{tPrihod.docsCount}</span>
+              <span className="tile-count-hero">{tPrihod.docsCount}</span>
             </div>
           </button>
         )}
@@ -365,7 +365,7 @@ const Home: React.FC = () => {
               <p className="tile-subtext text-[#343436]">{tPodbor.description}</p>
             </div>
             <div className="tile-footer">
-              <span className="tile-count-dark">{tPodbor.docsCount}</span>
+              <span className="tile-count-hero">{tPodbor.docsCount}</span>
             </div>
           </button>
         )}
@@ -382,7 +382,7 @@ const Home: React.FC = () => {
               <p className="tile-subtext text-[#343436]">{tOtgruzka.description}</p>
             </div>
             <div className="tile-footer">
-              <span className="tile-count-dark">{tOtgruzka.docsCount}</span>
+              <span className="tile-count-hero">{tOtgruzka.docsCount}</span>
             </div>
           </button>
         )}
