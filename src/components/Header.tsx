@@ -62,9 +62,9 @@ const Header: React.FC = () => {
 
   return (
     <header className="bg-[#343436] text-[#e3e3dd] shadow-lg sticky top-0 z-50 border-b border-[#474747]">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+      <div className="container mx-auto px-3 py-2.5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
             {!isHome && (
               <button
                 onClick={() => navigate(-1)}
@@ -89,8 +89,8 @@ const Header: React.FC = () => {
               className="cursor-pointer flex-1"
               onClick={() => navigate('/')}
             >
-              <div className="flex items-center gap-3">
-                <h1 className="text-xl font-medium tracking-wide">
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-medium tracking-wide">
                   {listInfo ? listInfo.title : pageInfo.title}
                 </h1>
                 {documentInfo && (
@@ -100,7 +100,7 @@ const Header: React.FC = () => {
                 )}
               </div>
               {documentInfo ? (
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-1.5 mt-1">
                   <div className="flex-1 max-w-[200px] bg-gray-700 rounded-full h-1">
                     <div
                       className="bg-[#86e0cb] h-1 rounded-full transition-all"
@@ -112,12 +112,12 @@ const Header: React.FC = () => {
                   </span>
                 </div>
               ) : listInfo ? (
-                <p className="text-xs text-[#a7a7a7] mt-1">
+                <p className="text-[11px] text-[#a7a7a7] mt-0.5">
                   Всего: {listInfo.count}
                 </p>
               ) : (
                 pageInfo.subtitle && (
-                  <p className="text-xs text-[#a7a7a7] mt-1">
+                  <p className="text-[11px] text-[#a7a7a7] mt-0.5">
                     {pageInfo.subtitle}
                   </p>
                 )
@@ -125,10 +125,10 @@ const Header: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-3">
             {/* Online/Offline status */}
-            <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400' : 'bg-red-400'}`} />
+            <div className="flex items-center gap-1.5">
+              <div className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-green-400' : 'bg-red-400'}`} />
               <span className="text-sm hidden sm:inline">{isOnline ? 'Онлайн' : 'Оффлайн'}</span>
             </div>
 
@@ -147,7 +147,7 @@ const Header: React.FC = () => {
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center space-x-2 p-2 hover:bg-[#474747] rounded-lg transition-colors"
+                  className="flex items-center gap-2 p-2 hover:bg-[#474747] rounded-lg transition-colors"
                   aria-label="Меню пользователя"
                 >
                   <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-sm font-bold">

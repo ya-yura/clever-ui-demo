@@ -127,13 +127,14 @@ const DocumentsByType: React.FC = () => {
   };
 
   const getStatusBadge = (doc: ODataDocument) => {
+    const base = 'inline-flex items-center h-[22px] px-2 rounded-full text-[10px] font-semibold uppercase tracking-wide border';
     if (doc.finished) {
-      return <span className="px-2 py-1 bg-green-500 text-white text-xs rounded">Завершён</span>;
+      return <span className={`${base} bg-[#1f3324] text-[#74ff9c] border-transparent`}>Завершён</span>;
     }
     if (doc.inProcess) {
-      return <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded">В работе</span>;
+      return <span className={`${base} bg-[#1d2f3c] text-[#7ad4ff] border-transparent`}>В работе</span>;
     }
-    return <span className="px-2 py-1 bg-gray-500 text-white text-xs rounded">Новый</span>;
+    return <span className={`${base} bg-[#353535] text-[#d7d7d7] border-[#4e4e4e]`}>Новый</span>;
   };
 
   const formatDate = (dateString: string) => {
@@ -239,60 +240,60 @@ const DocumentsByType: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredDocuments.map((doc) => (
+          {filteredDocuments.map((doc) => {
+            const appointment = (doc.appointment || '').trim();
+            const owner = (doc.userName || '').trim();
+            const secondaryLine = appointment || doc.description || '';
+
+            return (
             <button
               key={doc.id}
               onClick={() => {
                 console.log(`📄 [DOCS] Navigating to document details: /docs/${docTypeUni}/${doc.id}`);
                 navigate(`/docs/${docTypeUni}/${doc.id}`);
               }}
-              className="w-full bg-[#474747] hover:bg-[#525252] rounded-lg p-4 text-left transition-all border border-[#474747] hover:border-[#666]"
+              className="w-full bg-[#3c3c3c] hover:bg-[#444] rounded-md px-3 py-2.5 text-left transition-all border border-[#4c4c4c] hover:border-[#666]"
             >
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-[#e3e3dd] mb-1">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-[#f0f0f0] leading-tight line-clamp-2">
                     {doc.name || doc.id}
                   </h3>
-                  {doc.description && (
-                    <p className="text-sm text-[#a7a7a7] mb-2">{doc.description}</p>
-                  )}
-                </div>
-                <div className="ml-4">
-                  {getStatusBadge(doc)}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 text-xs text-[#a7a7a7]">
-                <div>
-                  <span className="opacity-70">Создан:</span>
-                  <span className="ml-2">{formatDate(doc.createDate)}</span>
-                </div>
-                <div>
-                  <span className="opacity-70">Изменён:</span>
-                  <span className="ml-2">{formatDate(doc.lastChangeDate)}</span>
-                </div>
-                {doc.userName && (
-                  <div>
-                    <span className="opacity-70">Пользователь:</span>
-                    <span className="ml-2">{doc.userName}</span>
+                  <div className="mt-1 flex flex-col gap-0.5 text-[11px] leading-tight">
+                    {secondaryLine && (
+                      <span className="text-[#8fe4a3] line-clamp-1">
+                        {secondaryLine}
+                      </span>
+                    )}
+                    {owner && (
+                      <span className="text-[#a5c7ff] line-clamp-1">{owner}</span>
+                    )}
                   </div>
-                )}
+                </div>
+                <div className="shrink-0">{getStatusBadge(doc)}</div>
+              </div>
+ 
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] leading-tight text-[#b8b8b8]">
+                <span className="flex items-center gap-1">
+                  <span className="uppercase tracking-wide text-[10px] text-[#8f8f8f]">Создан</span>
+                  <span className="text-[#e3e3e3]">{formatDate(doc.createDate)}</span>
+                </span>
                 {doc.warehouseId && (
-                  <div>
-                    <span className="opacity-70">Склад:</span>
-                    <span className="ml-2">{doc.warehouseId}</span>
-                  </div>
+                  <span className="flex items-center gap-1">
+                    <span className="uppercase tracking-wide text-[10px] text-[#8f8f8f]">Склад</span>
+                    <span className="text-[#d3d3d3]">{doc.warehouseId}</span>
+                  </span>
                 )}
               </div>
-
+ 
               {doc.barcode && (
-                <div className="mt-3 pt-3 border-t border-[#555]">
-                  <span className="text-xs text-[#a7a7a7] opacity-70">Штрихкод:</span>
-                  <span className="ml-2 text-sm text-[#e3e3dd] font-mono">{doc.barcode}</span>
+                <div className="mt-2 pt-2 border-t border-[#4c4c4c] text-[11px] text-[#d8d8d8] font-mono truncate">
+                  {doc.barcode}
                 </div>
               )}
             </button>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
