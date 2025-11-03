@@ -71,28 +71,31 @@ class ApiService {
    */
   updateBaseURL() {
     try {
-      // Check if running on localhost (most reliable way)
-      const isLocalhost = typeof window !== 'undefined' && 
-                         (window.location.hostname === 'localhost' || 
-                          window.location.hostname === '127.0.0.1');
-      
-      if (isLocalhost) {
-        // Use relative path for Vite proxy
+      const isLocalhost = typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+      const isViteDev = isLocalhost && (window.location.port === '3002');
+
+      // In local dev, always go through Vite proxy to avoid CORS
+      if (isViteDev) {
         const devBaseUrl = '/MobileSMARTS/api/v1';
         this.client.defaults.baseURL = devBaseUrl;
-        console.log('✅ [LOCALHOST] Using Vite proxy:', devBaseUrl);
+        console.log('✅ [API] Dev mode: using Vite proxy baseURL:', devBaseUrl);
         return;
       }
-      
-      // Production: use configured URL
+
+      // Otherwise prefer configured absolute server URL
       if (configService.isConfigured()) {
         const serverUrl = configService.getServerUrl();
-        this.client.defaults.baseURL = serverUrl;
-        console.log('✅ [PROD] baseURL from config:', this.client.defaults.baseURL);
-      } else {
-        console.error('❌ [PROD] No server URL configured!');
-        throw new Error('Server URL not configured. Please go to Setup page.');
+        if (serverUrl) {
+          this.client.defaults.baseURL = serverUrl.replace(/\/$/, '');
+          console.log('✅ [API] baseURL from config:', this.client.defaults.baseURL);
+          return;
+        }
       }
+
+      // Fallback if nothing configured
+      console.error('❌ [API] Server URL not configured. Open Setup and set http://localhost:9000/MobileSMARTS/api/v1');
+      throw new Error('Server URL not configured. Please go to Setup page.');
     } catch (error) {
       console.error('❌ [API] Failed to update baseURL:', error);
     }

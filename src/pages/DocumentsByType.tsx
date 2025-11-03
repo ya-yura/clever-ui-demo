@@ -83,9 +83,15 @@ const DocumentsByType: React.FC = () => {
 
       setDocTypeName(displayName);
 
-      // Fetch documents from cache/API
+      // Fetch documents from cache/API and filter client-side using multiple names
       console.log(`📄 [DOCS] Fetching documents for: ${docTypeUni}`);
-      const docs = await odataCache.getDocsByType(docTypeUni);
+      let names: string[] | undefined;
+      try {
+        const types = await odataCache.getDocTypes();
+        const t = types.find(dt => dt.uni === docTypeUni);
+        if (t) names = [t.uni as any, (t as any).name, (t as any).displayName].filter(Boolean) as string[];
+      } catch {}
+      const docs = await odataCache.getDocsByType(docTypeUni, { names });
       console.log(`📄 [DOCS] Loaded ${docs.length} documents:`, docs);
       setDocuments(docs);
       

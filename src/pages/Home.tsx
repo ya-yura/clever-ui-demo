@@ -145,7 +145,7 @@ const Home: React.FC = () => {
           
           if (!isMockData) {
             try {
-              const docs = await odataCache.getDocsByType(type.uni);
+              const docs = await odataCache.getDocsByType(type.uni, { names: [type.uni, (type as any).name, (type as any).displayName] });
               docsCount = docs.length;
               console.log(`✅ [API] Type "${type.uni}": ${docsCount} documents`);
             } catch (err: any) {

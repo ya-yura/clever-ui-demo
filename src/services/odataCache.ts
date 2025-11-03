@@ -84,70 +84,101 @@ class ODataCacheService {
   /**
    * Get documents by type with caching
    */
-  async getDocsByType(docTypeUni: string, forceRefresh = false): Promise<ODataDocument[]> {
+  async getDocsByType(
+    docTypeUni: string,
+    options?: { names?: string[]; forceRefresh?: boolean }
+  ): Promise<ODataDocument[]> {
     const cacheKey = `docs_${docTypeUni}`;
+    const forceRefresh = options?.forceRefresh === true;
 
     console.log(`📦 [CACHE] getDocsByType(${docTypeUni})`);
 
     // Try cache first (if not forcing refresh)
     if (!forceRefresh && await this.isCacheValid(cacheKey)) {
-      const cached = await db.odataDocuments
-        .where('documentTypeName')
-        .equals(docTypeUni)
-        .toArray();
-      
+      const all = await db.odataDocuments.toArray();
+      const normalize = (v: any) => (v ? String(v).toLowerCase().trim() : '');
+      const targets = new Set<string>([
+        normalize(docTypeUni),
+        ...((options?.names || []).map(normalize)),
+      ].filter(Boolean));
+      const cached = all.filter((doc: any) => {
+        const candidates = [
+          (doc as any).documentTypeName,
+          (doc as any).documentTypeUni,
+          (doc as any).documentType?.uni,
+          (doc as any).documentType,
+          (doc as any).type,
+        ].map(normalize);
+        return candidates.some(c => targets.has(c));
+      });
       if (cached.length > 0) {
         console.log(`✅ [CACHE] Loaded ${cached.length} documents from cache for ${docTypeUni}`);
-        return cached;
+        return cached as ODataDocument[];
       }
     }
 
-    // Try to fetch from API (with or without auth)
+    // Fetch ALL documents, then filter client-side by type
     try {
-      console.log(`🌐 [API] Fetching documents from /Docs/${docTypeUni}...`);
-      const response: any = await api.getDocsByType(docTypeUni);
-      
-      console.log(`📡 [API] Response for ${docTypeUni}:`, response);
-      
+      console.log(`🌐 [API] Fetching ALL documents from /Docs ... (will filter by ${docTypeUni})`);
+      const response: any = await api.getAllDocs();
+
       if (response.success && response.data) {
-        // Handle both OData collection format and plain array
         let docs: ODataDocument[] = [];
-        
+
         if (Array.isArray(response.data)) {
-          console.log(`✅ [API] Got plain array with ${response.data.length} documents`);
           docs = response.data;
         } else if (response.data.value && Array.isArray(response.data.value)) {
-          console.log(`✅ [API] Got OData collection with ${response.data.value.length} documents`);
           docs = response.data.value;
-        } else {
-          console.warn(`⚠️ [API] Unexpected response format:`, response.data);
         }
 
-        // If client-side filtering is needed
-        if (response.needsClientFilter && response.filterType) {
-          console.log(`🔍 [CACHE] Filtering ${docs.length} documents by documentTypeName=${response.filterType}`);
-          docs = docs.filter(doc => doc.documentTypeName === response.filterType);
-          console.log(`✅ [CACHE] After filtering: ${docs.length} documents`);
+        const normalize = (v: any) => (v ? String(v).toLowerCase().trim() : '');
+        const targets = new Set<string>([
+          normalize(docTypeUni),
+          ...((options?.names || []).map(normalize)),
+        ].filter(Boolean));
+
+        const filtered = docs.filter((doc: any) => {
+          const candidates = [
+            (doc as any).documentTypeName,
+            (doc as any).documentTypeUni,
+            (doc as any).documentType?.uni,
+            (doc as any).documentType,
+            (doc as any).type,
+          ].map(normalize);
+          return candidates.some(c => targets.has(c));
+        });
+
+        // Save to cache for this type: remove previous entries matching targets
+        const existing = await db.odataDocuments.toArray();
+        const toRemoveIds = existing
+          .filter((doc: any) => {
+            const candidates = [
+              (doc as any).documentTypeName,
+              (doc as any).documentTypeUni,
+              (doc as any).documentType?.uni,
+              (doc as any).documentType,
+              (doc as any).type,
+            ].map(normalize);
+            return candidates.some(c => targets.has(c));
+          })
+          .map((d: any) => (d as any).id)
+          .filter(Boolean);
+        if (toRemoveIds.length > 0) {
+          await Promise.all(toRemoveIds.map((id) => db.odataDocuments.delete(id)));
         }
 
-        // Save to cache (replace existing docs of this type)
-        await db.odataDocuments
-          .where('documentTypeName')
-          .equals(docTypeUni)
-          .delete();
-        
-        if (docs.length > 0) {
-          await db.odataDocuments.bulkAdd(docs);
+        if (filtered.length > 0) {
+          await db.odataDocuments.bulkAdd(filtered);
           await this.updateCacheMetadata(cacheKey);
         }
 
-        console.log(`✅ [API] Fetched and cached ${docs.length} documents for ${docTypeUni}`);
-        return docs;
+        console.log(`✅ [API] Fetched ${docs.length} docs, filtered ${filtered.length} for ${docTypeUni} by targets:`, Array.from(targets));
+        return filtered;
       } else {
-        console.warn(`⚠️ [API] No data returned for ${docTypeUni}:`, response);
+        console.warn('⚠️ [API] No data returned from /Docs');
       }
     } catch (error: any) {
-      console.error(`❌ [API] Failed to fetch documents for ${docTypeUni}:`, error.message || error);
+      console.error(`❌ [API] Failed to fetch /Docs:`, error.message || error);
     }
 
     // Fallback to stale cache
