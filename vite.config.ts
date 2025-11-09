@@ -11,6 +11,7 @@ export default defineConfig({
   },
   server: {
     port: 5174,
+    host: true,
     open: true,
     // Proxy to bypass CORS in development
     proxy: {
