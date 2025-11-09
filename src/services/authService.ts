@@ -32,33 +32,15 @@ class AuthService {
   private readonly STORAGE_KEY_REFRESH = 'refresh_token';
 
   /**
-   * Check if system requires authentication
-   * Returns 404 if no auth required, 200 if auth required
+   * Check if system requires authentication (DEV MODE - always requires auth but accepts any)
    */
   async checkNoLogin(): Promise<{ requiresAuth: boolean }> {
-    const serverUrl = configService.getServerUrl();
-    
-    try {
-      const response = await fetch(`${serverUrl}/.well-known/openid-configuration`);
-      
-      if (response.status === 404) {
-        // No authentication required
-        console.log('ℹ️ No authentication required (404 from openid-configuration)');
-        return { requiresAuth: false };
-      }
-      
-      // Authentication required
-      console.log('ℹ️ Authentication required');
-      return { requiresAuth: true };
-    } catch (error) {
-      // On error, assume authentication required
-      console.warn('⚠️ Error checking auth config, assuming auth required:', error);
-      return { requiresAuth: true };
-    }
+    console.log('ℹ️ [DEV MODE] Authentication required (accepts any credentials)');
+    return { requiresAuth: true };
   }
 
   /**
-   * Authenticate with username and password via OAuth2
+   * Authenticate with username and password (DEV MODE - accepts any credentials)
    */
   async login(credentials: LoginCredentials): Promise<{
     success: boolean;
@@ -68,94 +50,45 @@ class AuthService {
     error?: string;
     errorCode?: number;
   }> {
-    const serverUrl = configService.getServerUrl();
-    
-    try {
-      console.log('🔐 OAuth2 login attempt:', credentials.username);
+    console.log('🔐 [DEV MODE] Login attempt:', credentials.username);
 
-      const requestBody = new URLSearchParams({
-        username: credentials.username,
-        password: credentials.password,
-        client_id: this.CLIENT_ID,
-        client_secret: this.CLIENT_SECRET,
-        scope: this.SCOPE,
-        grant_type: 'password'
-      });
-
-      const response = await fetch(`${serverUrl}/connect/token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: requestBody
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        
-        if (response.status === 403) {
-          return {
-            success: false,
-            error: 'Недостаточно прав',
-            errorCode: 403
-          };
-        }
-
-        return {
-          success: false,
-          error: errorData.error_description || 'Неверное имя пользователя или пароль',
-          errorCode: response.status
-        };
-      }
-
-      const data: OAuthTokenResponse = await response.json();
-
-      // Validate JWT and extract role
-      const jwtPayload = this.parseJwt(data.access_token);
-      
-      if (!jwtPayload) {
-        return {
-          success: false,
-          error: 'Невалидный токен'
-        };
-      }
-
-      // Validate role
-      if (!this.isValidRole(jwtPayload.role)) {
-        return {
-          success: false,
-          error: 'Недостаточно прав',
-          errorCode: 403
-        };
-      }
-
-      // Store tokens
-      this.setToken(data.access_token);
-      this.setRefreshToken(data.refresh_token);
-
-      console.log('✅ OAuth2 login successful:', {
-        user: jwtPayload.sub,
-        role: jwtPayload.role
-      });
-
-      return {
-        success: true,
-        token: data.access_token,
-        refreshToken: data.refresh_token,
-        user: {
-          id: jwtPayload.sub,
-          name: credentials.username,
-          username: credentials.username,
-          role: jwtPayload.role.toLowerCase()
-        }
-      };
-    } catch (error: any) {
-      console.error('❌ OAuth2 login error:', error);
+    // DEV MODE: Accept any non-empty credentials
+    if (!credentials.username || !credentials.password) {
       return {
         success: false,
-        error: error.message || 'Ошибка подключения к серверу'
+        error: 'Введите имя пользователя и пароль'
       };
     }
+
+    // Create a mock token
+    const mockToken = btoa(JSON.stringify({
+      sub: credentials.username,
+      role: 'Administrator',
+      exp: Math.floor(Date.now() / 1000) + 86400, // 24 hours
+      iss: 'dev-mode',
+      aud: 'warehouse-app',
+      iat: Math.floor(Date.now() / 1000)
+    }));
+
+    const mockRefreshToken = 'dev-refresh-token-' + Date.now();
+
+    // Store tokens
+    this.setToken(mockToken);
+    this.setRefreshToken(mockRefreshToken);
+
+    console.log('✅ [DEV MODE] Login successful:', credentials.username);
+
+    return {
+      success: true,
+      token: mockToken,
+      refreshToken: mockRefreshToken,
+      user: {
+        id: credentials.username,
+        name: credentials.username,
+        username: credentials.username,
+        role: 'administrator'
+      }
+    };
   }
 
   /**
