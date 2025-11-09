@@ -5,7 +5,11 @@ import { ActionRegistry } from '../services/actionRegistry';
 import { SchemaLoader } from '../services/schemaLoader';
 import { QRScanner } from './QRScanner';
 
-export const DynamicGridInterface: React.FC = () => {
+interface DynamicGridInterfaceProps {
+  schemaName?: string;
+}
+
+export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ schemaName = 'default' }) => {
   const [schema, setSchema] = useState<UISchema | null>(null);
   const [loading, setLoading] = useState(true);
   const [showScanner, setShowScanner] = useState(false);
@@ -14,16 +18,16 @@ export const DynamicGridInterface: React.FC = () => {
 
   useEffect(() => {
     loadSchema();
-  }, []);
+  }, [schemaName]);
 
   const loadSchema = () => {
     setLoading(true);
     
     // Попытка загрузить схему из LocalStorage
-    const loadedSchema = SchemaLoader.loadFromLocalStorage('default');
+    const loadedSchema = SchemaLoader.loadFromLocalStorage(schemaName);
     
     if (loadedSchema) {
-      console.log('✅ Loaded schema from localStorage:', loadedSchema);
+      console.log(`✅ Loaded schema "${schemaName}" from localStorage:`, loadedSchema);
       setSchema(loadedSchema);
     } else {
       console.log('ℹ️ No schema found, using default');

@@ -16,12 +16,14 @@ interface HamburgerMenuProps {
   onSync?: () => void;
   onUpdateReferences?: () => void;
   onLogout?: () => void;
+  onInstallInterface?: () => void;
 }
 
 const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
   onSync,
   onUpdateReferences,
   onLogout,
+  onInstallInterface,
 }) => {
   const { isOpen, closeMenu } = useMenu();
   const navigate = useNavigate();
@@ -93,6 +95,9 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
           onUpdateReferences();
           closeMenu();
           showToast('Обновление справочников');
+        } else if (value === 'installInterface' && onInstallInterface) {
+          onInstallInterface();
+          closeMenu();
         } else if (value === 'sendFeedback') {
           closeMenu();
           showToast('Отзыв отправлен в локальный лог');

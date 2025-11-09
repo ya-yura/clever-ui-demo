@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { odataCache } from '@/services/odataCache';
 import { ODataDocumentType } from '@/types/odata';
 import { MOCK_DOC_TYPES } from '@/data/mockDocTypes';
+import { SchemaLoader } from '@/services/schemaLoader';
+import { DynamicGridInterface } from '@/components/DynamicGridInterface';
 
 interface DocTypeCard {
   uni: string;
@@ -100,9 +102,18 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [totalDocs, setTotalDocs] = useState(0);
   const [usingMockData, setUsingMockData] = useState(false);
+  const [hasCustomInterface, setHasCustomInterface] = useState(false);
 
   useEffect(() => {
-    loadDocTypes();
+    // Check if custom interface is installed
+    const customSchema = SchemaLoader.loadFromLocalStorage('active');
+    if (customSchema) {
+      console.log('✅ Custom interface found, rendering custom UI');
+      setHasCustomInterface(true);
+    } else {
+      console.log('ℹ️ No custom interface, loading standard UI');
+      loadDocTypes();
+    }
   }, []);
 
   // Debug: log docTypes whenever it changes
@@ -235,6 +246,11 @@ const Home: React.FC = () => {
   };
 
   console.log('🎯 [RENDER] Home render - loading:', loading, 'error:', error, 'docTypes.length:', docTypes.length);
+
+  // Render custom interface if installed
+  if (hasCustomInterface) {
+    return <DynamicGridInterface schemaName="active" />;
+  }
 
   // Loading state
   if (loading) {

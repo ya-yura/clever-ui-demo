@@ -16,6 +16,7 @@ import {
   User as UserIcon,
   Sliders,
   Repeat,
+  QrCode,
   LucideIcon,
 } from 'lucide-react';
 
@@ -53,6 +54,13 @@ export const menuItems: MenuItem[] = [
     icon: Settings,
     action: 'navigate',
     actionValue: '/settings',
+  },
+  {
+    id: 'install-interface',
+    label: 'Установить интерфейс',
+    icon: QrCode,
+    action: 'function',
+    actionValue: 'installInterface',
   },
   {
     id: 'partner',
