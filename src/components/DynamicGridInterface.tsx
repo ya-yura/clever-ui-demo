@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { UISchema, ButtonConfig } from '@cleverence/shared-schema';
+import type { UISchema, ButtonConfig } from '../types/ui-schema';
+import { ACTION_ROUTES, type ButtonAction } from '../types/ui-schema';
 import { ActionRegistry } from '../services/actionRegistry';
 import { SchemaLoader } from '../services/schemaLoader';
+import { documentCounter } from '../services/documentCounter';
 import { QRScanner } from './QRScanner';
+import analytics from '../analytics';
 
 interface DynamicGridInterfaceProps {
   schemaName?: string;
@@ -13,12 +16,39 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
   const [schema, setSchema] = useState<UISchema | null>(null);
   const [loading, setLoading] = useState(true);
   const [showScanner, setShowScanner] = useState(false);
+  const [documentCounts, setDocumentCounts] = useState<Map<ButtonAction, number>>(new Map());
   const navigate = useNavigate();
   const actionRegistry = new ActionRegistry(navigate);
 
   useEffect(() => {
     loadSchema();
   }, [schemaName]);
+
+  // Загрузка количества документов
+  useEffect(() => {
+    if (!schema || schema.buttons.length === 0) {
+      return;
+    }
+
+    const actions = schema.buttons
+      .map(btn => btn.action as ButtonAction)
+      .filter(action => action !== 'none');
+
+    // Загружаем количества
+    const loadCounts = async () => {
+      const counts = await documentCounter.getAllCounts(actions);
+      setDocumentCounts(counts);
+    };
+
+    loadCounts();
+
+    // Запускаем автообновление каждую минуту
+    documentCounter.startAutoUpdate(actions, 60000);
+
+    return () => {
+      documentCounter.stopAutoUpdate();
+    };
+  }, [schema]);
 
   const loadSchema = () => {
     setLoading(true);
@@ -29,6 +59,14 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
     if (loadedSchema) {
       console.log(`✅ Loaded schema "${schemaName}" from localStorage:`, loadedSchema);
       setSchema(loadedSchema);
+      
+      // Track custom interface loaded
+      analytics.trackCustomInterfaceLoaded({
+        id: loadedSchema.metadata?.name || schemaName,
+        version: '1.0.0',
+        buttonsCount: loadedSchema.buttons?.length || 0,
+        source: 'localStorage',
+      });
     } else {
       console.log('ℹ️ No schema found, using default');
       setSchema(SchemaLoader.getDefaultSchema());
@@ -48,20 +86,63 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
         setSchema(loadedSchema);
         SchemaLoader.saveToLocalStorage(loadedSchema, 'default');
         setShowScanner(false);
+        
+        // Track successful QR scan
+        analytics.trackCustomInterfaceQRScan(true);
+        
+        // Track custom interface loaded
+        analytics.trackCustomInterfaceLoaded({
+          id: loadedSchema.metadata?.name || 'unknown',
+          version: '1.0.0',
+          buttonsCount: loadedSchema.buttons?.length || 0,
+          source: 'qr',
+        });
+        
         alert('✅ Интерфейс успешно загружен!');
       } else {
         console.error('❌ Invalid schema from QR code');
+        
+        // Track failed QR scan
+        analytics.trackCustomInterfaceQRScan(false, 'Invalid schema');
+        
         alert('❌ Неверный QR-код. Попробуйте ещё раз.');
       }
     } catch (error: any) {
       console.error('Failed to load schema from QR:', error);
+      
+      // Track failed QR scan
+      analytics.trackCustomInterfaceQRScan(false, error.message);
+      
       alert('❌ Ошибка загрузки схемы: ' + error.message);
     }
   };
 
-  const handleButtonClick = (button: ButtonConfig) => {
+  const handleButtonClick = (button: ButtonConfig, position?: { row: number; col: number }) => {
     console.log('🖱️ Button clicked:', button.label, button.action);
-    actionRegistry.execute(button.action, button.params);
+    
+    // Track custom button click
+    analytics.trackCustomButtonClick({
+      label: button.label,
+      action: button.action,
+      params: button.params,
+      position,
+      color: button.color,
+    });
+    
+    // Приоритет: button.route > ACTION_ROUTES > actionRegistry (legacy)
+    if (button.route) {
+      console.log('📍 Navigating to direct route:', button.route);
+      navigate(button.route);
+    } else if (button.action !== 'none' && button.action in ACTION_ROUTES) {
+      const route = ACTION_ROUTES[button.action as keyof typeof ACTION_ROUTES];
+      if (route) {
+        console.log('📍 Navigating via ACTION_ROUTES:', route);
+        navigate(route);
+      }
+    } else {
+      // Fallback to legacy action registry
+      actionRegistry.execute(button.action, button.params);
+    }
   };
 
   const handleOpenScanner = () => {
@@ -142,7 +223,6 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
   }
 
   const { columns, rows } = schema.grid;
-  const columnWidth = 100 / columns;
 
   return (
     <>
@@ -223,14 +303,19 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
           }}>
             {schema.buttons.map((button) => {
               const isDark = button.style === 'dark';
+              // Получаем количество документов из state или из самой кнопки
+              const count = documentCounts.get(button.action as ButtonAction) ?? button.documentCount;
               
               return (
                 <button
                   key={button.id}
-                  onClick={() => handleButtonClick(button)}
+                  onClick={() => handleButtonClick(button, {
+                    row: button.position.startRow,
+                    col: button.position.startCol,
+                  })}
                   style={{
-                    gridColumn: `${button.position.startCol + 1} / ${button.position.endCol + 1}`,
-                    gridRow: `${button.position.startRow + 1} / ${button.position.endRow + 1}`,
+                    gridColumn: `${button.position.startCol + 1} / ${button.position.endCol + 2}`,
+                    gridRow: `${button.position.startRow + 1} / ${button.position.endRow + 2}`,
                     background: isDark ? '#3E515C' : '#F3A36A',
                     color: isDark ? '#FFFFFF' : '#8B5931',
                     border: isDark ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
@@ -265,16 +350,15 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
                   <span style={{ flex: '0 0 auto' }}>
                     {button.label}
                   </span>
-                  {button.documentCount !== undefined && (
+                  {count !== undefined && count > 0 && (
                     <span style={{
                       alignSelf: 'flex-end',
-                      color: '#FFFFFF',
                       fontSize: '20px',
                       fontWeight: 700,
-                      lineHeight: 1,
+                      opacity: 0.8,
                       marginTop: 'auto',
                     }}>
-                      {button.documentCount}
+                      {count}
                     </span>
                   )}
                 </button>
@@ -292,9 +376,9 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
           fontSize: '12px',
           color: 'rgba(255, 255, 255, 0.5)',
         }}>
+          <div>Интерфейс: {schema.metadata.name}</div>
           <div>Кнопок: {schema.buttons.length}</div>
           <div>Сетка: {columns}×{rows}</div>
-          <div>Версия: {schema.version}</div>
         </div>
       </div>
 

@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# JSONL fallback files
+*.jsonl
+
+# Environment variables
+.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+
+
+

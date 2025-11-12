@@ -6,14 +6,13 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Header from './Header';
 import OfflineIndicator from './OfflineIndicator';
 import { HamburgerMenu } from '@/modules/menu';
-import { QRScanner } from './QRScanner';
-import { SchemaLoader } from '@/services/schemaLoader';
+import { InterfaceInstaller } from './InterfaceInstaller';
 import { useSync } from '@/hooks/useSync';
 import { useReferences } from '@/hooks/useReferences';
 
 const Layout: React.FC = () => {
   const navigate = useNavigate();
-  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [showInterfaceInstaller, setShowInterfaceInstaller] = useState(false);
   
   // Sync hook for documents
   const { sync: triggerSync } = useSync({
@@ -32,35 +31,22 @@ const Layout: React.FC = () => {
 
   // Install interface handler
   const handleInstallInterface = () => {
-    console.log('🎨 Opening QR scanner for interface installation');
-    setShowQRScanner(true);
+    console.log('🎨 Opening interface installer');
+    setShowInterfaceInstaller(true);
   };
 
-  // QR scan complete handler
-  const handleQRScan = (data: string) => {
-    console.log('📱 QR scanned, loading interface...');
+  // Interface installation success handler
+  const handleInterfaceSuccess = (schema: any) => {
+    console.log('✅ Interface installed successfully:', schema);
+    setShowInterfaceInstaller(false);
     
-    try {
-      const schema = SchemaLoader.loadFromCompressed(data);
-      
-      if (schema) {
-        SchemaLoader.saveToLocalStorage(schema, 'active');
-        console.log('✅ Interface installed successfully');
-        setShowQRScanner(false);
-        
-        // Show success message
-        alert('✅ Интерфейс успешно установлен!\n\nТеперь вы можете использовать его на главной странице.');
-        
-        // Navigate to home to see the new interface
-        navigate('/');
-      } else {
-        console.error('❌ Invalid schema from QR');
-        alert('❌ Неверный QR-код интерфейса');
-      }
-    } catch (error: any) {
-      console.error('Failed to load interface:', error);
-      alert('❌ Ошибка загрузки интерфейса: ' + error.message);
-    }
+    // Navigate to home to see the new interface
+    navigate('/');
+    
+    // Reload page to apply new interface
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   };
 
   // Logout handler
@@ -84,11 +70,11 @@ const Layout: React.FC = () => {
         onInstallInterface={handleInstallInterface}
       />
       
-      {/* QR Scanner Modal for Interface Installation */}
-      {showQRScanner && (
-        <QRScanner 
-          onScan={handleQRScan}
-          onClose={() => setShowQRScanner(false)}
+      {/* Interface Installer Modal */}
+      {showInterfaceInstaller && (
+        <InterfaceInstaller 
+          onClose={() => setShowInterfaceInstaller(false)}
+          onSuccess={handleInterfaceSuccess}
         />
       )}
     </div>

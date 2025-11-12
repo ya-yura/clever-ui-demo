@@ -1,9 +1,26 @@
-import type { ButtonAction } from '@cleverence/shared-schema';
-
 /**
  * Реестр действий для кнопок
  * Связывает действия из схемы с реальными функциями приложения
+ * 
+ * ВАЖНО: Новые действия (RECEIVING, ORDER_PICKING и т.д.) должны обрабатываться
+ * в DynamicGridInterface через button.route или ACTION_ROUTES из ui-schema.ts
  */
+
+// Legacy actions для обратной совместимости
+type LegacyAction = 
+  | 'scan_barcode'
+  | 'open_document_list'
+  | 'open_form'
+  | 'navigate_to'
+  | 'navigate'
+  | 'submit_data'
+  | 'navigate_back'
+  | 'print_label'
+  | 'take_photo'
+  | 'search'
+  | 'filter'
+  | 'refresh';
+
 export class ActionRegistry {
   private navigate: (path: string) => void;
 
@@ -14,14 +31,18 @@ export class ActionRegistry {
   /**
    * Выполнить действие
    */
-  execute(action: ButtonAction, params?: Record<string, any>) {
+  execute(action: string, params?: Record<string, any>) {
     console.log('🎯 Executing action:', action, 'with params:', params);
 
-    const handlers: Record<ButtonAction, () => void> = {
-      none: () => {
-        console.log('ℹ️ No action assigned to this button');
-      },
+    // ВАЖНО: Новые действия должны обрабатываться в DynamicGridInterface
+    // через button.route или ACTION_ROUTES, не здесь!
+    
+    // Этот метод остается только для legacy совместимости
 
+    // Normalize action (navigate -> navigate_to)
+    const normalizedAction = action === 'navigate' ? 'navigate_to' : action;
+
+    const legacyHandlers: Partial<Record<LegacyAction, () => void>> = {
       scan_barcode: () => {
         this.openScanner();
       },
@@ -43,6 +64,11 @@ export class ActionRegistry {
       },
 
       navigate_to: () => {
+        const path = params?.path || '/';
+        this.navigate(path);
+      },
+
+      navigate: () => {
         const path = params?.path || '/';
         this.navigate(path);
       },
@@ -76,11 +102,17 @@ export class ActionRegistry {
       },
     };
 
-    const handler = handlers[action];
+    const handler = legacyHandlers[normalizedAction as LegacyAction];
     if (handler) {
       handler();
     } else {
       console.warn('⚠️ Unknown action:', action);
+      console.log('💡 Tip: Use button.route or ACTION_ROUTES for new actions');
+      
+      // Try to navigate if it looks like a path
+      if (action.startsWith('/')) {
+        this.navigate(action);
+      }
     }
   }
 

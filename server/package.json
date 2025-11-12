@@ -1,0 +1,32 @@
+{
+  "name": "analytics-tracking-server",
+  "version": "1.0.0",
+  "description": "Minimal analytics tracking server for PWA applications",
+  "main": "track-server.js",
+  "scripts": {
+    "start": "node track-server.js",
+    "dev": "nodemon track-server.js"
+  },
+  "keywords": [
+    "analytics",
+    "tracking",
+    "pwa",
+    "offline-first"
+  ],
+  "author": "Cleverence",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "better-sqlite3": "^9.2.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
+
+
+

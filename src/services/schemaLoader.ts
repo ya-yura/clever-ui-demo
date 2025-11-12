@@ -1,5 +1,5 @@
-import type { UISchema } from '@cleverence/shared-schema';
-import { validateSchema, decompressSchema, createDefaultSchema } from '@cleverence/shared-schema';
+import type { UISchema } from '../types/ui-schema';
+import { validateSchema, decompressSchema, createDefaultSchema } from '../types/ui-schema';
 
 /**
  * Сервис для загрузки схем интерфейса
