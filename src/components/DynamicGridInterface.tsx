@@ -229,14 +229,13 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
    * 
    * Экран делится на 4 колонки (обычно), это базовая единица `m`.
    * Ширина колонки: 100vw / columns
-   * Высота строки: 100vh / rows
+   * Высота строки: РАВНА ширине колонки (calc(100vw / columns))
+   * 
+   * Это гарантирует, что кнопка 2×2 будет квадратной, 3×3 тоже квадратной, и т.д.
    * 
    * Кнопки могут занимать:
    * - По ширине: m, 2m, 3m, 4m (1-4 колонки)
-   * - По высоте: кратно m (1-N строк)
-   * 
-   * Используем 100vw/100vh для полноэкранной сетки без отступов.
-   * Grid автоматически распределяет пространство через `1fr`.
+   * - По высоте: m, 2m, 3m... (1-N строк)
    * 
    * НЕ ИЗМЕНЯТЬ логику сетки - она критична для всех импортируемых интерфейсов!
    */
@@ -244,14 +243,14 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
     <>
       <div style={{
         width: '100vw',
-        height: '100vh',
         display: 'grid',
         gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gridTemplateRows: `repeat(${rows}, 1fr)`,
+        gridTemplateRows: `repeat(${rows}, calc(100vw / ${columns}))`,
         gap: '4px',
         padding: '0',
         margin: '0',
         boxSizing: 'border-box',
+        overflow: 'auto',
       }}>
             {schema.buttons.map((button) => {
               const isDark = button.style === 'dark';
