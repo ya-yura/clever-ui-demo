@@ -224,6 +224,22 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
 
   const { columns, rows } = schema.grid;
 
+  /**
+   * ВАЖНО: Квадратная сетка для кнопок
+   * 
+   * Экран делится на 4 колонки (обычно), это базовая единица `m`.
+   * Ширина колонки: 100vw / columns
+   * Высота строки: 100vh / rows
+   * 
+   * Кнопки могут занимать:
+   * - По ширине: m, 2m, 3m, 4m (1-4 колонки)
+   * - По высоте: кратно m (1-N строк)
+   * 
+   * Используем 100vw/100vh для полноэкранной сетки без отступов.
+   * Grid автоматически распределяет пространство через `1fr`.
+   * 
+   * НЕ ИЗМЕНЯТЬ логику сетки - она критична для всех импортируемых интерфейсов!
+   */
   return (
     <>
       <div style={{
@@ -239,7 +255,14 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
       }}>
             {schema.buttons.map((button) => {
               const isDark = button.style === 'dark';
-              // Получаем количество документов из state или из самой кнопки
+              /**
+               * Счетчик документов:
+               * - Берется из documentCounts (автообновляется каждую минуту)
+               * - Или из button.documentCount (из схемы)
+               * - Отображается в правом нижнем углу кнопки
+               * - Шрифт: 28px, белый, с тенью для читаемости
+               * - Показывается только если count > 0
+               */
               const count = documentCounts.get(button.action as ButtonAction) ?? button.documentCount;
               
               return (
