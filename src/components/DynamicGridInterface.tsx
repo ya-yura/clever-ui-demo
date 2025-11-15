@@ -245,22 +245,24 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
    * НЕ ИЗМЕНЯТЬ логику сетки - она критична для всех импортируемых интерфейсов!
    */
   const gap = 2; // px
-  // Используем 100% чтобы заполнить доступную ширину контейнера
-  // Layout добавляет px-4 (padding), но мы работаем внутри него
-  const cellWidth = `calc((100% - ${gap * (columns - 1)}px) / ${columns})`;
+  // Layout добавляет px-4 (16px слева + 16px справа = 32px)
+  const containerPadding = 32; // px
+  // Доступная ширина экрана для сетки = 100vw - padding контейнера
+  const availableWidth = `100vw - ${containerPadding}px`;
+  // Ширина и высота ячейки (квадратные!)
+  const cellSize = `calc((${availableWidth} - ${gap * (columns - 1)}px) / ${columns})`;
   
   return (
     <>
       <div style={{
         width: '100%',
         display: 'grid',
-        gridTemplateColumns: `repeat(${columns}, ${cellWidth})`,
-        gridTemplateRows: `repeat(${rows}, ${cellWidth})`,
+        gridTemplateColumns: `repeat(${columns}, 1fr)`,
+        gridTemplateRows: `repeat(${rows}, ${cellSize})`,
         gap: `${gap}px`,
         padding: '0',
         margin: '0',
         boxSizing: 'border-box',
-        overflow: 'auto',
       }}>
             {schema.buttons.map((button) => {
               const isDark = button.style === 'dark';
