@@ -245,7 +245,10 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
    * НЕ ИЗМЕНЯТЬ логику сетки - она критична для всех импортируемых интерфейсов!
    */
   const gap = 2; // px
-  const cellWidth = `calc((100vw - ${gap * (columns - 1)}px) / ${columns})`;
+  // Layout добавляет px-4 (16px) слева и справа, компенсируем это
+  const layoutPadding = 16; // px с каждой стороны
+  const totalLayoutPadding = layoutPadding * 2; // 32px total
+  const cellWidth = `calc((100vw - ${gap * (columns - 1)}px - ${totalLayoutPadding}px) / ${columns})`;
   
   return (
     <>
@@ -256,7 +259,7 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
         gridTemplateRows: `repeat(${rows}, ${cellWidth})`,
         gap: `${gap}px`,
         padding: '0',
-        margin: '0',
+        margin: `0 -${layoutPadding}px`, // Компенсируем padding Layout
         boxSizing: 'border-box',
         overflow: 'auto',
       }}>
