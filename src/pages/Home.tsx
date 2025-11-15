@@ -106,14 +106,32 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     // Check if custom interface is installed
-    const customSchema = SchemaLoader.loadFromLocalStorage('active');
-    if (customSchema) {
-      console.log('✅ Custom interface found, rendering custom UI');
-      setHasCustomInterface(true);
-    } else {
-      console.log('ℹ️ No custom interface, loading standard UI');
-      loadDocTypes();
-    }
+    const checkCustomInterface = () => {
+      const customSchema = SchemaLoader.loadFromLocalStorage('active');
+      if (customSchema) {
+        console.log('✅ Custom interface found, rendering custom UI');
+        setHasCustomInterface(true);
+      } else {
+        console.log('ℹ️ No custom interface, loading standard UI');
+        setHasCustomInterface(false);
+        loadDocTypes();
+      }
+    };
+
+    // Check on mount
+    checkCustomInterface();
+
+    // Listen for custom event when interface is installed
+    const handleInterfaceInstalled = () => {
+      console.log('🔄 Interface installed event received, reloading...');
+      checkCustomInterface();
+    };
+
+    window.addEventListener('interface-installed', handleInterfaceInstalled);
+
+    return () => {
+      window.removeEventListener('interface-installed', handleInterfaceInstalled);
+    };
   }, []);
 
   // Debug: log docTypes whenever it changes

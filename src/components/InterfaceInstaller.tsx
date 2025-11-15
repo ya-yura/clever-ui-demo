@@ -45,6 +45,9 @@ export const InterfaceInstaller: React.FC<InterfaceInstallerProps> = ({
         // Save to localStorage as 'active' schema
         SchemaLoader.saveToLocalStorage(schema, 'active');
         
+        // Dispatch event to notify Home component
+        window.dispatchEvent(new Event('interface-installed'));
+        
         // Track successful load
         analytics.trackCustomInterfaceQRScan(true);
         analytics.trackCustomInterfaceLoaded({
@@ -60,7 +63,7 @@ export const InterfaceInstaller: React.FC<InterfaceInstallerProps> = ({
           onSuccess(schema);
         }
         
-        alert('✅ Интерфейс успешно загружен!\nПерезагрузите страницу для применения.');
+        alert('✅ Интерфейс успешно загружен!');
         onClose();
       } else {
         throw new Error('Invalid schema format');
@@ -90,6 +93,9 @@ export const InterfaceInstaller: React.FC<InterfaceInstallerProps> = ({
         // Save to localStorage as 'active' schema
         SchemaLoader.saveToLocalStorage(schema, 'active');
         
+        // Dispatch event to notify Home component
+        window.dispatchEvent(new Event('interface-installed'));
+        
         // Track successful load
         analytics.trackCustomInterfaceLoaded({
           id: schema.metadata?.name || 'unknown',
@@ -102,7 +108,7 @@ export const InterfaceInstaller: React.FC<InterfaceInstallerProps> = ({
           onSuccess(schema);
         }
         
-        alert('✅ Интерфейс успешно загружен!\nПерезагрузите страницу для применения.');
+        alert('✅ Интерфейс успешно загружен!');
         onClose();
       } else {
         throw new Error('Invalid JSON schema');
@@ -147,6 +153,9 @@ export const InterfaceInstaller: React.FC<InterfaceInstallerProps> = ({
         // Save to localStorage as 'active' schema
         SchemaLoader.saveToLocalStorage(schema, 'active');
         
+        // Dispatch event to notify Home component
+        window.dispatchEvent(new Event('interface-installed'));
+        
         // Track successful load
         analytics.trackCustomInterfaceLoaded({
           id: schema.metadata?.name || 'unknown',
@@ -159,7 +168,7 @@ export const InterfaceInstaller: React.FC<InterfaceInstallerProps> = ({
           onSuccess(schema);
         }
         
-        alert('✅ Интерфейс успешно загружен!\nПерезагрузите страницу для применения.');
+        alert('✅ Интерфейс успешно загружен!');
         onClose();
       } else {
         throw new Error('Invalid schema format');
