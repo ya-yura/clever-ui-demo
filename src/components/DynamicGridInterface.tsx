@@ -228,8 +228,13 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
    * ВАЖНО: Квадратная сетка для кнопок
    * 
    * Экран делится на 4 колонки (обычно), это базовая единица `m`.
-   * Ширина колонки: 100vw / columns
-   * Высота строки: РАВНА ширине колонки (calc(100vw / columns))
+   * 
+   * С учетом gap:
+   * - Общая ширина контента = 100vw - gap * (columns - 1)
+   * - Ширина колонки = (100vw - gap * (columns - 1)) / columns
+   * - Высота строки = ширине колонки (для квадратных ячеек)
+   * 
+   * Gap = 2px (минимальный отступ для визуального разделения)
    * 
    * Это гарантирует, что кнопка 2×2 будет квадратной, 3×3 тоже квадратной, и т.д.
    * 
@@ -239,14 +244,17 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
    * 
    * НЕ ИЗМЕНЯТЬ логику сетки - она критична для всех импортируемых интерфейсов!
    */
+  const gap = 2; // px
+  const cellWidth = `calc((100vw - ${gap * (columns - 1)}px) / ${columns})`;
+  
   return (
     <>
       <div style={{
         width: '100vw',
         display: 'grid',
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gridTemplateRows: `repeat(${rows}, calc(100vw / ${columns}))`,
-        gap: '4px',
+        gridTemplateColumns: `repeat(${columns}, ${cellWidth})`,
+        gridTemplateRows: `repeat(${rows}, ${cellWidth})`,
+        gap: `${gap}px`,
         padding: '0',
         margin: '0',
         boxSizing: 'border-box',
