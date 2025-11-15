@@ -245,21 +245,20 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
    * НЕ ИЗМЕНЯТЬ логику сетки - она критична для всех импортируемых интерфейсов!
    */
   const gap = 2; // px
-  // Layout добавляет px-4 (16px) слева и справа, компенсируем это
-  const layoutPadding = 16; // px с каждой стороны
-  const totalLayoutPadding = layoutPadding * 2; // 32px total
-  const cellWidth = `calc((100vw - ${gap * (columns - 1)}px - ${totalLayoutPadding}px) / ${columns})`;
+  // Используем 100% чтобы заполнить доступную ширину контейнера
+  // Layout добавляет px-4 (padding), но мы работаем внутри него
+  const cellWidth = `calc((100% - ${gap * (columns - 1)}px) / ${columns})`;
   
   return (
     <>
       <div style={{
-        width: '100vw',
+        width: '100%',
         display: 'grid',
         gridTemplateColumns: `repeat(${columns}, ${cellWidth})`,
         gridTemplateRows: `repeat(${rows}, ${cellWidth})`,
         gap: `${gap}px`,
         padding: '0',
-        margin: `0 -${layoutPadding}px`, // Компенсируем padding Layout
+        margin: '0',
         boxSizing: 'border-box',
         overflow: 'auto',
       }}>
