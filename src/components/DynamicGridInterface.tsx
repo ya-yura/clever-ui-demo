@@ -231,56 +231,6 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
         maxWidth: '1200px',
         margin: '0 auto',
       }}>
-        {/* Header with schema info and scan button */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '16px',
-          padding: '12px 16px',
-          background: '#4A4F54',
-          borderRadius: '12px',
-        }}>
-          <div>
-            <h2 style={{ 
-              margin: 0, 
-              fontSize: '18px', 
-              fontWeight: 700,
-              color: '#FFFFFF',
-            }}>
-              {schema.metadata.name}
-            </h2>
-            {schema.metadata.description && (
-              <p style={{ 
-                margin: '4px 0 0 0', 
-                fontSize: '14px', 
-                color: 'rgba(255, 255, 255, 0.7)',
-              }}>
-                {schema.metadata.description}
-              </p>
-            )}
-          </div>
-          <button
-            onClick={handleOpenScanner}
-            style={{
-              padding: '8px 16px',
-              background: 'transparent',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '8px',
-              color: '#FFFFFF',
-              fontSize: '14px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-            title="Загрузить новый интерфейс"
-          >
-            <span>📷</span>
-            <span>QR</span>
-          </button>
-        </div>
-
         {/* Grid */}
         <div style={{
           position: 'relative',
@@ -368,20 +318,6 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
               );
             })}
           </div>
-        </div>
-
-        {/* Debug info */}
-        <div style={{
-          marginTop: '16px',
-          padding: '12px',
-          background: 'rgba(255, 255, 255, 0.05)',
-          borderRadius: '8px',
-          fontSize: '12px',
-          color: 'rgba(255, 255, 255, 0.5)',
-        }}>
-          <div>Интерфейс: {schema.metadata.name}</div>
-          <div>Кнопок: {schema.buttons.length}</div>
-          <div>Сетка: {columns}×{rows}</div>
         </div>
       </div>
 
