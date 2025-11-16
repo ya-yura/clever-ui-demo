@@ -299,12 +299,22 @@ html[data-theme='light'] .chip-active {
   border-color: #86e0cb !important;
 }
 
+/* Tile styles for light theme */
+html[data-theme='light'] .tile-base {
+  border-color: #94a3b8 !important;
+  border-width: 2px !important;
+}
+
+html[data-theme='light'] .tile-secondary.tile-outline,
+html[data-theme='light'] .tile-primary.tile-outline,
+html[data-theme='light'] .tile-tertiary.tile-outline,
 html[data-theme='light'] .tile-outline {
   background-color: #f1f5f9 !important;
   border-color: #94a3b8 !important;
   border-width: 2px !important;
 }
 
+/* Color adjustments for tile headers in light theme */
 html[data-theme='light'] .tile-outline .text-\[\#86E0CB\] {
   color: #2d7a6b !important;
 }
@@ -315,6 +325,21 @@ html[data-theme='light'] .tile-outline .text-\[\#91ED91\] {
 
 html[data-theme='light'] .tile-outline .text-\[\#BA8F8E\] {
   color: #6b3d3c !important;
+}
+
+/* Fix text-white in tiles for light theme - make it dark */
+html[data-theme='light'] .tile-outline .text-white,
+html[data-theme='light'] .tile-outline p.text-white,
+html[data-theme='light'] .tile-outline span.text-white {
+  color: #52606d !important;
+}
+
+html[data-theme='light'] .tile-outline .tile-subtext {
+  color: #52606d !important;
+}
+
+html[data-theme='light'] .tile-outline .tile-footer span {
+  color: #1f2933 !important;
 }
 
 html[data-theme='light'] .bg-gray-700 {
