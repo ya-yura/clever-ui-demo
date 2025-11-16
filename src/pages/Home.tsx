@@ -175,14 +175,24 @@ const Home: React.FC = () => {
           
           if (!isMockData) {
             try {
-              const countResponse = await api.getDocsCount(type.uni);
-              if (countResponse.success && typeof countResponse.data === 'number') {
-                docsCount = countResponse.data;
-              }
-              console.log(`✅ [API] Type "${type.uni}": ${docsCount} documents`);
+              const docs = await odataCache.getDocsByType(type.uni, {
+                names: [type.uni, (type as any).name, (type as any).displayName],
+              });
+              docsCount = docs.length;
+              console.log(`✅ [CACHE/API] Type "${type.uni}": ${docsCount} documents (list)`);
             } catch (err: any) {
-              console.error(`❌ [API] Failed to load docs count for "${type.uni}":`, err?.message || err);
-              docsCount = 0;
+              console.warn(`⚠️ [CACHE/API] Failed to load docs list for "${type.uni}":`, err?.message || err);
+
+              try {
+                const countResponse = await api.getDocsCount(type.uni);
+                if (countResponse.success && typeof countResponse.data === 'number') {
+                  docsCount = countResponse.data;
+                }
+                console.log(`✅ [API] Type "${type.uni}": ${docsCount} documents (count fallback)`);
+              } catch (countErr: any) {
+                console.error(`❌ [API] Failed to load docs count for "${type.uni}":`, countErr?.message || countErr);
+                docsCount = 0;
+              }
             }
           }
 
