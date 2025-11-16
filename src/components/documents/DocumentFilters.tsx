@@ -86,7 +86,7 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
   );
 
   return (
-    <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <div className="bg-[#343436] border-b border-[#474747] sticky top-0 z-10">
       {/* Search Bar */}
       <div className="p-4 pb-3">
         <div className="relative">
@@ -95,7 +95,7 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
             placeholder="Найти"
             value={filter.searchQuery || ''}
             onChange={handleSearchChange}
-            className="w-full px-4 py-3 pl-10 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 pl-10 text-base border border-[#474747] rounded-lg bg-[#2a2a2c] text-[#e3e3dd] focus:ring-2 focus:ring-[#86e0cb] focus:border-[#86e0cb] placeholder-[#a7a7a7]"
           />
           {!filter.searchQuery && (
             <span className="absolute left-3 top-3.5 text-xl pointer-events-none">🔍</span>
@@ -104,7 +104,7 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
           {filter.searchQuery && (
             <button
               onClick={() => onFilterChange({ ...filter, searchQuery: '' })}
-              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-3 text-[#a7a7a7] hover:text-[#e3e3dd]"
             >
               ✕
             </button>
@@ -116,42 +116,38 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
       <div className="px-4 pb-3 flex items-center justify-between">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
             hasActiveFilters
-              ? 'bg-blue-100 text-blue-700'
-              : 'bg-gray-100 text-gray-700'
+              ? 'bg-[#FEA079] text-[#2d2d2d]'
+              : 'bg-[#474747] text-[#e3e3dd] hover:bg-[#5a5a5a]'
           }`}
         >
           <span>🎚️</span>
           <span>Фильтры</span>
           {hasActiveFilters && (
-            <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
+            <span className="bg-[#2d2d2d] text-[#FEA079] text-xs px-2 py-0.5 rounded-full">
               {(filter.types?.length || 0) + (filter.statuses?.length || 0)}
             </span>
           )}
         </button>
 
-        <div className="text-sm text-gray-600">
-          Показано: <strong>{filteredCount}</strong> из <strong>{totalCount}</strong>
+        <div className="text-sm text-[#a7a7a7]">
+          Показано: <strong className="text-[#e3e3dd]">{filteredCount}</strong> из <strong className="text-[#e3e3dd]">{totalCount}</strong>
         </div>
       </div>
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="px-4 pb-4 border-t border-gray-200 pt-4 space-y-4">
+        <div className="px-4 pb-4 border-t border-[#474747] pt-4 space-y-4">
           {/* Document Types */}
           <div>
-            <div className="text-sm font-medium text-gray-700 mb-2">Тип документа</div>
-            <div className="flex flex-wrap gap-2">
+            <div className="text-sm font-medium text-[#a7a7a7] mb-2">Тип документа</div>
+            <div className="flex flex-wrap gap-[8px]">
               {(Object.keys(DOCUMENT_TYPE_LABELS) as DocumentType[]).map(type => (
                 <button
                   key={type}
                   onClick={() => handleTypeToggle(type)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    filter.types?.includes(type)
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`chip ${filter.types?.includes(type) ? 'chip-active' : ''}`}
                 >
                   {DOCUMENT_TYPE_LABELS[type]}
                 </button>
@@ -161,17 +157,13 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
 
           {/* Statuses */}
           <div>
-            <div className="text-sm font-medium text-gray-700 mb-2">Статус</div>
-            <div className="flex flex-wrap gap-2">
+            <div className="text-sm font-medium text-[#a7a7a7] mb-2">Статус</div>
+            <div className="flex flex-wrap gap-[8px]">
               {(Object.keys(STATUS_LABELS) as DocumentStatus[]).map(status => (
                 <button
                   key={status}
                   onClick={() => handleStatusToggle(status)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    filter.statuses?.includes(status)
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`chip ${filter.statuses?.includes(status) ? 'chip-active' : ''}`}
                 >
                   {STATUS_LABELS[status]}
                 </button>
@@ -181,8 +173,8 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
 
           {/* Sort Options */}
           <div>
-            <div className="text-sm font-medium text-gray-700 mb-2">Сортировка</div>
-            <div className="flex flex-wrap gap-2">
+            <div className="text-sm font-medium text-[#a7a7a7] mb-2">Сортировка</div>
+            <div className="flex flex-wrap gap-[8px]">
               {[
                 { field: 'createdAt' as DocumentSortField, label: 'Дата создания' },
                 { field: 'updatedAt' as DocumentSortField, label: 'Обновлено' },
@@ -192,15 +184,11 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
                 <button
                   key={field}
                   onClick={() => handleSortChange(field)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
-                    sort.field === field
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`chip ${sort.field === field ? 'chip-active' : ''}`}
                 >
                   {label}
                   {sort.field === field && (
-                    <span>{sort.direction === 'asc' ? '↑' : '↓'}</span>
+                    <span className="ml-1">{sort.direction === 'asc' ? '↑' : '↓'}</span>
                   )}
                 </button>
               ))}
@@ -212,7 +200,7 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
             <div className="pt-2">
               <button
                 onClick={onReset}
-                className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                className="w-full px-4 py-2 bg-[#474747] text-[#e3e3dd] rounded-lg font-medium hover:bg-[#5a5a5a] active:bg-[#6a6a6a] transition-colors"
               >
                 ↻ Сбросить все фильтры
               </button>

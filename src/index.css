@@ -182,13 +182,13 @@ body {
 
   /* === Chips (compact pills) === */
   .chip {
-    @apply inline-flex items-center rounded-sm px-1.5 py-0.5 text-[10px] leading-tight whitespace-nowrap min-w-0 shrink-0 select-none
-           border border-[#474747] bg-transparent text-[#e3e3dd] transition-colors;
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-sm leading-tight whitespace-nowrap min-w-0 shrink-0 select-none font-medium
+           border border-[#474747] bg-transparent text-[#e3e3dd] transition-all;
   }
 
-  .chip:hover:not(.chip-active) { @apply bg-[#2a2a2c]; }
+  .chip:hover:not(.chip-active) { @apply bg-[#2a2a2c] border-[#5a5a5a]; }
 
-  .chip-active { @apply bg-[#FEA079] text-[#2d2d2d] border-[#FEA079]; }
+  .chip-active { @apply bg-[#86e0cb] text-[#2d2d2d] border-[#86e0cb] font-semibold shadow-sm; }
 }
 
 /* Touch targets */
@@ -289,7 +289,14 @@ html[data-theme='light'] .chip {
 }
 
 html[data-theme='light'] .chip:hover:not(.chip-active) {
-  background-color: #e2e8f0 !important;
+  background-color: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+}
+
+html[data-theme='light'] .chip-active {
+  background-color: #86e0cb !important;
+  color: #1f2933 !important;
+  border-color: #86e0cb !important;
 }
 
 html[data-theme='light'] .tile-outline {
