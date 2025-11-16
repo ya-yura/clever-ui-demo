@@ -33,9 +33,13 @@ export const ACTION_ROUTES: Record<ButtonAction, string> = {
 };
 
 export interface UISchema {
+  version?: string; // Top-level version (e.g., "1.0")
   metadata: {
     name: string;
     description?: string;
+    version?: string; // Nested version
+    created?: string;
+    updated?: string;
   };
   grid: {
     rows: number;

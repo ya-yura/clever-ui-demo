@@ -52,7 +52,7 @@ export const InterfaceInstaller: React.FC<InterfaceInstallerProps> = ({
         analytics.trackCustomInterfaceQRScan(true);
         analytics.trackCustomInterfaceLoaded({
           id: schema.metadata?.name || 'unknown',
-          version: '1.0.0',
+          version: schema.version || schema.metadata?.version || '1.0.0',
           buttonsCount: schema.buttons?.length || 0,
           source: 'qr',
         });
@@ -99,7 +99,7 @@ export const InterfaceInstaller: React.FC<InterfaceInstallerProps> = ({
         // Track successful load
         analytics.trackCustomInterfaceLoaded({
           id: schema.metadata?.name || 'unknown',
-          version: '1.0.0',
+          version: schema.version || schema.metadata?.version || '1.0.0',
           buttonsCount: schema.buttons?.length || 0,
           source: 'file',
         });
@@ -159,7 +159,7 @@ export const InterfaceInstaller: React.FC<InterfaceInstallerProps> = ({
         // Track successful load
         analytics.trackCustomInterfaceLoaded({
           id: schema.metadata?.name || 'unknown',
-          version: '1.0.0',
+          version: schema.version || schema.metadata?.version || '1.0.0',
           buttonsCount: schema.buttons?.length || 0,
           source: 'qr', // Using 'qr' as it's compressed
         });

@@ -4,6 +4,7 @@
  */
 
 import type { ButtonAction } from '../types/ui-schema';
+import { api } from './api';
 
 export interface DocumentCount {
   action: ButtonAction;
@@ -12,7 +13,6 @@ export interface DocumentCount {
 }
 
 export class DocumentCounterService {
-  private static apiBaseUrl = '/api'; // Настроить URL API функциональной программы
   private cache: Map<ButtonAction, DocumentCount> = new Map();
   private updateInterval: number | null = null;
 
@@ -61,14 +61,14 @@ export class DocumentCounterService {
     // Маппинг действий на эндпоинты API
     const endpointMap: Record<ButtonAction, string> = {
       none: '',
-      RECEIVING: '/docs/PrihodNaSklad/count',
-      ORDER_PICKING: '/docs/PodborZakaza/count',
-      SHIPPING: '/docs/Otgruzka/count',
-      INVENTORY: '/docs/Inventarizaciya/count',
-      PLACEMENT: '/docs/RazmeshhenieVYachejki/count',
-      RETURN: '/docs/Vozvrat/count',
-      TRANSFER: '/docs/Peremeshenie/count',
-      MARKING: '/docs/Markirovka/count',
+      RECEIVING: '/Docs/PrihodNaSklad',
+      ORDER_PICKING: '/Docs/PodborZakaza',
+      SHIPPING: '/Docs/Otgruzka',
+      INVENTORY: '/Docs/Inventarizaciya',
+      PLACEMENT: '/Docs/RazmeshhenieVYachejki',
+      RETURN: '/Docs/Vozvrat',
+      TRANSFER: '/Docs/Peremeshenie',
+      MARKING: '/Docs/Markirovka',
     };
 
     const endpoint = endpointMap[action];
@@ -77,19 +77,34 @@ export class DocumentCounterService {
     }
 
     try {
-      const response = await fetch(`${DocumentCounterService.apiBaseUrl}${endpoint}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await api.get(endpoint, {
+        $top: 0, // некоторые серверы игнорируют, но оставим для совместимости
+        $count: true,
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Empty response');
       }
 
-      const data = await response.json();
-      return data.count || 0;
+      const data: any = response.data;
+
+      if (typeof data === 'number') {
+        return data;
+      }
+
+      if (typeof data?.['@odata.count'] === 'number') {
+        return data['@odata.count'];
+      }
+
+      if (typeof data?.count === 'number') {
+        return data.count;
+      }
+
+      if (Array.isArray(data?.value)) {
+        return data.value.length;
+      }
+
+      return 0;
     } catch (error) {
       console.error(`API request failed for ${action}:`, error);
       // Fallback: возвращаем данные из локального хранилища
@@ -182,6 +197,7 @@ export class DocumentCounterService {
   clearCache(): void {
     this.cache.clear();
   }
+
 }
 
 // Singleton instance

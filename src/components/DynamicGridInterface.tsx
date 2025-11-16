@@ -5,46 +5,40 @@ import { ACTION_ROUTES, type ButtonAction } from '../types/ui-schema';
 import { ActionRegistry } from '../services/actionRegistry';
 import { SchemaLoader } from '../services/schemaLoader';
 import { documentCounter } from '../services/documentCounter';
-import { QRScanner } from './QRScanner';
 import analytics from '../analytics';
 
 interface DynamicGridInterfaceProps {
   schemaName?: string;
 }
 
-export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ schemaName = 'default' }) => {
-  // Ленивая инициализация схемы - загружаем сразу синхронно
+export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ 
+  schemaName = 'default' 
+}) => {
   const [schema, setSchema] = useState<UISchema | null>(() => {
-    const loadedSchema = SchemaLoader.loadFromLocalStorage(schemaName);
-    if (loadedSchema) {
-      console.log(`✅ Initial load: schema "${schemaName}" from localStorage`);
-      return loadedSchema;
-    }
-    return null;
+    return SchemaLoader.loadFromLocalStorage(schemaName);
   });
-  const [showScanner, setShowScanner] = useState(false);
   const [documentCounts, setDocumentCounts] = useState<Map<ButtonAction, number>>(new Map());
   const navigate = useNavigate();
   const actionRegistry = new ActionRegistry(navigate);
 
   useEffect(() => {
-    // Загружаем схему только если её нет
     if (!schema) {
-      loadSchema();
+      const loadedSchema = SchemaLoader.loadFromLocalStorage(schemaName);
+      if (loadedSchema) {
+        setSchema(loadedSchema);
+      }
     } else {
-      // Track custom interface loaded только при первой загрузке
       analytics.trackCustomInterfaceLoaded({
         id: schema.metadata?.name || schemaName,
-        version: '1.0.0',
+        version: schema.version || schema.metadata?.version || '1.0.0',
         buttonsCount: schema.buttons?.length || 0,
         source: 'localStorage',
       });
     }
   }, [schemaName]);
 
-  // Загрузка количества документов
   useEffect(() => {
-    if (!schema || schema.buttons.length === 0) {
+    if (!schema || !schema.buttons || schema.buttons.length === 0) {
       return;
     }
 
@@ -52,22 +46,19 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
       .map(btn => btn.action as ButtonAction)
       .filter(action => action !== 'none');
 
-    // Загружаем количества
     const loadCounts = async () => {
       const counts = await documentCounter.getAllCounts(actions);
       
-      // Если API не вернул данных, используем тестовые данные для демонстрации
       if (counts.size === 0 || Array.from(counts.values()).every(c => c === 0)) {
-        console.log('📊 Using mock document counts for demo');
         const mockCounts = new Map<ButtonAction, number>([
-          ['RECEIVING', 36],
-          ['ORDER_PICKING', 49],
-          ['SHIPPING', 60],
-          ['INVENTORY', 19],
-          ['PLACEMENT', 5],
-          ['RETURN', 16],
-          ['TRANSFER', 42],
-          ['MARKING', 99],
+          ['RECEIVING', 58],
+          ['ORDER_PICKING', 57],
+          ['SHIPPING', 15],
+          ['INVENTORY', 99],
+          ['PLACEMENT', 91],
+          ['RETURN', 85],
+          ['TRANSFER', 32],
+          ['MARKING', 14],
         ]);
         setDocumentCounts(mockCounts);
       } else {
@@ -76,8 +67,6 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
     };
 
     loadCounts();
-
-    // Запускаем автообновление каждую минуту
     documentCounter.startAutoUpdate(actions, 60000);
 
     return () => {
@@ -85,99 +74,31 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
     };
   }, [schema]);
 
-  const loadSchema = () => {
-    // Попытка загрузить схему из LocalStorage
-    const loadedSchema = SchemaLoader.loadFromLocalStorage(schemaName);
-    
-    if (loadedSchema) {
-      console.log(`✅ Loaded schema "${schemaName}" from localStorage:`, loadedSchema);
-      setSchema(loadedSchema);
-    } else {
-      console.log('ℹ️ No schema found, using default');
-      setSchema(SchemaLoader.getDefaultSchema());
-    }
-  };
-
-  const handleScanComplete = (data: string) => {
-    console.log('📱 Scanned data length:', data.length);
-    
-    try {
-      const loadedSchema = SchemaLoader.loadFromCompressed(data);
-      
-      if (loadedSchema) {
-        console.log('✅ Schema loaded from QR code:', loadedSchema);
-        setSchema(loadedSchema);
-        SchemaLoader.saveToLocalStorage(loadedSchema, 'default');
-        setShowScanner(false);
-        
-        // Track successful QR scan
-        analytics.trackCustomInterfaceQRScan(true);
-        
-        // Track custom interface loaded
-        analytics.trackCustomInterfaceLoaded({
-          id: loadedSchema.metadata?.name || 'unknown',
-          version: '1.0.0',
-          buttonsCount: loadedSchema.buttons?.length || 0,
-          source: 'qr',
-        });
-        
-        alert('✅ Интерфейс успешно загружен!');
-      } else {
-        console.error('❌ Invalid schema from QR code');
-        
-        // Track failed QR scan
-        analytics.trackCustomInterfaceQRScan(false, 'Invalid schema');
-        
-        alert('❌ Неверный QR-код. Попробуйте ещё раз.');
-      }
-    } catch (error: any) {
-      console.error('Failed to load schema from QR:', error);
-      
-      // Track failed QR scan
-      analytics.trackCustomInterfaceQRScan(false, error.message);
-      
-      alert('❌ Ошибка загрузки схемы: ' + error.message);
-    }
-  };
-
-  const handleButtonClick = (button: ButtonConfig, position?: { row: number; col: number }) => {
-    console.log('🖱️ Button clicked:', button.label, button.action);
-    
-    // Track custom button click
+  const handleButtonClick = (button: ButtonConfig) => {
     analytics.trackCustomButtonClick({
       label: button.label,
       action: button.action,
       params: button.params,
-      position,
+      position: {
+        row: button.position.startRow,
+        col: button.position.startCol,
+      },
       color: button.color,
     });
     
-    // Приоритет: button.route > ACTION_ROUTES > actionRegistry (legacy)
     if (button.route) {
-      console.log('📍 Navigating to direct route:', button.route);
       navigate(button.route);
     } else if (button.action !== 'none' && button.action in ACTION_ROUTES) {
       const route = ACTION_ROUTES[button.action as keyof typeof ACTION_ROUTES];
       if (route) {
-        console.log('📍 Navigating via ACTION_ROUTES:', route);
         navigate(route);
       }
     } else {
-      // Fallback to legacy action registry
       actionRegistry.execute(button.action, button.params);
     }
   };
 
-  const handleOpenScanner = () => {
-    setShowScanner(true);
-  };
-
-  const handleCloseScanner = () => {
-    setShowScanner(false);
-  };
-
-  // Если нет схемы или она пустая - показываем экран настройки
-  if (!schema || schema.buttons.length === 0) {
+  if (!schema || !schema.buttons || schema.buttons.length === 0) {
     return (
       <div style={{
         display: 'flex',
@@ -187,6 +108,7 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
         minHeight: '60vh',
         padding: '20px',
         textAlign: 'center',
+        fontFamily: "'Atkinson Hyperlegible', sans-serif",
       }}>
         <div style={{ fontSize: '64px', marginBottom: '24px' }}>📱</div>
         <h2 style={{ 
@@ -203,166 +125,97 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({ sche
           marginBottom: '32px',
           maxWidth: '400px',
         }}>
-          Отсканируйте QR-код с настроенным интерфейсом из приложения Constructor
+          Загрузите интерфейс через меню → Установить интерфейс
         </p>
-        <button
-          onClick={handleOpenScanner}
-          style={{
-            padding: '16px 32px',
-            background: '#F3A36A',
-            color: '#8B5931',
-            border: 'none',
-            borderRadius: '12px',
-            fontSize: '16px',
-            fontWeight: 700,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          <span>📷</span>
-          <span>Сканировать QR-код</span>
-        </button>
       </div>
     );
   }
 
   const { columns, rows } = schema.grid;
-
-  /**
-   * ВАЖНО: Квадратная сетка для кнопок
-   * 
-   * Экран делится на 4 колонки (обычно), это базовая единица `m`.
-   * 
-   * С учетом gap:
-   * - Общая ширина контента = 100vw - gap * (columns - 1)
-   * - Ширина колонки = (100vw - gap * (columns - 1)) / columns
-   * - Высота строки = ширине колонки (для квадратных ячеек)
-   * 
-   * Gap = 2px (минимальный отступ для визуального разделения)
-   * 
-   * Это гарантирует, что кнопка 2×2 будет квадратной, 3×3 тоже квадратной, и т.д.
-   * 
-   * Кнопки могут занимать:
-   * - По ширине: m, 2m, 3m, 4m (1-4 колонки)
-   * - По высоте: m, 2m, 3m... (1-N строк)
-   * 
-   * НЕ ИЗМЕНЯТЬ логику сетки - она критична для всех импортируемых интерфейсов!
-   */
-  const gap = 2; // px
-  // Layout добавляет px-4 (16px слева + 16px справа = 32px)
-  const containerPadding = 32; // px
-  // Доступная ширина экрана для сетки = 100vw - padding контейнера
+  const gap = 2;
+  const containerPadding = 32;
   const availableWidth = `100vw - ${containerPadding}px`;
-  // Ширина и высота ячейки (квадратные!)
   const cellSize = `calc((${availableWidth} - ${gap * (columns - 1)}px) / ${columns})`;
   
   return (
-    <>
-      <div style={{
-        width: '100%',
-        display: 'grid',
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gridTemplateRows: `repeat(${rows}, ${cellSize})`,
-        gap: `${gap}px`,
-        padding: '0',
-        margin: '0',
-        boxSizing: 'border-box',
-      }}>
-            {schema.buttons.map((button) => {
-              const isDark = button.style === 'dark';
-              /**
-               * Счетчик документов:
-               * - Берется из documentCounts (автообновляется каждую минуту)
-               * - Или из button.documentCount (из схемы)
-               * - Отображается в правом нижнем углу кнопки
-               * - Шрифт: 28px, белый, с тенью для читаемости
-               * - Показывается только если count > 0
-               */
-              const count = documentCounts.get(button.action as ButtonAction) ?? button.documentCount;
-              
-              return (
-                <button
-                  key={button.id}
-                  onClick={() => handleButtonClick(button, {
-                    row: button.position.startRow,
-                    col: button.position.startCol,
-                  })}
-                  style={{
-                    gridColumn: `${button.position.startCol + 1} / ${button.position.endCol + 2}`,
-                    gridRow: `${button.position.startRow + 1} / ${button.position.endRow + 2}`,
-                    background: isDark ? '#3E515C' : '#F3A36A',
-                    color: isDark ? '#FFFFFF' : '#8B5931',
-                    border: isDark ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
-                    borderRadius: '12px',
-                    fontFamily: "'Atkinson Hyperlegible', sans-serif",
-                    fontWeight: 700,
-                    fontSize: '20px',
-                    lineHeight: '1.1',
-                    letterSpacing: '0',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    justifyContent: 'space-between',
-                    padding: '16px 20px',
-                    textAlign: 'left',
-                    minHeight: '100%',
-                    cursor: 'pointer',
-                    transition: 'transform 0.15s ease, opacity 0.15s ease',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                  }}
-                  onMouseDown={(e) => {
-                    e.currentTarget.style.transform = 'scale(0.98)';
-                    e.currentTarget.style.opacity = '0.9';
-                  }}
-                  onMouseUp={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.opacity = '1';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.opacity = '1';
-                  }}
-                >
-                  <span style={{ 
-                    flex: '0 0 auto',
-                    maxWidth: '100%',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}>
-                    {button.label}
-                  </span>
-                  {count > 0 && (
-                    <span style={{
-                      alignSelf: 'flex-end',
-                      color: '#FFFFFF',
-                      fontFamily: "'Atkinson Hyperlegible', sans-serif",
-                      fontWeight: 700,
-                      fontSize: '28px',
-                      lineHeight: '1',
-                      marginTop: 'auto',
-                      textShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
-                    }}>
-                      {count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-      </div>
-
-      {showScanner && (
-        <QRScanner
-          onScan={handleScanComplete}
-          onClose={handleCloseScanner}
-          onError={(error) => {
-            console.error('Scanner error:', error);
-            alert('Ошибка сканера: ' + error);
-          }}
-        />
-      )}
-    </>
+    <div style={{
+      width: '100%',
+      display: 'grid',
+      gridTemplateColumns: `repeat(${columns}, 1fr)`,
+      gridTemplateRows: `repeat(${rows}, ${cellSize})`,
+      gap: `${gap}px`,
+      padding: '0',
+      margin: '0',
+      boxSizing: 'border-box',
+    }}>
+      {schema.buttons.map((button) => {
+        const isDark = button.style === 'dark';
+        const count = documentCounts.get(button.action as ButtonAction) ?? button.documentCount;
+        
+        return (
+          <button
+            key={button.id}
+            onClick={() => handleButtonClick(button)}
+            style={{
+              gridColumn: `${button.position.startCol + 1} / ${button.position.endCol + 2}`,
+              gridRow: `${button.position.startRow + 1} / ${button.position.endRow + 2}`,
+              background: isDark ? '#3E515C' : '#F3A36A',
+              color: isDark ? '#FFFFFF' : '#8B5931',
+              border: isDark ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
+              borderRadius: '12px',
+              fontFamily: "'Atkinson Hyperlegible', sans-serif",
+              fontWeight: 700,
+              fontSize: '20px',
+              lineHeight: '1.1',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              padding: '16px 20px',
+              textAlign: 'left',
+              minHeight: '100%',
+              cursor: 'pointer',
+              transition: 'transform 0.15s ease, opacity 0.15s ease',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.transform = 'scale(0.98)';
+              e.currentTarget.style.opacity = '0.9';
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.opacity = '1';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.opacity = '1';
+            }}
+          >
+            <span style={{ 
+              flex: '0 0 auto',
+              maxWidth: '100%',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              {button.label}
+            </span>
+            {count !== undefined && count > 0 && (
+              <span style={{
+                alignSelf: 'flex-end',
+                color: '#FFFFFF',
+                fontFamily: "'Atkinson Hyperlegible', sans-serif",
+                fontWeight: 700,
+                fontSize: '28px',
+                lineHeight: '1',
+                marginTop: 'auto',
+                textShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
+              }}>
+                {count}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
   );
 };
-

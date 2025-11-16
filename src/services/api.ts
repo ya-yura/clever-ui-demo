@@ -92,34 +92,53 @@ class ApiService {
    */
   updateBaseURL() {
     try {
-      const isLocalhost = typeof window !== 'undefined' &&
-        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-      const isViteDev = isLocalhost && (window.location.port === '3002');
-
-      // In local dev, always go through Vite proxy to avoid CORS
-      if (isViteDev) {
-        const devBaseUrl = '/MobileSMARTS/api/v1';
-        this.client.defaults.baseURL = devBaseUrl;
-        console.log('✅ [API] Dev mode: using Vite proxy baseURL:', devBaseUrl);
-        return;
-      }
-
-      // Otherwise prefer configured absolute server URL
+      // 1. Explicit configuration from Setup screen (DOCS: API_SERVER_SETUP)
       if (configService.isConfigured()) {
-        const serverUrl = configService.getServerUrl();
-        if (serverUrl) {
-          this.client.defaults.baseURL = serverUrl.replace(/\/$/, '');
+        const configuredUrl = configService.getServerUrl();
+        if (configuredUrl) {
+          this.client.defaults.baseURL = configuredUrl.replace(/\/$/, '');
           console.log('✅ [API] baseURL from config:', this.client.defaults.baseURL);
           return;
         }
       }
 
-      // Fallback if nothing configured
-      console.error('❌ [API] Server URL not configured. Open Setup and set http://localhost:9000/MobileSMARTS/api/v1');
-      throw new Error('Server URL not configured. Please go to Setup page.');
+      // 2. Local development: use Vite proxy to avoid CORS
+      const devBaseUrl = this.getDevProxyBaseUrl();
+      if (devBaseUrl) {
+        this.client.defaults.baseURL = devBaseUrl;
+        console.log('✅ [API] Dev proxy baseURL:', this.client.defaults.baseURL);
+        return;
+      }
+
+      // 3. Final safety fallback — direct connection to default Mobile SMARTS server
+      this.client.defaults.baseURL = 'http://localhost:9000/MobileSMARTS/api/v1';
+      console.warn('⚠️ [API] Using default Mobile SMARTS URL:', this.client.defaults.baseURL);
     } catch (error) {
       console.error('❌ [API] Failed to update baseURL:', error);
+      this.client.defaults.baseURL = this.client.defaults.baseURL || 'http://localhost:9000/MobileSMARTS/api/v1';
     }
+  }
+
+  /**
+   * Determine base URL for local dev server (Vite proxy)
+   */
+  private getDevProxyBaseUrl(): string | null {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    const hostname = window.location.hostname;
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+    if (!isLocalhost) {
+      return null;
+    }
+
+    const devPorts = new Set(['3000', '3001', '3002', '3003', '5173', '5174', '5175']);
+    if (devPorts.has(window.location.port || '')) {
+      return '/MobileSMARTS/api/v1';
+    }
+
+    return null;
   }
 
   setToken(token: string) {
