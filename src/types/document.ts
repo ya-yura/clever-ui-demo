@@ -62,6 +62,8 @@ export interface UniversalDocument {
   vehicle?: string;             // For shipment
   returnReason?: string;        // For returns
   inventoryType?: string;       // For inventory (full/partial/cycle)
+  origin?: 'legacy' | 'odata';  // Data source indicator
+  docTypeUni?: string;          // Original OData document type (PrihodNaSklad, etc.)
 }
 
 /**

@@ -8,6 +8,7 @@ import { ODataDocumentType } from '@/types/odata';
 import { MOCK_DOC_TYPES } from '@/data/mockDocTypes';
 import { SchemaLoader } from '@/services/schemaLoader';
 import { DynamicGridInterface } from '@/components/DynamicGridInterface';
+import { api } from '@/services/api';
 
 interface DocTypeCard {
   uni: string;
@@ -174,11 +175,13 @@ const Home: React.FC = () => {
           
           if (!isMockData) {
             try {
-              const docs = await odataCache.getDocsByType(type.uni, { names: [type.uni, (type as any).name, (type as any).displayName] });
-              docsCount = docs.length;
+              const countResponse = await api.getDocsCount(type.uni);
+              if (countResponse.success && typeof countResponse.data === 'number') {
+                docsCount = countResponse.data;
+              }
               console.log(`✅ [API] Type "${type.uni}": ${docsCount} documents`);
             } catch (err: any) {
-              console.error(`❌ [API] Failed to load docs for "${type.uni}":`, err.message);
+              console.error(`❌ [API] Failed to load docs count for "${type.uni}":`, err?.message || err);
               docsCount = 0;
             }
           }

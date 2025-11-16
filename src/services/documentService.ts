@@ -2,12 +2,65 @@
 // Service for working with documents from all modules
 
 import { db } from './db';
-import { 
-  UniversalDocument, 
+import {
+  UniversalDocument,
   DocumentType,
   DocumentFilter,
   DocumentSort,
+  DocumentPriority,
 } from '@/types/document';
+import { DocumentStatus } from '@/types/common';
+import { odataCache } from './odataCache';
+import { ODataDocument } from '@/types/odata';
+
+const normalizeDocTypeKey = (value?: string): string =>
+  value
+    ? value
+        .toString()
+        .toLowerCase()
+        .replace(/[\s_\-]+/g, '')
+        .replace(/[^a-z0-9а-яё]/g, '')
+    : '';
+
+const DOC_TYPE_ALIASES: Record<string, DocumentType> = {
+  prihodnasklad: 'receiving',
+  'приходнасклад': 'receiving',
+  priemka: 'receiving',
+  'приёмка': 'receiving',
+  receiving: 'receiving',
+
+  razmeshhenievyachejki: 'placement',
+  razmeshhenie: 'placement',
+  'размещениевячейки': 'placement',
+  'размещение': 'placement',
+  placement: 'placement',
+
+  podborzakaza: 'picking',
+  picking: 'picking',
+  'подборзаказа': 'picking',
+  'подбор': 'picking',
+
+  otgruzka: 'shipment',
+  shipping: 'shipment',
+  'отгрузка': 'shipment',
+
+  vozvrat: 'return',
+  return: 'return',
+  'возврат': 'return',
+
+  inventarizaciya: 'inventory',
+  inventory: 'inventory',
+  'инвентаризация': 'inventory',
+};
+
+const MODULE_TO_DOC_TYPE_UNI: Record<DocumentType, string> = {
+  receiving: 'PrihodNaSklad',
+  placement: 'RazmeshhenieVYachejki',
+  picking: 'PodborZakaza',
+  shipment: 'Otgruzka',
+  return: 'Vozvrat',
+  inventory: 'Inventarizaciya',
+};
 
 /**
  * Document Service
@@ -18,6 +71,64 @@ export class DocumentService {
    * Get all documents from all modules
    */
   async getAllDocuments(): Promise<UniversalDocument[]> {
+    const remoteDocuments = await this.loadRemoteDocuments();
+    if (remoteDocuments.length > 0) {
+      return remoteDocuments;
+    }
+
+    console.warn('⚠️ Falling back to legacy IndexedDB documents (receiving/placement/etc.)');
+    return this.loadLegacyDocuments();
+  }
+
+  /**
+   * Load documents directly from OData API (with cache)
+   */
+  private async loadRemoteDocuments(): Promise<UniversalDocument[]> {
+    try {
+      let docs = await odataCache.getAllDocuments();
+
+      if (!docs || docs.length === 0) {
+        console.warn('⚠️ [DOCS] /Docs returned empty list, fallback to per-type fetching');
+        try {
+          const docTypes = await odataCache.getDocTypes();
+          const aggregated: ODataDocument[] = [];
+
+          for (const type of docTypes) {
+            const names = [type.uni, (type as any).name, (type as any).displayName]
+              .filter(Boolean) as string[];
+            const typeDocs = await odataCache.getDocsByType(type.uni, {
+              names,
+              forceRefresh: true,
+            });
+            aggregated.push(...typeDocs);
+          }
+
+          docs = aggregated;
+        } catch (err) {
+          console.error('❌ [DOCS] Failed to load documents per type:', err);
+          docs = [];
+        }
+      }
+
+      if (!docs || docs.length === 0) {
+        return [];
+      }
+
+      const mapped = docs
+        .map((doc) => this.mapODataDocument(doc))
+        .filter((doc): doc is UniversalDocument => Boolean(doc));
+
+      return mapped;
+    } catch (error) {
+      console.error('Error fetching documents from OData API:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Legacy loader for IndexedDB data (mock data/offline modules)
+   */
+  private async loadLegacyDocuments(): Promise<UniversalDocument[]> {
     try {
       const [
         receiving,
@@ -44,9 +155,97 @@ export class DocumentService {
         ...inventory,
       ];
     } catch (error) {
-      console.error('Error fetching all documents:', error);
+      console.error('Error fetching legacy documents:', error);
       return [];
     }
+  }
+
+  /**
+   * Map OData document to UniversalDocument
+   */
+  private mapODataDocument(doc: ODataDocument): UniversalDocument | null {
+    const resolved = this.resolveDocumentType(doc);
+    if (!resolved) {
+      return null;
+    }
+
+    const createdAt = this.parseDate(doc.createDate);
+    const updatedAt = this.parseDate(doc.lastChangeDate) || createdAt;
+
+    return {
+      id: doc.id,
+      type: resolved.type,
+      docTypeUni: resolved.docTypeUni,
+      origin: 'odata',
+      status: this.mapStatusFromOData(doc),
+      priority: this.mapPriorityFromOData(doc.priority),
+      number: doc.name || doc.id,
+      externalId: doc.barcode || doc.id,
+      createdAt,
+      updatedAt,
+      userId: doc.userId,
+      userName: doc.userName,
+      warehouseId: doc.warehouseId,
+      partnerName: doc.appointment,
+      notes: doc.description,
+      tags: doc.notOpenedYet ? ['new'] : undefined,
+    };
+  }
+
+  private parseDate(value?: string): number {
+    if (!value) {
+      return Date.now();
+    }
+    const timestamp = Date.parse(value);
+    return Number.isNaN(timestamp) ? Date.now() : timestamp;
+  }
+
+  private mapStatusFromOData(doc: ODataDocument): DocumentStatus {
+    if ((doc as any).isCancelled) {
+      return 'cancelled';
+    }
+    if (doc.finished) {
+      return 'completed';
+    }
+    if (doc.inProcess || doc.modified) {
+      return 'in_progress';
+    }
+    return 'draft';
+  }
+
+  private mapPriorityFromOData(priority?: number): DocumentPriority | undefined {
+    if (priority === undefined || priority === null) {
+      return undefined;
+    }
+
+    if (priority >= 80) return 'urgent';
+    if (priority >= 50) return 'high';
+    if (priority <= 20) return 'low';
+    return 'normal';
+  }
+
+  private resolveDocumentType(doc: ODataDocument): { type: DocumentType; docTypeUni?: string } | null {
+    const candidates = [
+      doc.documentTypeName,
+      (doc as any).documentTypeUni,
+      (doc as any).documentType?.uni,
+      (doc as any).documentType,
+    ];
+
+    for (const candidate of candidates) {
+      const normalized = normalizeDocTypeKey(candidate);
+      if (!normalized) continue;
+
+      const mappedType = DOC_TYPE_ALIASES[normalized];
+      if (mappedType) {
+        return {
+          type: mappedType,
+          docTypeUni: typeof candidate === 'string' ? candidate : undefined,
+        };
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -362,6 +561,12 @@ export class DocumentService {
    * Get document URL by type and id
    */
   getDocumentUrl(doc: UniversalDocument): string {
+    if (doc.origin === 'odata') {
+      const docTypeUni = doc.docTypeUni || MODULE_TO_DOC_TYPE_UNI[doc.type];
+      if (docTypeUni) {
+        return `/docs/${docTypeUni}/${doc.id}`;
+      }
+    }
     return `/${doc.type}/${doc.id}`;
   }
 

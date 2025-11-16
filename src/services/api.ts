@@ -96,7 +96,15 @@ class ApiService {
       if (configService.isConfigured()) {
         const configuredUrl = configService.getServerUrl();
         if (configuredUrl) {
-          this.client.defaults.baseURL = configuredUrl.replace(/\/$/, '');
+          const sanitized = configuredUrl.replace(/\/$/, '');
+
+          if (this.shouldUseDevProxy(sanitized)) {
+            this.client.defaults.baseURL = '/MobileSMARTS/api/v1';
+            console.log('✅ [API] baseURL via Vite proxy (local dev detected):', this.client.defaults.baseURL);
+            return;
+          }
+
+          this.client.defaults.baseURL = sanitized;
           console.log('✅ [API] baseURL from config:', this.client.defaults.baseURL);
           return;
         }
@@ -139,6 +147,42 @@ class ApiService {
     }
 
     return null;
+  }
+
+  /**
+   * Determine if we should route requests through Vite proxy even when config has absolute localhost URL.
+   * This helps avoid CORS issues when the API server runs on a different port (e.g. 9000) while the dev server
+   * runs on 5173/5175. In this case, we should hit /MobileSMARTS/... so that the proxy forwards the call.
+   */
+  private shouldUseDevProxy(configuredUrl: string): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    try {
+      const target = new URL(configuredUrl);
+      const currentHost = window.location.hostname;
+      const targetHost = target.hostname;
+      const devPorts = new Set(['3000', '3001', '3002', '3003', '5173', '5174', '5175', '5176']);
+      const isLocalCurrent = currentHost === 'localhost' || currentHost === '127.0.0.1';
+      const isLocalTarget = targetHost === 'localhost' || targetHost === '127.0.0.1';
+      const currentPort = window.location.port || '';
+      const targetPort = target.port || (target.protocol === 'https:' ? '443' : '80');
+
+      if (!isLocalCurrent || !isLocalTarget) {
+        return false;
+      }
+
+      if (!devPorts.has(currentPort)) {
+        return false;
+      }
+
+      // If ports differ (e.g., frontend 5173, backend 9000) — use proxy.
+      return currentPort !== targetPort;
+    } catch (error) {
+      console.warn('⚠️ [API] Failed to parse configured URL, skipping proxy detection:', error);
+      return false;
+    }
   }
 
   setToken(token: string) {
@@ -323,6 +367,33 @@ class ApiService {
    */
   async getAllDocs(params?: any) {
     return this.get('/Docs', params);
+  }
+
+  /**
+   * Get documents count for specific type
+   * GET /api/v1/Docs/{DocType}/$count
+   */
+  async getDocsCount(docTypeUni: string) {
+    try {
+      const response = await this.client.get(`/Docs/${docTypeUni}/$count`, {
+        responseType: 'text',
+        transformResponse: [(data) => data],
+      });
+
+      let count: number =
+        typeof response.data === 'number'
+          ? response.data
+          : parseInt(String(response.data).trim(), 10);
+
+      if (Number.isNaN(count)) {
+        count = 0;
+      }
+
+      return { success: true, data: count };
+    } catch (error: any) {
+      console.error(`❌ [API] Failed to fetch docs count for ${docTypeUni}:`, error?.message || error);
+      return { success: false, error: error.message };
+    }
   }
 
   /**
