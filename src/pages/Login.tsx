@@ -16,8 +16,10 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLogging, setIsLogging] = useState(false);
+  const [isDemoLogging, setIsDemoLogging] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [requiresAuth, setRequiresAuth] = useState(true);
 
   const serverUrl = configService.getServerUrl();
 
@@ -43,13 +45,7 @@ const Login: React.FC = () => {
 
         // Check if authentication is required
         const noAuthRequired = await checkNoAuth();
-        if (noAuthRequired) {
-          console.log('✅ No authentication required, auto-login');
-          // Auto-login without credentials
-          await login({ username: 'auto', password: 'auto' });
-          navigate('/');
-          return;
-        }
+        setRequiresAuth(!noAuthRequired);
       } catch (err) {
         console.error('Auth check error:', err);
       } finally {
@@ -75,6 +71,7 @@ const Login: React.FC = () => {
       const result = await login({
         username: username.trim(),
         password: password.trim(),
+        mode: 'oauth',
       });
 
       if (result.success) {
@@ -89,6 +86,29 @@ const Login: React.FC = () => {
       setError(err.message || 'Ошибка подключения к серверу');
     } finally {
       setIsLogging(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setError('');
+    setIsDemoLogging(true);
+
+    try {
+      const result = await login({
+        username: 'demo',
+        password: 'demo',
+        mode: 'demo',
+      });
+
+      if (result.success) {
+        navigate('/');
+      } else {
+        setError(result.error || 'Не удалось выполнить демо-вход');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Ошибка подключения к серверу');
+    } finally {
+      setIsDemoLogging(false);
     }
   };
 
@@ -131,107 +151,135 @@ const Login: React.FC = () => {
           </div>
         </div>
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          <div className="bg-[#474747] rounded-lg p-6 space-y-4">
-            {/* Username */}
-            <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-[#e3e3dd] mb-2"
-              >
-                Имя пользователя
-              </label>
-              <div className="relative">
-                <input
-                  id="username"
-                  type="text"
-                  required
-                  autoComplete="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3 pl-10 bg-[#343436] border border-[#555] rounded-lg text-[#e3e3dd] placeholder-[#777] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="Введите имя пользователя"
-                  disabled={isLogging}
-                />
-                <span className="absolute left-3 top-3 text-[#777]">👤</span>
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-[#e3e3dd] mb-2"
-              >
-                Пароль
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pl-10 pr-12 bg-[#343436] border border-[#555] rounded-lg text-[#e3e3dd] placeholder-[#777] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="Введите пароль"
-                  disabled={isLogging}
-                />
-                <span className="absolute left-3 top-3 text-[#777]">🔒</span>
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-[#777] hover:text-[#e3e3dd] transition-colors"
-                >
-                  {showPassword ? '👁️' : '👁️‍🗨️'}
-                </button>
-              </div>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-500 bg-opacity-10 border border-red-500 rounded-lg p-3">
-                <p className="text-sm text-red-400">⚠️ {error}</p>
-              </div>
+        <div className="mt-8 space-y-6">
+          {/* Demo Mode */}
+          <div className="bg-[#404040] rounded-lg p-6 space-y-3 border border-[#565656]">
+            <h3 className="text-xl font-semibold text-[#e3e3dd]">Демо-режим без авторизации</h3>
+            <p className="text-sm text-[#a7a7a7]">
+              Быстрый доступ ко всем функциям без проверки пользователя. Данные не отправляются на сервер.
+            </p>
+            {requiresAuth && (
+              <p className="text-xs text-[#f0c674]">
+                Сервер требует авторизацию, поэтому демо-режим предназначен только для демонстрации интерфейса.
+              </p>
             )}
-          </div>
-
-          {/* Buttons */}
-          <div className="space-y-3">
-            <button
-              type="submit"
-              disabled={isLogging || !username.trim() || !password.trim()}
-              className="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
-            >
-              {isLogging ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Вход...
-                </>
-              ) : (
-                'Войти →'
-              )}
-            </button>
-
             <button
               type="button"
-              onClick={handleBackToSetup}
-              disabled={isLogging}
-              className="w-full py-2 px-4 text-[#a7a7a7] hover:text-[#e3e3dd] text-sm transition-colors disabled:text-gray-700"
+              onClick={handleDemoLogin}
+              disabled={isDemoLogging}
+              className="w-full py-3 px-4 bg-[#6b7280] hover:bg-[#818cf8] text-white font-medium rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              ← Изменить сервер
+              {isDemoLogging ? 'Запуск демо...' : 'Войти без авторизации'}
             </button>
           </div>
-        </form>
+
+          {/* Auth form */}
+          {requiresAuth && (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="bg-[#474747] rounded-lg p-6 space-y-4 border border-[#5a5a5a]">
+                <div>
+                  <label
+                    htmlFor="username"
+                    className="block text-sm font-medium text-[#e3e3dd] mb-2"
+                  >
+                    Имя пользователя
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="username"
+                      type="text"
+                      required
+                      autoComplete="username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="w-full px-4 py-3 pl-10 bg-[#343436] border border-[#555] rounded-lg text-[#e3e3dd] placeholder-[#777] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      placeholder="Введите имя пользователя"
+                      disabled={isLogging}
+                    />
+                    <span className="absolute left-3 top-3 text-[#777]">👤</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-[#e3e3dd] mb-2"
+                  >
+                    Пароль
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full px-4 py-3 pl-10 pr-12 bg-[#343436] border border-[#555] rounded-lg text-[#e3e3dd] placeholder-[#777] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      placeholder="Введите пароль"
+                      disabled={isLogging}
+                    />
+                    <span className="absolute left-3 top-3 text-[#777]">🔒</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3 text-[#777] hover:text-[#e3e3dd] transition-colors"
+                    >
+                      {showPassword ? '👁️' : '👁️‍🗨️'}
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  type="submit"
+                  disabled={isLogging || !username.trim() || !password.trim()}
+                  className="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {isLogging ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Вход...
+                    </>
+                  ) : (
+                    'Войти →'
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleBackToSetup}
+                  disabled={isLogging}
+                  className="w-full py-2 px-4 text-[#a7a7a7] hover:text-[#e3e3dd] text-sm transition-colors disabled:text-gray-700"
+                >
+                  ← Изменить сервер
+                </button>
+              </div>
+            </form>
+          )}
+
+          {!requiresAuth && (
+            <div className="text-xs text-[#a7a7a7] text-center">
+              Этот сервер не требует авторизации. Используйте демо-режим для моментального доступа.
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-500 bg-opacity-10 border border-red-500 rounded-lg p-3">
+              <p className="text-sm text-red-400 text-center">⚠️ {error}</p>
+            </div>
+          )}
+        </div>
 
         {/* Footer */}
         <div className="text-center text-xs text-[#777]">
           <p>Cleverence Mobile SMARTS</p>
-          <p className="mt-1">Защищенное соединение 🔒</p>
+          <p className="mt-1">{requiresAuth ? 'Требуется авторизация сервера' : 'Работа без авторизации'}</p>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@
 // OAuth2 Authentication Service
 
 import { configService } from './configService';
+import { LoginCredentials } from '@/types/auth';
 
 export interface OAuthTokenResponse {
   access_token: string;
@@ -19,11 +20,6 @@ export interface JWTPayload {
   iat: number;
 }
 
-export interface LoginCredentials {
-  username: string;
-  password: string;
-}
-
 class AuthService {
   private readonly CLIENT_ID = 'ext_client';
   private readonly CLIENT_SECRET = 'ext_client_secret';
@@ -35,12 +31,37 @@ class AuthService {
    * Check if system requires authentication (DEV MODE - always requires auth but accepts any)
    */
   async checkNoLogin(): Promise<{ requiresAuth: boolean }> {
-    console.log('ℹ️ [DEV MODE] Authentication required (accepts any credentials)');
-    return { requiresAuth: true };
+    const serverUrl = configService.getServerUrl();
+    if (!serverUrl) {
+      return { requiresAuth: false };
+    }
+
+    try {
+      const response = await fetch(`${serverUrl}/.well-known/openid-configuration`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (response.status === 404) {
+        return { requiresAuth: false };
+      }
+
+      if (response.ok) {
+        return { requiresAuth: true };
+      }
+
+      // Non-404 errors treated as auth required
+      return { requiresAuth: true };
+    } catch (error) {
+      console.warn('⚠️ Failed to determine authentication requirement:', error);
+      return { requiresAuth: true };
+    }
   }
 
   /**
-   * Authenticate with username and password (DEV MODE - accepts any credentials)
+   * Authenticate with username and password
    */
   async login(credentials: LoginCredentials): Promise<{
     success: boolean;
@@ -50,33 +71,39 @@ class AuthService {
     error?: string;
     errorCode?: number;
   }> {
-    console.log('🔐 [DEV MODE] Login attempt:', credentials.username);
+    const mode = credentials.mode || 'oauth';
+    if (mode === 'demo') {
+      return this.loginDemo(credentials);
+    }
+    return this.loginOAuth(credentials);
+  }
 
-    // DEV MODE: Accept any non-empty credentials
+  private async loginDemo(credentials: LoginCredentials) {
+    console.log('🔐 [DEMO MODE] Login attempt:', credentials.username);
+
     if (!credentials.username || !credentials.password) {
       return {
         success: false,
-        error: 'Введите имя пользователя и пароль'
+        error: 'Введите имя пользователя и пароль',
       };
     }
 
-    // Create a mock token
-    const mockToken = btoa(JSON.stringify({
-      sub: credentials.username,
-      role: 'Administrator',
-      exp: Math.floor(Date.now() / 1000) + 86400, // 24 hours
-      iss: 'dev-mode',
-      aud: 'warehouse-app',
-      iat: Math.floor(Date.now() / 1000)
-    }));
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(
+      JSON.stringify({
+        sub: credentials.username,
+        role: 'Administrator',
+        exp: Math.floor(Date.now() / 1000) + 86400,
+        iss: 'demo-mode',
+        aud: 'warehouse-app',
+        iat: Math.floor(Date.now() / 1000),
+      })
+    );
+    const mockToken = `${header}.${payload}.demo-signature`;
+    const mockRefreshToken = 'demo-refresh-token-' + Date.now();
 
-    const mockRefreshToken = 'dev-refresh-token-' + Date.now();
-
-    // Store tokens
     this.setToken(mockToken);
     this.setRefreshToken(mockRefreshToken);
-
-    console.log('✅ [DEV MODE] Login successful:', credentials.username);
 
     return {
       success: true,
@@ -86,9 +113,95 @@ class AuthService {
         id: credentials.username,
         name: credentials.username,
         username: credentials.username,
-        role: 'administrator'
-      }
+        role: 'Administrator',
+      },
     };
+  }
+
+  private async loginOAuth(credentials: LoginCredentials) {
+    const serverUrl = configService.getServerUrl();
+
+    if (!serverUrl) {
+      return {
+        success: false,
+        error: 'Сервер не настроен. Перейдите в раздел настройки.',
+      };
+    }
+
+    if (!credentials.username || !credentials.password) {
+      return {
+        success: false,
+        error: 'Введите имя пользователя и пароль',
+      };
+    }
+
+    try {
+      const requestBody = new URLSearchParams({
+        username: credentials.username,
+        password: credentials.password,
+        client_id: this.CLIENT_ID,
+        client_secret: this.CLIENT_SECRET,
+        scope: this.SCOPE,
+        grant_type: 'password',
+      });
+
+      const response = await fetch(`${serverUrl}/connect/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: requestBody,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          success: false,
+          error: errorData.error_description || 'Неверное имя пользователя или пароль',
+          errorCode: response.status,
+        };
+      }
+
+      const data: OAuthTokenResponse = await response.json();
+      const payload = this.parseJwt(data.access_token);
+
+      if (!payload) {
+        return {
+          success: false,
+          error: 'Не удалось обработать ответ сервера',
+        };
+      }
+
+      if (!this.isValidRole(payload.role)) {
+        return {
+          success: false,
+          error: 'Недостаточно прав для входа',
+        };
+      }
+
+      this.setToken(data.access_token);
+      if (data.refresh_token) {
+        this.setRefreshToken(data.refresh_token);
+      }
+
+      return {
+        success: true,
+        token: data.access_token,
+        refreshToken: data.refresh_token,
+        user: {
+          id: payload.sub,
+          name: payload.sub,
+          username: payload.sub,
+          role: payload.role,
+        },
+      };
+    } catch (error: any) {
+      console.error('❌ OAuth login error:', error);
+      return {
+        success: false,
+        error: error.message || 'Ошибка подключения к серверу',
+      };
+    }
   }
 
   /**
@@ -106,7 +219,8 @@ class AuthService {
     // Use special username with temp token as password
     return this.login({
       username: '__tempuid__',
-      password: tempToken
+      password: tempToken,
+      mode: 'oauth',
     });
   }
 
@@ -121,7 +235,7 @@ class AuthService {
     const serverUrl = configService.getServerUrl();
     const refreshToken = this.getRefreshToken();
 
-    if (!refreshToken) {
+    if (!refreshToken || refreshToken.startsWith('demo-refresh-token')) {
       return {
         success: false,
         error: 'No refresh token available'
@@ -265,6 +379,7 @@ class AuthService {
 }
 
 export const authService = new AuthService();
+
 
 
 

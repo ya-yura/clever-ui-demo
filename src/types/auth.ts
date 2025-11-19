@@ -26,6 +26,7 @@ export interface AuthState {
 export interface LoginCredentials {
   username: string;
   password: string;
+  mode?: 'demo' | 'oauth';
 }
 
 export interface LoginResponse {
