@@ -1,14 +1,14 @@
 // === 📁 src/modules/menu/MenuProvider.tsx ===
 // Context provider for menu state
 
-import React from 'react';
 import { MenuContext, useMenuState } from './useMenu';
+import { ReactNode } from 'react';
 
 interface MenuProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
+export const MenuProvider = ({ children }: MenuProviderProps) => {
   const menuState = useMenuState();
 
   return (

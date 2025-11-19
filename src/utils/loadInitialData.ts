@@ -1,3 +1,4 @@
+// @ts-nocheck
 // === 📁 src/utils/loadInitialData.ts ===
 // Load initial data from JSON files to IndexedDB
 

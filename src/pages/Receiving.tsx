@@ -99,7 +99,7 @@ const Receiving: React.FC = () => {
     
     if (line) {
       // Increment fact
-      const updatedLine = {
+      const updatedLine: ReceivingLine = {
         ...line,
         quantityFact: line.quantityFact + 1,
         status: line.quantityFact + 1 >= line.quantityPlan ? 'completed' : 'partial' as const,
@@ -169,7 +169,7 @@ const Receiving: React.FC = () => {
     if (!line) return;
 
     const newFact = Math.max(0, line.quantityFact + delta);
-    const updatedLine = {
+    const updatedLine: ReceivingLine = {
       ...line,
       quantityFact: newFact,
       status: newFact >= line.quantityPlan ? 'completed' : newFact > 0 ? 'partial' : 'pending' as const,

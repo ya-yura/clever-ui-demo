@@ -1,7 +1,6 @@
 // === 📁 src/App.tsx ===
 // Main application component
 
-import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';

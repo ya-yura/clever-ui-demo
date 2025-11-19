@@ -74,9 +74,15 @@ const Picking: React.FC = () => {
           const response = await api.getPickingDocument(id);
           if (response.success && response.data) {
             doc = response.data.document;
-            docLines = response.data.lines;
-            await db.pickingDocuments.put(doc);
-            await db.pickingLines.bulkPut(docLines);
+            docLines = response.data.lines || [];
+
+            if (doc) {
+              await db.pickingDocuments.put(doc);
+            }
+
+            if (docLines.length) {
+              await db.pickingLines.bulkPut(docLines);
+            }
           }
         }
 

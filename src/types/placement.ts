@@ -5,6 +5,7 @@ import { BaseDocument, BaseLine } from './common';
 
 export interface PlacementDocument extends BaseDocument {
   sourceDocumentId?: string;
+  sourceDocument?: string;
   sourceDocumentType?: string;
   totalLines: number;
   completedLines: number;

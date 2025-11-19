@@ -13,6 +13,7 @@ export interface ShipmentDocument extends BaseDocument {
   totalWeight?: number;
   totalPackages?: number;
   ttn?: string;
+  ttnNumber?: string;
   carrier?: string;
   trackingNumber?: string;
   signature?: string;

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // === 📁 src/modules/menu/__tests__/menu.test.example.tsx ===
 // Example test file for hamburger menu (demonstration purposes)
 

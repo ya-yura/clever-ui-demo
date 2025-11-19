@@ -37,7 +37,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onScan, onError, onClose }
           onScan(decodedText);
           stopScanning();
         },
-        (errorMessage) => {
+        (errorMessage: string) => {
           // Игнорируем ошибки "не найдено" при сканировании
           // console.log('Scanning...', errorMessage);
         }

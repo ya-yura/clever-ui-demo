@@ -1,7 +1,7 @@
 // === 📁 src/pages/Login.tsx ===
 // Login page for user authentication with OAuth2 support
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { configService } from '@/services/configService';
@@ -152,28 +152,6 @@ const Login: React.FC = () => {
         </div>
 
         <div className="mt-8 space-y-6">
-          {/* Demo Mode */}
-          <div className="bg-[#404040] rounded-lg p-6 space-y-3 border border-[#565656]">
-            <h3 className="text-xl font-semibold text-[#e3e3dd]">Демо-режим без авторизации</h3>
-            <p className="text-sm text-[#a7a7a7]">
-              Быстрый доступ ко всем функциям без проверки пользователя. Данные не отправляются на сервер.
-            </p>
-            {requiresAuth && (
-              <p className="text-xs text-[#f0c674]">
-                Сервер требует авторизацию, поэтому демо-режим предназначен только для демонстрации интерфейса.
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={handleDemoLogin}
-              disabled={isDemoLogging}
-              className="w-full py-3 px-4 bg-[#6b7280] hover:bg-[#818cf8] text-white font-medium rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
-            >
-              {isDemoLogging ? 'Запуск демо...' : 'Войти без авторизации'}
-            </button>
-          </div>
-
-          {/* Auth form */}
           {requiresAuth && (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="bg-[#474747] rounded-lg p-6 space-y-4 border border-[#5a5a5a]">
@@ -262,6 +240,15 @@ const Login: React.FC = () => {
               </div>
             </form>
           )}
+
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            disabled={isDemoLogging}
+            className="w-full py-3 px-4 border border-[#5a5a5a] bg-[#393939] text-[#b3b3b3] font-medium rounded-lg transition-colors hover:bg-[#454545] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+          >
+            {isDemoLogging ? 'Запуск демо...' : 'Войти без авторизации'}
+          </button>
 
           {!requiresAuth && (
             <div className="text-xs text-[#a7a7a7] text-center">

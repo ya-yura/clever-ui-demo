@@ -72,9 +72,15 @@ const Shipment: React.FC = () => {
           const response = await api.getShipmentDocument(id);
           if (response.success && response.data) {
             doc = response.data.document;
-            docLines = response.data.lines;
-            await db.shipmentDocuments.put(doc);
-            await db.shipmentLines.bulkPut(docLines);
+            docLines = response.data.lines || [];
+
+            if (doc) {
+              await db.shipmentDocuments.put(doc);
+            }
+
+            if (docLines.length) {
+              await db.shipmentLines.bulkPut(docLines);
+            }
           }
         }
 

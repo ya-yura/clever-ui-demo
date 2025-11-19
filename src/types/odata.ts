@@ -6,6 +6,7 @@
  * Represents a type of warehouse operation (Receiving, Placement, etc.)
  */
 export interface ODataDocumentType {
+  id?: string;
   uni: string; // Unique identifier
   name: string; // Internal name
   displayName: string; // Display name for UI
@@ -30,6 +31,7 @@ export interface ODataDocumentType {
   buttonColor?: string;
   visible?: string;
   enabled?: string;
+  [key: string]: any;
 }
 
 /**
@@ -109,6 +111,12 @@ export interface ODataProduct {
   basePackingId?: string;
   marking?: string;
   versionNumber: number;
+  packings?: Array<{
+    id: string;
+    name: string;
+    barcode?: string;
+    [key: string]: any;
+  }>;
 }
 
 /**

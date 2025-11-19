@@ -14,6 +14,15 @@ import { STATUS_LABELS } from '@/types/document';
 import PlacementCard from '@/components/placement/PlacementCard';
 import ScannerInput from '@/components/ScannerInput';
 import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
+import { LineStatus } from '@/types/common';
+
+const PLACEMENT_STATUS_ORDER: Record<LineStatus, number> = {
+  pending: 0,
+  partial: 1,
+  completed: 2,
+  error: 3,
+  mismatch: 4,
+};
 
 const Placement: React.FC = () => {
   const { id } = useParams();
@@ -75,9 +84,15 @@ const Placement: React.FC = () => {
           const response = await api.getPlacementDocument(id);
           if (response.success && response.data) {
             doc = response.data.document;
-            docLines = response.data.lines;
-            await db.placementDocuments.put(doc);
-            await db.placementLines.bulkPut(docLines);
+            docLines = response.data.lines || [];
+
+            if (doc) {
+              await db.placementDocuments.put(doc);
+            }
+
+            if (docLines.length) {
+              await db.placementLines.bulkPut(docLines);
+            }
           }
         }
 
@@ -381,9 +396,7 @@ const Placement: React.FC = () => {
       <div className="space-y-2">
         {lines
           .sort((a, b) => {
-            // Show pending first, then partial, then completed
-            const statusOrder = { pending: 0, partial: 1, completed: 2 };
-            return (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0);
+            return (PLACEMENT_STATUS_ORDER[a.status] ?? 99) - (PLACEMENT_STATUS_ORDER[b.status] ?? 99);
           })
           .map(line => (
             <PlacementCard

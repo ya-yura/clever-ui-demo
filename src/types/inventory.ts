@@ -6,6 +6,7 @@ import { BaseDocument, BaseLine } from './common';
 export interface InventoryDocument extends BaseDocument {
   type?: 'full' | 'partial' | 'cycle';
   zone?: string;
+  warehouseZone?: string;
   totalLines: number;
   completedLines: number;
   discrepanciesCount: number;

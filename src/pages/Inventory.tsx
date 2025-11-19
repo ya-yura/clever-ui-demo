@@ -72,9 +72,15 @@ const Inventory: React.FC = () => {
           const response = await api.getInventoryDocument(id);
           if (response.success && response.data) {
             doc = response.data.document;
-            docLines = response.data.lines;
-            await db.inventoryDocuments.put(doc);
-            await db.inventoryLines.bulkPut(docLines);
+            docLines = response.data.lines || [];
+
+            if (doc) {
+              await db.inventoryDocuments.put(doc);
+            }
+
+            if (docLines.length) {
+              await db.inventoryLines.bulkPut(docLines);
+            }
           }
         }
 
