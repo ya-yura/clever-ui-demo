@@ -105,6 +105,7 @@ Added references to:
 | **Button** | primary, secondary, ghost, danger | size, isLoading, startIcon, endIcon, fullWidth | ✅ Complete |
 | **Card** | base, elevated, interactive | noPadding, onClick | ✅ Complete |
 | **Badge** | success, warning, error, info, neutral | label, icon | ✅ Complete |
+| **Chip** | neutral, primary, info, success, warning, error | label, active, icon, onClick | ✅ Complete |
 | **Avatar** | sm, md, lg | src, fallback, status (online/offline/busy) | ✅ Complete |
 | **ProgressBar** | primary, success, warning, error | value, max, size, showLabel | ✅ Complete |
 | **Input** | — | icon, error, disabled | ✅ Complete |

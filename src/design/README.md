@@ -6,11 +6,15 @@
 ## Quick Start
 
 ```tsx
-import { Button, Card, Badge, Avatar } from '@/design/components';
+import { Button, Card, Badge, Chip, Avatar } from '@/design/components';
 
 // Use components with design tokens
 <Card className="space-y-4">
   <h3 className="text-lg font-bold text-content-primary">Title</h3>
+  <div className="flex gap-2">
+    <Chip label="Filter" variant="primary" active />
+    <Chip label="Tag" variant="neutral" />
+  </div>
   <Button variant="primary">Action</Button>
 </Card>
 ```
@@ -24,6 +28,7 @@ src/design/
 │   ├── Button.tsx
 │   ├── Card.tsx
 │   ├── Badge.tsx
+│   ├── Chip.tsx       # NEW: Interactive badge/pill
 │   ├── Avatar.tsx
 │   ├── Input.tsx
 │   ├── Checkbox.tsx
@@ -131,6 +136,20 @@ text-content-tertiary  // Metadata
     placeholder="user@example.com"
     icon={<Mail />}
   />
+</div>
+```
+
+**Filters with chips:**
+```tsx
+<div className="flex flex-wrap gap-2">
+  <Chip 
+    label="Active" 
+    variant="success" 
+    active={isActive}
+    onClick={() => setIsActive(!isActive)}
+  />
+  <Chip label="Pending" variant="warning" />
+  <Chip label="Cancelled" variant="error" />
 </div>
 ```
 
