@@ -7,5 +7,6 @@ export * from './ProgressBar';
 export * from './Input';
 export * from './Checkbox';
 export * from './Toggle';
+export * from './Skeleton';
 
 

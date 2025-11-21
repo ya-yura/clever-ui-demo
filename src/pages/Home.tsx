@@ -8,6 +8,7 @@ import { ODataDocumentType } from '@/types/odata';
 import { MOCK_DOC_TYPES } from '@/data/mockDocTypes';
 import { SchemaLoader } from '@/services/schemaLoader';
 import { DynamicGridInterface } from '@/components/DynamicGridInterface';
+import { HomeSkeleton } from '@/components/HomeSkeleton';
 import { api } from '@/services/api';
 
 interface DocTypeCard {
@@ -285,14 +286,7 @@ const Home: React.FC = () => {
 
   // Loading state
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="text-6xl mb-4 animate-pulse">📦</div>
-          <p className="text-xl text-content-tertiary">Загрузка типов документов...</p>
-        </div>
-      </div>
-    );
+    return <HomeSkeleton />;
   }
 
   // Error state

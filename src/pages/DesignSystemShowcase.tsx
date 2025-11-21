@@ -26,6 +26,9 @@ import {
   TextArea,
   Checkbox,
   Toggle,
+  Skeleton,
+  SkeletonText,
+  SkeletonCard,
 } from '@/design/components';
 
 const DesignSystemShowcase: React.FC = () => {
@@ -340,9 +343,60 @@ const DesignSystemShowcase: React.FC = () => {
           </div>
         </section>
 
-        {/* 7. Calendar */}
+        {/* 7. Skeleton Loaders */}
         <section className="space-y-6">
-          <SectionHeader title="07. Calendar" description="Date picker component" />
+          <SectionHeader title="07. Skeleton Loaders" description="Loading placeholders" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Basic Skeletons */}
+            <Card className="space-y-6">
+              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Basic Shapes</h4>
+              
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs text-content-tertiary mb-2">Text (single line)</p>
+                  <Skeleton variant="text" />
+                </div>
+
+                <div>
+                  <p className="text-xs text-content-tertiary mb-2">Text (multiple lines)</p>
+                  <SkeletonText lines={3} />
+                </div>
+
+                <div>
+                  <p className="text-xs text-content-tertiary mb-2">Circular (avatar)</p>
+                  <Skeleton variant="circular" width={48} height={48} />
+                </div>
+
+                <div>
+                  <p className="text-xs text-content-tertiary mb-2">Rectangular (image)</p>
+                  <Skeleton variant="rectangular" className="w-full h-32" />
+                </div>
+              </div>
+            </Card>
+
+            {/* Complex Skeletons */}
+            <Card className="space-y-6">
+              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Complex Layouts</h4>
+              
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs text-content-tertiary mb-2">Card with Avatar</p>
+                  <SkeletonCard hasAvatar />
+                </div>
+
+                <div>
+                  <p className="text-xs text-content-tertiary mb-2">Card with Image</p>
+                  <SkeletonCard hasImage />
+                </div>
+              </div>
+            </Card>
+          </div>
+        </section>
+
+        {/* 8. Calendar */}
+        <section className="space-y-6">
+          <SectionHeader title="08. Calendar" description="Date picker component" />
           
           <Card variant="elevated" className="max-w-sm mx-auto md:mx-0 p-4">
             <div className="flex items-center justify-between mb-4">

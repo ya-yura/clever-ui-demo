@@ -240,15 +240,37 @@ button, a, input[type="button"], input[type="submit"] {
   min-width: 44px;
 }
 
-/* Loading animation */
+/* Loading animations */
 @keyframes pulse {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 .skeleton {
   background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 37%, rgba(255,255,255,0.05) 63%);
   animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-wave {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-tertiary) 0%,
+    var(--color-surface-tertiary) 40%,
+    rgba(255, 255, 255, 0.1) 50%,
+    var(--color-surface-tertiary) 60%,
+    var(--color-surface-tertiary) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
 
 /* Light theme overrides */

@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { DocumentFilters } from '@/components/documents/DocumentFilters';
 import { DocumentList } from '@/components/documents/DocumentList';
+import { DocumentListSkeleton } from '@/components/documents/DocumentListSkeleton';
 import { documentService } from '@/services/documentService';
 import {
   UniversalDocument,

@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UniversalDocument } from '@/types/document';
 import { DocumentCard } from './DocumentCard';
+import { DocumentListSkeleton } from './DocumentListSkeleton';
 
 interface DocumentListProps {
   documents: UniversalDocument[];
@@ -58,11 +59,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <div className="animate-spin text-4xl mb-4">⏳</div>
-          <div className="text-gray-600">Загрузка документов...</div>
-        </div>
+      <div className="p-4">
+        <DocumentListSkeleton count={6} />
       </div>
     );
   }

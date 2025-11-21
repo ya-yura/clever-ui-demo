@@ -6,6 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { odataCache } from '@/services/odataCache';
 import { ODataDocument, ODataDocumentType } from '@/types/odata';
 import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
+import { DocumentsByTypeSkeleton } from '@/components/documents/DocumentsByTypeSkeleton';
 
 // Short, human-friendly titles per document type
 const SHORT_TITLES: Record<string, string> = {
@@ -154,14 +155,7 @@ const DocumentsByType: React.FC = () => {
 
   // Loading state
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="text-6xl mb-4 animate-pulse">📋</div>
-          <p className="text-xl text-[#a7a7a7]">Загрузка документов...</p>
-        </div>
-      </div>
-    );
+    return <DocumentsByTypeSkeleton />;
   }
 
   // Error state
