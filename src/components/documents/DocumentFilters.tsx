@@ -11,6 +11,7 @@ import {
   STATUS_LABELS,
 } from '@/types/document';
 import { DocumentStatus } from '@/types/common';
+import { Chip, Badge, Button } from '@/design/components';
 
 interface DocumentFiltersProps {
   filter: DocumentFilter;
@@ -114,22 +115,21 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
 
       {/* Filter Toggle & Stats */}
       <div className="px-4 pb-3 flex items-center justify-between">
-        <button
+        <Button
+          variant={hasActiveFilters ? 'primary' : 'secondary'}
+          size="md"
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-            hasActiveFilters
-              ? 'bg-brand-primary text-brand-dark'
-              : 'bg-surface-tertiary text-content-secondary hover:bg-surface-tertiary/80'
-          }`}
+          startIcon={<span>🎚️</span>}
         >
-          <span>🎚️</span>
-          <span>Фильтры</span>
+          Фильтры
           {hasActiveFilters && (
-            <span className="bg-brand-dark/20 text-brand-dark text-xs px-2 py-0.5 rounded-full font-bold">
-              {(filter.types?.length || 0) + (filter.statuses?.length || 0)}
-            </span>
+            <Badge 
+              label={String((filter.types?.length || 0) + (filter.statuses?.length || 0))} 
+              variant="neutral"
+              className="ml-2 bg-brand-dark/20 text-brand-dark border-brand-dark/30"
+            />
           )}
-        </button>
+        </Button>
 
         <div className="text-sm text-content-tertiary">
           Показано: <strong className="text-content-primary">{filteredCount}</strong> из <strong className="text-content-primary">{totalCount}</strong>
@@ -142,19 +142,15 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
           {/* Document Types */}
           <div>
             <div className="text-sm font-medium text-content-tertiary mb-2">Тип документа</div>
-            <div className="flex flex-wrap gap-[8px]">
+            <div className="flex flex-wrap gap-2">
               {(Object.keys(DOCUMENT_TYPE_LABELS) as DocumentType[]).map(type => (
-                <button
+                <Chip
                   key={type}
+                  label={DOCUMENT_TYPE_LABELS[type]}
+                  variant="primary"
+                  active={filter.types?.includes(type)}
                   onClick={() => handleTypeToggle(type)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                    filter.types?.includes(type) 
-                      ? 'bg-brand-primary/20 text-brand-primary border-brand-primary' 
-                      : 'bg-surface-primary text-content-secondary border-surface-tertiary hover:border-content-tertiary'
-                  }`}
-                >
-                  {DOCUMENT_TYPE_LABELS[type]}
-                </button>
+                />
               ))}
             </div>
           </div>
@@ -162,47 +158,46 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
           {/* Statuses */}
           <div>
             <div className="text-sm font-medium text-content-tertiary mb-2">Статус</div>
-            <div className="flex flex-wrap gap-[8px]">
-              {(Object.keys(STATUS_LABELS) as DocumentStatus[]).map(status => (
-                <button
-                  key={status}
-                  onClick={() => handleStatusToggle(status)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                    filter.statuses?.includes(status)
-                      ? 'bg-brand-secondary/20 text-brand-secondary border-brand-secondary'
-                      : 'bg-surface-primary text-content-secondary border-surface-tertiary hover:border-content-tertiary'
-                  }`}
-                >
-                  {STATUS_LABELS[status]}
-                </button>
-              ))}
+            <div className="flex flex-wrap gap-2">
+              {(Object.keys(STATUS_LABELS) as DocumentStatus[]).map(status => {
+                // Map status to chip variant
+                const variantMap: Record<DocumentStatus, 'success' | 'warning' | 'error' | 'neutral'> = {
+                  'completed': 'success',
+                  'in_progress': 'warning',
+                  'pending': 'neutral',
+                  'cancelled': 'error',
+                };
+                
+                return (
+                  <Chip
+                    key={status}
+                    label={STATUS_LABELS[status]}
+                    variant={variantMap[status]}
+                    active={filter.statuses?.includes(status)}
+                    onClick={() => handleStatusToggle(status)}
+                  />
+                );
+              })}
             </div>
           </div>
 
           {/* Sort Options */}
           <div>
             <div className="text-sm font-medium text-content-tertiary mb-2">Сортировка</div>
-            <div className="flex flex-wrap gap-[8px]">
+            <div className="flex flex-wrap gap-2">
               {[
                 { field: 'createdAt' as DocumentSortField, label: 'Дата создания' },
                 { field: 'updatedAt' as DocumentSortField, label: 'Обновлено' },
                 { field: 'number' as DocumentSortField, label: 'Номер' },
                 { field: 'status' as DocumentSortField, label: 'Статус' },
               ].map(({ field, label }) => (
-                <button
+                <Chip
                   key={field}
+                  label={`${label}${sort.field === field ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}`}
+                  variant="info"
+                  active={sort.field === field}
                   onClick={() => handleSortChange(field)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                    sort.field === field
-                      ? 'bg-info/20 text-info border-info'
-                      : 'bg-surface-primary text-content-secondary border-surface-tertiary hover:border-content-tertiary'
-                  }`}
-                >
-                  {label}
-                  {sort.field === field && (
-                    <span className="ml-1">{sort.direction === 'asc' ? '↑' : '↓'}</span>
-                  )}
-                </button>
+                />
               ))}
             </div>
           </div>
@@ -210,12 +205,14 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
           {/* Reset Button */}
           {hasActiveFilters && (
             <div className="pt-2">
-              <button
+              <Button
+                variant="secondary"
+                fullWidth
                 onClick={onReset}
-                className="w-full px-4 py-2 bg-surface-tertiary text-content-primary rounded-lg font-medium hover:bg-surface-tertiary/80 active:bg-surface-tertiary/60 transition-colors"
+                startIcon={<span>↻</span>}
               >
-                ↻ Сбросить все фильтры
-              </button>
+                Сбросить все фильтры
+              </Button>
             </div>
           )}
         </div>

@@ -19,6 +19,7 @@ import {
   Button,
   Card,
   Badge,
+  Chip,
   Avatar,
   ProgressBar,
   Input,
@@ -224,13 +225,26 @@ const DesignSystemShowcase: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-sm text-content-tertiary font-bold uppercase">Badges & Pills</h4>
+                <h4 className="text-sm text-content-tertiary font-bold uppercase">Badges</h4>
                 <div className="flex flex-wrap gap-3">
                   <Badge label="Success" variant="success" />
                   <Badge label="Warning" variant="warning" />
                   <Badge label="Error" variant="error" />
                   <Badge label="Info" variant="info" />
                   <Badge label="Neutral" variant="neutral" />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-sm text-content-tertiary font-bold uppercase">Chips (Interactive)</h4>
+                <div className="flex flex-wrap gap-2">
+                  <Chip label="Inactive" variant="neutral" />
+                  <Chip label="Active" variant="neutral" active />
+                  <Chip label="Primary" variant="primary" active />
+                  <Chip label="Info" variant="info" active />
+                  <Chip label="Success" variant="success" active />
+                  <Chip label="Warning" variant="warning" active />
+                  <Chip label="Error" variant="error" active />
                 </div>
               </div>
             </Card>
