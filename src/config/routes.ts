@@ -190,6 +190,11 @@ export const SYSTEM_ROUTES = {
   SOUND_TEST: '/sound-test',
 
   /**
+   * Showcase дизайн-системы (компоненты, токены, примеры)
+   */
+  DESIGN_SYSTEM: '/design-system',
+
+  /**
    * Кастомный интерфейс (динамическая сборка)
    */
   CUSTOM_INTERFACE: '/custom-interface',

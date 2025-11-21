@@ -23,6 +23,7 @@ import Diagnostics from './pages/Diagnostics';
 import About from './pages/About';
 import Feedback from './pages/Feedback';
 import SoundTest from './pages/SoundTest';
+import DesignSystemShowcase from './pages/DesignSystemShowcase';
 import { DynamicGridInterface } from './components/DynamicGridInterface';
 import { MenuProvider } from './modules/menu';
 import { AuthProvider } from './contexts/AuthContext';
@@ -81,6 +82,7 @@ function App() {
                 <Route path="about" element={<About />} />
                 <Route path="feedback" element={<Feedback />} />
                 <Route path="sound-test" element={<SoundTest />} />
+                <Route path="design-system" element={<DesignSystemShowcase />} />
                 <Route path="custom-interface" element={<DynamicGridInterface />} />
               </Route>
 
