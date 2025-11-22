@@ -331,19 +331,19 @@ const DocumentDetails: React.FC = () => {
       </div>
 
       {items.length > 0 && (
-        <div className="flex flex-wrap gap-0.5">
+        <div className="grid grid-cols-4 gap-1">
           {STATUS_SUMMARY.map((stat) => {
             const isActive = statusFilter === stat.key;
             return (
               <button
                 key={stat.key}
                 onClick={() => setStatusFilter(isActive ? 'all' : stat.key)}
-                className={`flex-1 min-w-[120px] px-3 py-2 rounded-lg text-left transition-all text-xs ${
+                className={`w-full px-2 py-2 rounded-md text-left transition-all text-[11px] ${
                   isActive ? 'ring-2 ring-offset-2 ring-brand-primary' : ''
                 } ${stat.className}`}
               >
-                <div className="text-[10px] uppercase tracking-wide opacity-70">{stat.label}</div>
-                <div className="text-xl font-semibold">{statusCounters[stat.key]}</div>
+                <div className="text-[9px] uppercase tracking-wide opacity-70">{stat.label}</div>
+                <div className="text-lg font-semibold">{statusCounters[stat.key]}</div>
               </button>
             );
           })}
