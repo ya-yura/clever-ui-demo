@@ -1,6 +1,8 @@
 {
-  "name": "Cleverence Mobile Proto",
-  "version": "1.0.0",
+  "name": "Cleverence Mobile Proto – Design System",
+  "version": "2.0.0",
+  "description": "Полноценная дизайн-система для PWA приложения Склад-15",
+  
   "dna": {
     "colors": {
       "dark": {
@@ -8,13 +10,22 @@
           "primary": "#242424",
           "secondary": "#343436",
           "tertiary": "#474747",
-          "inverse": "#ffffff"
+          "inverse": "#ffffff",
+          "overlay": "rgba(0, 0, 0, 0.7)",
+          "disabled": "#3a3a3a"
         },
         "content": {
           "primary": "#ffffff",
           "secondary": "#e3e3dd",
           "tertiary": "#a7a7a7",
-          "inverse": "#242424"
+          "inverse": "#242424",
+          "disabled": "#666666"
+        },
+        "border": {
+          "default": "#474747",
+          "light": "#575757",
+          "strong": "#666666",
+          "focus": "#86e0cb"
         }
       },
       "light": {
@@ -22,71 +33,291 @@
           "primary": "#f6f7fb",
           "secondary": "#ffffff",
           "tertiary": "#e2e8f0",
-          "inverse": "#1f2933"
+          "inverse": "#1f2933",
+          "overlay": "rgba(15, 23, 42, 0.7)",
+          "disabled": "#f1f5f9"
         },
         "content": {
           "primary": "#1f2933",
           "secondary": "#52606d",
           "tertiary": "#94a3b8",
-          "inverse": "#ffffff"
+          "inverse": "#ffffff",
+          "disabled": "#cbd5e1"
+        },
+        "border": {
+          "default": "#d1d5db",
+          "light": "#e2e8f0",
+          "strong": "#94a3b8",
+          "focus": "#86e0cb"
         }
       },
       "brand": {
         "primary": "#daa420",
         "primaryDark": "#725a1e",
-        "secondary": "#86e0cb"
+        "primaryLight": "#f3c563",
+        "secondary": "#86e0cb",
+        "secondaryDark": "#2d7a6b",
+        "secondaryLight": "#b3f0e3",
+        "accent": "#fea079",
+        "accentDark": "#8c533b"
       },
       "status": {
         "success": "#91ed91",
+        "successDark": "#2d6b2d",
+        "successLight": "#d4f8d4",
         "warning": "#f3a361",
+        "warningDark": "#8b5931",
+        "warningLight": "#ffd9b3",
         "error": "#ba8f8e",
-        "info": "#86e0cb"
+        "errorDark": "#6b3d3c",
+        "errorLight": "#f0d6d6",
+        "info": "#86e0cb",
+        "infoDark": "#2d7a6b",
+        "infoLight": "#d4f5ee"
+      },
+      "modules": {
+        "receiving": {
+          "bg": "#daa420",
+          "text": "#725a1e",
+          "light": "#f3c563",
+          "dark": "#5a4518"
+        },
+        "inventory": {
+          "bg": "#fea079",
+          "text": "#8c533b",
+          "light": "#ffc8a8",
+          "dark": "#6e3e2a"
+        },
+        "picking": {
+          "bg": "#f3a361",
+          "text": "#8b5931",
+          "light": "#ffc799",
+          "dark": "#6e4625"
+        },
+        "placement": {
+          "bg": "#86e0cb",
+          "text": "#2d7a6b",
+          "light": "#b3f0e3",
+          "dark": "#1f5a4f"
+        },
+        "shipment": {
+          "bg": "#91ed91",
+          "text": "#2d6b2d",
+          "light": "#c8f5c8",
+          "dark": "#1f4d1f"
+        },
+        "return": {
+          "bg": "#ba8f8e",
+          "text": "#6b3d3c",
+          "light": "#e0c4c3",
+          "dark": "#4d2827"
+        }
+      },
+      "palette": {
+        "gray": {
+          "50": "#f9fafb",
+          "100": "#f3f4f6",
+          "200": "#e5e7eb",
+          "300": "#d1d5db",
+          "400": "#9ca3af",
+          "500": "#6b7280",
+          "600": "#4b5563",
+          "700": "#374151",
+          "800": "#1f2937",
+          "900": "#111827"
+        }
       }
     },
+    
     "typography": {
       "family": {
-        "primary": "\"Atkinson Hyperlegible\", sans-serif"
+        "primary": "\"Atkinson Hyperlegible\", sans-serif",
+        "mono": "\"JetBrains Mono\", \"Fira Code\", monospace"
       },
       "weights": {
         "regular": 400,
+        "medium": 500,
+        "semibold": 600,
         "bold": 700
       },
       "sizes": {
         "xs": "10px",
         "sm": "12px",
         "base": "16px",
+        "md": "18px",
         "lg": "20px",
         "xl": "24px",
         "2xl": "32px",
-        "3xl": "36px"
+        "3xl": "36px",
+        "4xl": "48px"
       },
       "lineHeights": {
         "tight": 1.1,
+        "snug": 1.25,
         "base": 1.4,
-        "relaxed": 1.6
+        "relaxed": 1.6,
+        "loose": 1.8
+      },
+      "letterSpacing": {
+        "tight": "-0.02em",
+        "normal": "0",
+        "wide": "0.02em",
+        "wider": "0.05em"
       }
     },
+    
     "spacing": {
       "scale": {
+        "0": "0px",
+        "0.5": "2px",
         "1": "4px",
+        "1.5": "6px",
         "2": "8px",
+        "2.5": "10px",
         "3": "12px",
+        "3.5": "14px",
         "4": "16px",
+        "5": "20px",
         "6": "24px",
-        "8": "32px"
+        "7": "28px",
+        "8": "32px",
+        "9": "36px",
+        "10": "40px",
+        "12": "48px",
+        "16": "64px",
+        "20": "80px",
+        "24": "96px"
+      },
+      "touch": {
+        "min": "44px",
+        "comfortable": "48px",
+        "spacious": "56px"
       }
     },
+    
     "borderRadius": {
+      "none": "0px",
+      "xs": "2px",
       "sm": "4px",
       "md": "8px",
-      "lg": "18px",
+      "lg": "12px",
+      "xl": "16px",
+      "2xl": "18px",
+      "3xl": "24px",
       "full": "9999px"
     },
+    
+    "borderWidth": {
+      "none": "0px",
+      "thin": "1px",
+      "default": "2px",
+      "thick": "3px",
+      "heavy": "4px"
+    },
+    
     "shadows": {
+      "none": "none",
+      "xs": "0 1px 2px rgba(0, 0, 0, 0.15)",
       "sm": "0 1px 2px rgba(0, 0, 0, 0.3)",
       "md": "0 2px 3px rgba(0, 0, 0, 0.5)",
-      "lg": "0 4px 6px rgba(0, 0, 0, 0.5)"
+      "lg": "0 4px 6px rgba(0, 0, 0, 0.5)",
+      "xl": "0 8px 16px rgba(0, 0, 0, 0.6)",
+      "2xl": "0 12px 24px rgba(0, 0, 0, 0.7)",
+      "inner": "inset 0 2px 4px rgba(0, 0, 0, 0.3)",
+      "focus": "0 0 0 3px rgba(134, 224, 203, 0.4)"
+    },
+    
+    "motion": {
+      "duration": {
+        "instant": "100ms",
+        "fast": "200ms",
+        "normal": "300ms",
+        "slow": "500ms",
+        "slower": "700ms"
+      },
+      "easing": {
+        "standard": "cubic-bezier(0.4, 0.0, 0.2, 1)",
+        "decelerate": "cubic-bezier(0.0, 0.0, 0.2, 1)",
+        "accelerate": "cubic-bezier(0.4, 0.0, 1, 1)",
+        "sharp": "cubic-bezier(0.4, 0.0, 0.6, 1)",
+        "bounce": "cubic-bezier(0.68, -0.55, 0.265, 1.55)"
+      }
+    },
+    
+    "breakpoints": {
+      "xs": "320px",
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px",
+      "2xl": "1536px"
+    },
+    
+    "zIndex": {
+      "hide": -1,
+      "base": 0,
+      "dropdown": 1000,
+      "sticky": 1020,
+      "fixed": 1030,
+      "modalBackdrop": 1040,
+      "modal": 1050,
+      "popover": 1060,
+      "tooltip": 1070,
+      "toast": 1080,
+      "max": 9999
+    },
+    
+    "iconSizes": {
+      "xs": "12px",
+      "sm": "16px",
+      "md": "20px",
+      "lg": "24px",
+      "xl": "32px",
+      "2xl": "48px"
+    },
+    
+    "components": {
+      "button": {
+        "height": {
+          "sm": "32px",
+          "md": "40px",
+          "lg": "48px"
+        },
+        "padding": {
+          "sm": "0 12px",
+          "md": "0 20px",
+          "lg": "0 24px"
+        }
+      },
+      "input": {
+        "height": {
+          "sm": "36px",
+          "md": "44px",
+          "lg": "52px"
+        }
+      },
+      "card": {
+        "padding": {
+          "compact": "12px",
+          "default": "16px",
+          "comfortable": "24px"
+        }
+      },
+      "tile": {
+        "minHeight": {
+          "small": "72px",
+          "medium": "96px",
+          "large": "108px",
+          "hero": "140px"
+        }
+      }
     }
+  },
+  
+  "metadata": {
+    "author": "Cleverence Development Team",
+    "license": "Proprietary",
+    "repository": "https://github.com/cleverence/warehouse-mobile",
+    "lastUpdated": "2025-11-22"
   }
 }
-
