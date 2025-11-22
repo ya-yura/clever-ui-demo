@@ -11,24 +11,41 @@ import {
   Home,
   Sun,
   Moon,
+  Mail,
+  User,
+  FileText,
+  Edit2,
+  Trash2,
+  Plus,
+  X,
+  AlertCircle,
+  Info as InfoIcon,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
-// Import from our new Design System Component Library
+// Import ALL components from Design System
 import {
   Button,
+  IconButton,
   Card,
   Badge,
   Chip,
   Avatar,
   ProgressBar,
   Input,
-  TextArea,
   Checkbox,
   Toggle,
+  Select,
   Skeleton,
   SkeletonText,
   SkeletonCard,
+  Tabs,
+  List,
+  ListItem,
+  Divider,
+  Modal,
+  Toast,
+  Tooltip,
 } from '@/design/components';
 
 const DesignSystemShowcase: React.FC = () => {
@@ -36,6 +53,22 @@ const DesignSystemShowcase: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const [toggleState, setToggleState] = useState(false);
   const [checkboxState, setCheckboxState] = useState(true);
+  const [activeTab, setActiveTab] = useState('home');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [selectValue, setSelectValue] = useState('option1');
+
+  const tabs = [
+    { id: 'home', label: 'Главная', icon: <Home size={16} /> },
+    { id: 'docs', label: 'Документы', icon: <FileText size={16} />, badge: 3 },
+    { id: 'settings', label: 'Настройки', icon: <Settings size={16} /> },
+  ];
+
+  const selectOptions = [
+    { value: 'option1', label: 'Опция 1' },
+    { value: 'option2', label: 'Опция 2' },
+    { value: 'option3', label: 'Опция 3' },
+  ];
 
   return (
     <div className="min-h-screen bg-surface-primary text-content-primary p-8 pb-32 font-sans transition-colors duration-200">
@@ -44,103 +77,37 @@ const DesignSystemShowcase: React.FC = () => {
         {/* Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between pb-8 border-b border-surface-tertiary gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-content-primary mb-2 tracking-tight">Design System</h1>
-            <p className="text-content-secondary text-lg">Cleverence Mobile Proto • v1.0.0</p>
+            <h1 className="text-4xl font-bold text-content-primary mb-2 tracking-tight">Design System v2.0</h1>
+            <p className="text-content-secondary text-lg">Cleverence Warehouse Mobile • 19 компонентов</p>
           </div>
           <div className="flex gap-3">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={toggleTheme}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            </Button>
+            <Tooltip content={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}>
+              <IconButton 
+                icon={theme === 'dark' ? <Sun /> : <Moon />}
+                variant="ghost"
+                onClick={toggleTheme}
+                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              />
+            </Tooltip>
             <Button variant="secondary" onClick={() => navigate('/')} startIcon={<Home size={18} />}>
-              Back to Home
+              На главную
             </Button>
           </div>
         </header>
 
-        {/* 1. Typography Scale */}
+        {/* 1. Buttons & IconButtons */}
         <section className="space-y-6">
-          <SectionHeader title="01. Typography" description="Atkinson Hyperlegible scale" />
-          
-          <Card noPadding className="overflow-hidden">
-            <div className="p-8 space-y-8">
-              <TypeSpecimen size="text-3xl" label="Display 3XL" weight="font-bold" sizeLabel="36px" />
-              <TypeSpecimen size="text-2xl" label="Display 2XL" weight="font-bold" sizeLabel="32px" />
-              <TypeSpecimen size="text-xl" label="Heading XL" weight="font-bold" sizeLabel="24px" />
-              <TypeSpecimen size="text-lg" label="Heading LG" weight="font-bold" sizeLabel="20px" />
-              <TypeSpecimen size="text-base" label="Body Base" weight="font-normal" sizeLabel="16px" />
-              <TypeSpecimen size="text-sm" label="Body Small" weight="font-normal" sizeLabel="12px" />
-              <TypeSpecimen size="text-xs" label="Caption XS" weight="font-normal" sizeLabel="10px" />
-            </div>
-          </Card>
-        </section>
-
-        {/* 2. Color Palette */}
-        <section className="space-y-6">
-          <SectionHeader title="02. Colors" description="Semantic palette tokens" />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Surface */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-content-tertiary border-b border-surface-tertiary pb-2">Surface</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <ColorCard name="surface-primary" hex="#242424" bg="bg-surface-primary" />
-                <ColorCard name="surface-secondary" hex="#343436" bg="bg-surface-secondary" />
-                <ColorCard name="surface-tertiary" hex="#474747" bg="bg-surface-tertiary" />
-                <ColorCard name="surface-inverse" hex="#ffffff" bg="bg-surface-inverse" text="text-surface-primary" />
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-content-tertiary border-b border-surface-tertiary pb-2">Content</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <ColorCard name="content-primary" hex="#ffffff" bg="bg-content-primary" text="text-surface-primary" />
-                <ColorCard name="content-secondary" hex="#e3e3dd" bg="bg-content-secondary" text="text-surface-primary" />
-                <ColorCard name="content-tertiary" hex="#a7a7a7" bg="bg-content-tertiary" text="text-surface-primary" />
-                <ColorCard name="content-inverse" hex="#242424" bg="bg-content-inverse" text="text-content-primary" />
-              </div>
-            </div>
-
-            {/* Brand */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-content-tertiary border-b border-surface-tertiary pb-2">Brand</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <ColorCard name="brand-primary" hex="#daa420" bg="bg-brand-primary" text="text-brand-dark" />
-                <ColorCard name="brand-dark" hex="#725a1e" bg="bg-brand-dark" text="text-white" />
-                <ColorCard name="brand-secondary" hex="#86e0cb" bg="bg-brand-secondary" text="text-surface-primary" />
-              </div>
-            </div>
-
-            {/* Status */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-content-tertiary border-b border-surface-tertiary pb-2">Status</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <ColorCard name="success" hex="#91ed91" bg="bg-success" text="text-surface-primary" />
-                <ColorCard name="warning" hex="#f3a361" bg="bg-warning" text="text-surface-primary" />
-                <ColorCard name="error" hex="#ba8f8e" bg="bg-error" text="text-surface-primary" />
-                <ColorCard name="info" hex="#86e0cb" bg="bg-info" text="text-surface-primary" />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 3. Buttons */}
-        <section className="space-y-6">
-          <SectionHeader title="03. Buttons" description="Interactive elements" />
+          <SectionHeader title="01. Buttons & IconButtons" description="Кнопки и иконочные кнопки" />
 
           <Card className="space-y-8">
             {/* Standard Buttons */}
             <div className="space-y-4">
-              <h4 className="text-sm text-content-tertiary font-bold uppercase">Standard</h4>
+              <h4 className="text-sm text-content-tertiary font-bold uppercase">Стандартные кнопки</h4>
               <div className="flex flex-wrap gap-4 items-center">
-                <Button variant="primary">Primary Action</Button>
+                <Button variant="primary">Primary</Button>
                 <Button variant="secondary">Secondary</Button>
                 <Button variant="ghost">Ghost</Button>
+                <Button variant="danger">Danger</Button>
                 <Button variant="primary" disabled>Disabled</Button>
                 <Button variant="primary" isLoading>Loading</Button>
               </div>
@@ -148,82 +115,321 @@ const DesignSystemShowcase: React.FC = () => {
 
             {/* With Icons */}
             <div className="space-y-4">
-              <h4 className="text-sm text-content-tertiary font-bold uppercase">With Icons</h4>
+              <h4 className="text-sm text-content-tertiary font-bold uppercase">С иконками</h4>
               <div className="flex flex-wrap gap-4 items-center">
-                <Button variant="primary" startIcon={<Check size={18} />}>Confirm</Button>
-                <Button variant="secondary" startIcon={<Settings size={18} />}>Settings</Button>
-                <Button variant="ghost" endIcon={<ChevronRight size={18} />}>Next</Button>
+                <Button variant="primary" startIcon={<Check size={18} />}>Подтвердить</Button>
+                <Button variant="secondary" startIcon={<Settings size={18} />}>Настройки</Button>
+                <Button variant="ghost" endIcon={<ChevronRight size={18} />}>Далее</Button>
               </div>
             </div>
 
-            {/* Icon Only */}
+            {/* Icon Buttons */}
             <div className="space-y-4">
-              <h4 className="text-sm text-content-tertiary font-bold uppercase">Icon Only</h4>
+              <h4 className="text-sm text-content-tertiary font-bold uppercase">IconButtons</h4>
               <div className="flex flex-wrap gap-4 items-center">
-                <Button variant="primary" size="icon"><Search size={20} /></Button>
-                <Button variant="secondary" size="icon"><Bell size={20} /></Button>
-                <Button variant="ghost" size="icon"><MoreHorizontal size={20} /></Button>
+                <IconButton icon={<Search />} variant="default" />
+                <IconButton icon={<Bell />} variant="primary" badge={5} />
+                <IconButton icon={<Settings />} variant="ghost" />
+                <IconButton icon={<Trash2 />} variant="danger" />
+              </div>
+            </div>
+
+            {/* Sizes */}
+            <div className="space-y-4">
+              <h4 className="text-sm text-content-tertiary font-bold uppercase">Размеры</h4>
+              <div className="flex flex-wrap gap-4 items-center">
+                <Button size="sm">Small</Button>
+                <Button size="md">Medium</Button>
+                <Button size="lg">Large</Button>
+                <IconButton icon={<Search />} size="sm" />
+                <IconButton icon={<Search />} size="md" />
+                <IconButton icon={<Search />} size="lg" />
               </div>
             </div>
           </Card>
         </section>
 
-        {/* 4. Cards */}
+        {/* 2. Cards & Divider */}
         <section className="space-y-6">
-          <SectionHeader title="04. Cards" description="Content containers" />
+          <SectionHeader title="02. Cards & Dividers" description="Контейнеры и разделители" />
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Base Card */}
             <Card>
               <h4 className="text-lg font-bold mb-2">Base Card</h4>
-              <p className="text-content-secondary text-sm leading-relaxed">
-                Standard container with subtle border and no shadow. Used for grouped content.
-              </p>
+              <p className="text-content-secondary text-sm">Базовая карточка</p>
             </Card>
 
-            {/* Elevated Card */}
             <Card variant="elevated">
-              <h4 className="text-lg font-bold mb-2 text-brand-primary">Elevated Card</h4>
-              <p className="text-content-secondary text-sm leading-relaxed">
-                Container with soft shadow (`shadow-soft`). Used for floating elements or emphasis.
-              </p>
+              <h4 className="text-lg font-bold mb-2 text-brand-primary">Elevated</h4>
+              <p className="text-content-secondary text-sm">С тенью</p>
             </Card>
 
-            {/* Interactive Card */}
             <Card variant="interactive">
-              <div className="flex justify-between items-start mb-3">
-                 <h4 className="text-lg font-bold">Interactive</h4>
-                 <Badge label="Click Me" variant="success" />
+              <h4 className="text-lg font-bold mb-2">Interactive</h4>
+              <Badge label="Кликабельная" variant="success" />
+            </Card>
+          </div>
+
+          <Card>
+            <h4 className="font-bold mb-4">Divider примеры</h4>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm mb-2">Горизонтальный:</p>
+                <Divider />
               </div>
-              <p className="text-content-secondary text-sm leading-relaxed">
-                Reacts to hover and click. Scales down slightly on active press.
-              </p>
+              
+              <div>
+                <p className="text-sm mb-2">С лейблом:</p>
+                <Divider label="ИЛИ" />
+              </div>
+
+              <div>
+                <p className="text-sm mb-2">Вертикальный:</p>
+                <div className="flex items-center gap-4">
+                  <span>Левая часть</span>
+                  <Divider orientation="vertical" />
+                  <span>Правая часть</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </section>
+
+        {/* 3. Tabs */}
+        <section className="space-y-6">
+          <SectionHeader title="03. Tabs" description="Навигация по вкладкам" />
+
+          <Card className="space-y-6">
+            <div>
+              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Default</h4>
+              <Tabs 
+                tabs={tabs}
+                activeTab={activeTab}
+                onChange={setActiveTab}
+                variant="default"
+              />
+            </div>
+
+            <div>
+              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Pills</h4>
+              <Tabs 
+                tabs={tabs}
+                activeTab={activeTab}
+                onChange={setActiveTab}
+                variant="pills"
+              />
+            </div>
+
+            <div>
+              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Underline</h4>
+              <Tabs 
+                tabs={tabs}
+                activeTab={activeTab}
+                onChange={setActiveTab}
+                variant="underline"
+              />
+            </div>
+          </Card>
+        </section>
+
+        {/* 4. Lists */}
+        <section className="space-y-6">
+          <SectionHeader title="04. Lists" description="Списки элементов" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <h4 className="font-bold mb-4">Базовый список</h4>
+              <List>
+                <ListItem title="Элемент 1" />
+                <ListItem title="Элемент 2" subtitle="С описанием" />
+                <ListItem title="Элемент 3" />
+              </List>
+            </Card>
+
+            <Card>
+              <h4 className="font-bold mb-4">С иконками</h4>
+              <List>
+                <ListItem 
+                  title="Главная"
+                  icon={<Home size={20} />}
+                  showChevron
+                />
+                <ListItem 
+                  title="Настройки"
+                  subtitle="Конфигурация приложения"
+                  icon={<Settings size={20} />}
+                  showChevron
+                />
+                <ListItem 
+                  title="Профиль"
+                  icon={<User size={20} />}
+                  active
+                />
+              </List>
             </Card>
           </div>
         </section>
 
-        {/* 5. UI Elements */}
+        {/* 5. Form Elements */}
         <section className="space-y-6">
-          <SectionHeader title="05. UI Elements" description="Badges, Avatars, Progress" />
+          <SectionHeader title="05. Form Elements" description="Элементы форм" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Inputs & Select */}
+            <Card className="space-y-6">
+              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Input & Select</h4>
+              
+              <Input 
+                label="Email"
+                type="email" 
+                placeholder="user@example.com"
+                icon={<Mail size={18} />}
+                fullWidth
+              />
+
+              <Input 
+                label="Поиск"
+                type="text" 
+                placeholder="Найти..."
+                icon={<Search size={18} />}
+                fullWidth
+              />
+
+              <Select 
+                label="Выберите опцию"
+                options={selectOptions}
+                value={selectValue}
+                onChange={(e) => setSelectValue(e.target.value)}
+                fullWidth
+              />
+
+              <Input 
+                label="Disabled"
+                type="text" 
+                disabled
+                value="Нельзя редактировать" 
+                fullWidth
+              />
+            </Card>
+
+            {/* Controls */}
+            <Card className="space-y-6">
+              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Checkbox & Toggle</h4>
+              
+              <div className="space-y-4">
+                <Checkbox 
+                  label="Согласен с условиями"
+                  checked={checkboxState}
+                  onChange={(e) => setCheckboxState(e.target.checked)}
+                />
+
+                <Checkbox 
+                  label="Получать уведомления"
+                  checked={false}
+                  onChange={() => {}}
+                />
+
+                <Checkbox 
+                  label="Отключено"
+                  checked={false}
+                  disabled
+                  onChange={() => {}}
+                />
+              </div>
+
+              <Divider spacing="sm" />
+
+              <div className="space-y-4">
+                <Toggle 
+                  label="Уведомления"
+                  checked={toggleState}
+                  onChange={(e) => setToggleState(e.target.checked)}
+                />
+
+                <Toggle 
+                  label="Тёмная тема"
+                  checked={theme === 'dark'}
+                  onChange={toggleTheme}
+                />
+
+                <Toggle 
+                  label="Отключено"
+                  checked={false}
+                  disabled
+                  onChange={() => {}}
+                />
+              </div>
+            </Card>
+          </div>
+        </section>
+
+        {/* 6. Overlays (Modal, Toast, Tooltip) */}
+        <section className="space-y-6">
+          <SectionHeader title="06. Overlays" description="Modal, Toast, Tooltip" />
+
+          <Card className="space-y-6">
+            <div>
+              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Modal</h4>
+              <Button onClick={() => setIsModalOpen(true)}>
+                Открыть модальное окно
+              </Button>
+            </div>
+
+            <Divider />
+
+            <div>
+              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Toast</h4>
+              <div className="flex flex-wrap gap-2">
+                <Button 
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setShowToast(true)}
+                >
+                  Показать Toast
+                </Button>
+              </div>
+            </div>
+
+            <Divider />
+
+            <div>
+              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Tooltip</h4>
+              <div className="flex flex-wrap gap-4">
+                <Tooltip content="Подсказка сверху" position="top">
+                  <Button variant="secondary">Наведите (top)</Button>
+                </Tooltip>
+                
+                <Tooltip content="Подсказка справа" position="right">
+                  <Button variant="secondary">Наведите (right)</Button>
+                </Tooltip>
+                
+                <Tooltip content="Подсказка снизу" position="bottom">
+                  <Button variant="secondary">Наведите (bottom)</Button>
+                </Tooltip>
+                
+                <Tooltip content="Подсказка слева" position="left">
+                  <Button variant="secondary">Наведите (left)</Button>
+                </Tooltip>
+              </div>
+            </div>
+          </Card>
+        </section>
+
+        {/* 7. UI Elements */}
+        <section className="space-y-6">
+          <SectionHeader title="07. UI Elements" description="Badge, Avatar, Chip, Progress" />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
-            {/* Avatars & Badges */}
             <Card className="space-y-8">
               <div className="space-y-4">
                 <h4 className="text-sm text-content-tertiary font-bold uppercase">Avatars</h4>
                 <div className="flex items-center gap-4">
-                  <Avatar size="lg" src="https://i.pravatar.cc/150?img=11" fallback="JD" />
-                  <Avatar size="md" fallback="AB" status="online" />
-                  <Avatar size="sm" fallback="User" status="offline" />
-                  <div className="flex -space-x-3">
-                    <Avatar size="sm" fallback="1" className="border-2 border-surface-secondary" />
-                    <Avatar size="sm" fallback="2" className="border-2 border-surface-secondary" />
-                    <Avatar size="sm" fallback="3" className="border-2 border-surface-secondary" />
-                    <div className="w-8 h-8 rounded-full bg-surface-tertiary border-2 border-surface-secondary flex items-center justify-center text-[10px] font-bold text-content-secondary">
-                      +5
-                    </div>
-                  </div>
+                  <Avatar size="xs" name="User" />
+                  <Avatar size="sm" name="AB" />
+                  <Avatar size="md" name="CD" status="online" />
+                  <Avatar size="lg" name="EF" />
+                  <Avatar size="xl" name="GH" />
                 </div>
               </div>
 
@@ -239,216 +445,136 @@ const DesignSystemShowcase: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-sm text-content-tertiary font-bold uppercase">Chips (Interactive)</h4>
+                <h4 className="text-sm text-content-tertiary font-bold uppercase">Chips</h4>
                 <div className="flex flex-wrap gap-2">
-                  <Chip label="Inactive" variant="neutral" />
-                  <Chip label="Active" variant="neutral" active />
+                  <Chip label="Inactive" />
+                  <Chip label="Active" active />
                   <Chip label="Primary" variant="primary" active />
-                  <Chip label="Info" variant="info" active />
                   <Chip label="Success" variant="success" active />
-                  <Chip label="Warning" variant="warning" active />
                   <Chip label="Error" variant="error" active />
                 </div>
               </div>
             </Card>
 
-            {/* Progress & Loading */}
             <Card className="space-y-8">
               <div className="space-y-4">
-                <h4 className="text-sm text-content-tertiary font-bold uppercase">Progress Indicators</h4>
+                <h4 className="text-sm text-content-tertiary font-bold uppercase">Progress Bar</h4>
                 
-                <div className="space-y-2">
-                  <ProgressBar value={45} showLabel />
-                </div>
-
-                <div className="space-y-2">
+                <div className="space-y-4">
+                  <ProgressBar value={25} showLabel />
+                  <ProgressBar value={50} variant="primary" showLabel />
+                  <ProgressBar value={75} variant="warning" showLabel />
                   <ProgressBar value={100} variant="success" showLabel />
                 </div>
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-sm text-content-tertiary font-bold uppercase">Skeleton Loading</h4>
-                <div className="space-y-3 animate-pulse">
-                  <div className="h-4 bg-surface-tertiary rounded w-3/4"></div>
-                  <div className="h-4 bg-surface-tertiary rounded w-1/2"></div>
-                  <div className="h-32 bg-surface-tertiary rounded w-full mt-4"></div>
-                </div>
-              </div>
-            </Card>
-
-          </div>
-        </section>
-
-        {/* 6. Forms */}
-        <section className="space-y-6">
-          <SectionHeader title="06. Form Elements" description="Inputs, Toggles, Checkboxes" />
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Inputs */}
-            <Card className="space-y-6">
-              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Input Fields</h4>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-content-secondary">Email Address</label>
-                <Input 
-                  type="email" 
-                  placeholder="user@example.com"
-                  icon={<Search size={18} />}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-content-secondary">Bio</label>
-                <TextArea 
-                  rows={3}
-                  placeholder="Tell us about yourself..." 
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-content-secondary">Disabled Input</label>
-                <Input 
-                  type="text" 
-                  disabled
-                  value="Cannot edit this" 
-                />
-              </div>
-            </Card>
-
-            {/* Controls */}
-            <Card className="space-y-6">
-              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Selection Controls</h4>
-              
-              {/* Toggle */}
-              <Card className="p-3 flex items-center justify-between bg-surface-primary border-surface-tertiary">
-                <Toggle 
-                  label="Notifications"
-                  description="Receive email alerts"
-                  checked={toggleState}
-                  onChange={() => setToggleState(!toggleState)}
-                />
-              </Card>
-
-              {/* Checkbox */}
-              <Card className="p-3 flex items-center bg-surface-primary border-surface-tertiary">
-                <Checkbox 
-                  label="Terms of Service"
-                  description="I agree to the terms"
-                  checked={checkboxState}
-                  onChange={() => setCheckboxState(!checkboxState)}
-                />
-              </Card>
-
-            </Card>
-          </div>
-        </section>
-
-        {/* 7. Skeleton Loaders */}
-        <section className="space-y-6">
-          <SectionHeader title="07. Skeleton Loaders" description="Loading placeholders" />
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Basic Skeletons */}
-            <Card className="space-y-6">
-              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Basic Shapes</h4>
-              
-              <div className="space-y-4">
-                <div>
-                  <p className="text-xs text-content-tertiary mb-2">Text (single line)</p>
-                  <Skeleton variant="text" />
-                </div>
-
-                <div>
-                  <p className="text-xs text-content-tertiary mb-2">Text (multiple lines)</p>
+                <h4 className="text-sm text-content-tertiary font-bold uppercase">Skeleton</h4>
+                <div className="space-y-3">
+                  <Skeleton variant="text" width="60%" />
                   <SkeletonText lines={3} />
-                </div>
-
-                <div>
-                  <p className="text-xs text-content-tertiary mb-2">Circular (avatar)</p>
-                  <Skeleton variant="circular" width={48} height={48} />
-                </div>
-
-                <div>
-                  <p className="text-xs text-content-tertiary mb-2">Rectangular (image)</p>
-                  <Skeleton variant="rectangular" className="w-full h-32" />
+                  <Skeleton variant="circle" size={48} />
+                  <Skeleton variant="rect" width="100%" height={100} />
                 </div>
               </div>
             </Card>
 
-            {/* Complex Skeletons */}
-            <Card className="space-y-6">
-              <h4 className="text-sm text-content-tertiary font-bold uppercase mb-4">Complex Layouts</h4>
-              
-              <div className="space-y-4">
-                <div>
-                  <p className="text-xs text-content-tertiary mb-2">Card with Avatar</p>
-                  <SkeletonCard hasAvatar />
-                </div>
-
-                <div>
-                  <p className="text-xs text-content-tertiary mb-2">Card with Image</p>
-                  <SkeletonCard hasImage />
-                </div>
-              </div>
-            </Card>
           </div>
         </section>
 
-        {/* 8. Calendar */}
+        {/* 8. Typography */}
         <section className="space-y-6">
-          <SectionHeader title="08. Calendar" description="Date picker component" />
+          <SectionHeader title="08. Typography" description="Типографическая шкала" />
           
-          <Card variant="elevated" className="max-w-sm mx-auto md:mx-0 p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-bold text-content-primary flex items-center gap-2">
-                <CalendarIcon size={18} className="text-brand-primary" />
-                October 2025
-              </h4>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                  <ChevronRight size={18} className="rotate-180" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                  <ChevronRight size={18} />
-                </Button>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-7 gap-1 mb-2 text-center">
-              {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
-                <span key={d} className="text-xs font-bold text-content-tertiary py-1">{d}</span>
-              ))}
-            </div>
-            
-            <div className="grid grid-cols-7 gap-1 text-center">
-              {/* Empty days */}
-              {[...Array(2)].map((_, i) => <div key={`empty-${i}`} className="p-2" />)}
-              
-              {/* Days */}
-              {[...Array(31)].map((_, i) => {
-                const day = i + 1;
-                const isSelected = day === 24;
-                const isToday = day === 20;
-                
-                return (
-                  <button 
-                    key={day}
-                    className={`
-                      p-2 rounded-lg text-sm font-medium transition-colors
-                      ${isSelected ? 'bg-brand-primary text-brand-dark font-bold shadow-soft' : ''}
-                      ${isToday && !isSelected ? 'border border-brand-primary text-brand-primary' : ''}
-                      ${!isSelected && !isToday ? 'text-content-secondary hover:bg-surface-tertiary' : ''}
-                    `}
-                  >
-                    {day}
-                  </button>
-                );
-              })}
+          <Card noPadding className="overflow-hidden">
+            <div className="p-8 space-y-6">
+              <TypeSpecimen size="text-4xl" label="4XL" weight="font-bold" sizeLabel="48px" />
+              <TypeSpecimen size="text-3xl" label="3XL" weight="font-bold" sizeLabel="36px" />
+              <TypeSpecimen size="text-2xl" label="2XL" weight="font-bold" sizeLabel="32px" />
+              <TypeSpecimen size="text-xl" label="XL" weight="font-bold" sizeLabel="24px" />
+              <TypeSpecimen size="text-lg" label="LG" weight="font-semibold" sizeLabel="20px" />
+              <TypeSpecimen size="text-base" label="Base" weight="font-normal" sizeLabel="16px" />
+              <TypeSpecimen size="text-sm" label="SM" weight="font-normal" sizeLabel="12px" />
+              <TypeSpecimen size="text-xs" label="XS" weight="font-normal" sizeLabel="10px" />
             </div>
           </Card>
         </section>
 
+        {/* 9. Colors */}
+        <section className="space-y-6">
+          <SectionHeader title="09. Colors" description="Цветовая палитра" />
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="space-y-3">
+              <h4 className="text-sm font-bold uppercase text-content-tertiary">Brand</h4>
+              <ColorCard name="Primary" hex="#daa420" bg="bg-brand-primary" text="text-brand-primaryDark" />
+              <ColorCard name="Secondary" hex="#86e0cb" bg="bg-brand-secondary" text="text-brand-secondaryDark" />
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-bold uppercase text-content-tertiary">Status</h4>
+              <ColorCard name="Success" hex="#91ed91" bg="bg-status-success" text="text-status-successDark" />
+              <ColorCard name="Warning" hex="#f3a361" bg="bg-status-warning" text="text-status-warningDark" />
+              <ColorCard name="Error" hex="#ba8f8e" bg="bg-status-error" text="text-status-errorDark" />
+              <ColorCard name="Info" hex="#86e0cb" bg="bg-status-info" text="text-status-infoDark" />
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-bold uppercase text-content-tertiary">Surface</h4>
+              <ColorCard name="Primary" hex="#242424" bg="bg-surface-primary" />
+              <ColorCard name="Secondary" hex="#343436" bg="bg-surface-secondary" />
+              <ColorCard name="Tertiary" hex="#474747" bg="bg-surface-tertiary" />
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-bold uppercase text-content-tertiary">Content</h4>
+              <ColorCard name="Primary" hex="#ffffff" bg="bg-content-primary" text="text-content-inverse" />
+              <ColorCard name="Secondary" hex="#e3e3dd" bg="bg-content-secondary" text="text-content-inverse" />
+              <ColorCard name="Tertiary" hex="#a7a7a7" bg="bg-content-tertiary" text="text-content-inverse" />
+            </div>
+          </div>
+        </section>
+
       </div>
+
+      {/* Modal Demo */}
+      <Modal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Пример модального окна"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-content-secondary">
+            Это демонстрация модального окна. Здесь может быть любой контент.
+          </p>
+          
+          <Input 
+            label="Введите текст"
+            placeholder="Пример поля ввода в модальном окне"
+            fullWidth
+          />
+        </div>
+        
+        <div className="flex gap-3 justify-end mt-6">
+          <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+            Отмена
+          </Button>
+          <Button variant="primary" onClick={() => setIsModalOpen(false)}>
+            Подтвердить
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Toast Demo */}
+      {showToast && (
+        <Toast 
+          message="Это уведомление Toast!"
+          variant="success"
+          duration={3000}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 };
@@ -463,10 +589,10 @@ const SectionHeader = ({ title, description }: { title: string, description: str
 );
 
 const ColorCard = ({ name, hex, bg, text = "text-content-primary" }: { name: string, hex: string, bg: string, text?: string }) => (
-  <Card className={`${bg} ${text} flex flex-col justify-between h-24 border-black/5 shadow-soft`}>
+  <div className={`${bg} ${text} p-4 rounded-lg flex flex-col justify-between h-20 shadow-sm`}>
     <span className="font-bold text-sm">{name}</span>
     <span className="font-mono text-xs opacity-80 uppercase">{hex}</span>
-  </Card>
+  </div>
 );
 
 const TypeSpecimen = ({ size, label, weight, sizeLabel }: any) => (
