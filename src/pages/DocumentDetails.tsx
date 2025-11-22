@@ -331,7 +331,7 @@ const DocumentDetails: React.FC = () => {
       </div>
 
       {items.length > 0 && (
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-0.5">
           {STATUS_SUMMARY.map((stat) => {
             const isActive = statusFilter === stat.key;
             return (
@@ -360,7 +360,7 @@ const DocumentDetails: React.FC = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1">
           {filteredItems.map(({ raw: item, index, planned, actual, status, diff, diffLabel, diffColor, completion }) => {
             const productName =
               item.product?.name || item.productName || item.productMarking || item.productId || '—';
