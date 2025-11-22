@@ -1,7 +1,7 @@
 // === 📁 src/pages/DocumentDetails.tsx ===
 // Document details page with items table
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/services/api';
 import { ODataDocumentItem } from '@/types/odata';
@@ -165,6 +165,117 @@ const DocumentDetails: React.FC = () => {
     return Array.from(itemsMap.values()).sort((a, b) => a.index - b.index);
   };
 
+  const items = getMergedItems();
+
+  const formatQuantity = (value: number | undefined | null) => {
+    if (value === undefined || value === null || Number.isNaN(Number(value))) {
+      return '0';
+    }
+    return Number(value).toLocaleString('ru-RU', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 3,
+    });
+  };
+
+  type ItemStatus = 'pending' | 'progress' | 'done' | 'over';
+
+  const getItemStatus = (planned: number, actual: number): ItemStatus => {
+    if (planned <= 0 && actual <= 0) return 'pending';
+    if (actual === 0) return 'pending';
+    if (actual >= planned && planned > 0) return actual > planned ? 'over' : 'done';
+    if (actual > 0 && actual < planned) return 'progress';
+    return 'pending';
+  };
+
+  const STATUS_META: Record<
+    ItemStatus,
+    { label: string; badge: string; border: string; progress: string }
+  > = {
+    pending: {
+      label: 'Не начато',
+      badge: 'bg-[#363636] text-[#c5c5c5]',
+      border: 'border-[#4f4f4f]',
+      progress: 'bg-[#4f4f4f]',
+    },
+    progress: {
+      label: 'В работе',
+      badge: 'bg-blue-500/15 text-blue-300 ring-1 ring-inset ring-blue-500/40',
+      border: 'border-blue-500/50',
+      progress: 'bg-blue-500/70',
+    },
+    done: {
+      label: 'Готово',
+      badge: 'bg-emerald-500/20 text-emerald-200 ring-1 ring-inset ring-emerald-400/40',
+      border: 'border-emerald-500/40',
+      progress: 'bg-emerald-400/90',
+    },
+    over: {
+      label: 'Переполнено',
+      badge: 'bg-amber-500/20 text-amber-100 ring-1 ring-inset ring-amber-400/40',
+      border: 'border-amber-500/50',
+      progress: 'bg-amber-400/90',
+    },
+  };
+
+  const normalizedItems = useMemo(() => {
+    return items.map((item, index) => {
+      const planned = typeof item.declaredQuantity === 'number'
+        ? item.declaredQuantity
+        : Number(item.quantityPlan ?? item.plan ?? 0);
+      const actualCandidate =
+        item.currentQuantity ?? item.currentQuantityWithBinding ?? item.quantityFact ?? item.factQuantity ?? 0;
+      const actual = typeof actualCandidate === 'number' ? actualCandidate : Number(actualCandidate || 0);
+      const status = getItemStatus(planned, actual);
+      const diff = actual - planned;
+      const diffLabel = diff === 0 ? '0' : diff > 0 ? `+${formatQuantity(diff)}` : formatQuantity(diff);
+      const diffColor =
+        diff === 0 ? 'text-[#cfcfcf]' : diff > 0 ? 'text-amber-300' : 'text-red-300';
+      const completion =
+        planned <= 0 && actual > 0
+          ? 100
+          : planned <= 0
+          ? 0
+          : Math.min(100, (actual / planned) * 100);
+
+      return {
+        raw: item,
+        index,
+        planned,
+        actual,
+        status,
+        diff,
+        diffLabel,
+        diffColor,
+        completion,
+      };
+    });
+  }, [items]);
+
+  const statusCounters = normalizedItems.reduce(
+    (acc, entry) => {
+      acc[entry.status] += 1;
+      return acc;
+    },
+    { pending: 0, progress: 0, done: 0, over: 0 },
+  );
+
+  const [statusFilter, setStatusFilter] = useState<'all' | ItemStatus>('all');
+
+  const filteredItems = statusFilter === 'all'
+    ? normalizedItems
+    : normalizedItems.filter((entry) => entry.status === statusFilter);
+
+  const STATUS_SUMMARY: Array<{
+    key: 'progress' | 'pending' | 'done' | 'over';
+    label: string;
+    className: string;
+  }> = [
+    { key: 'progress', label: 'В работе', className: 'bg-[#253456] text-blue-200' },
+    { key: 'pending', label: 'Не начато', className: 'bg-[#3f3f3f] text-[#f3f3f3]' },
+    { key: 'done', label: 'Готово', className: 'bg-[#1f3d34] text-emerald-200' },
+    { key: 'over', label: 'Переполнено', className: 'bg-[#4a3a1f] text-amber-100' },
+  ];
+
   // Loading state
   if (loading) {
     return (
@@ -204,72 +315,6 @@ const DocumentDetails: React.FC = () => {
     );
   }
 
-  const items = getMergedItems();
-
-  const formatQuantity = (value: number | undefined | null) => {
-    if (value === undefined || value === null || Number.isNaN(Number(value))) {
-      return '0';
-    }
-    return Number(value).toLocaleString('ru-RU', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3,
-    });
-  };
-
-  const getItemStatus = (planned: number, actual: number) => {
-    if (planned <= 0 && actual <= 0) return 'pending';
-    if (actual === 0) return 'pending';
-    if (actual >= planned && planned > 0) return actual > planned ? 'over' : 'done';
-    if (actual > 0 && actual < planned) return 'progress';
-    return 'pending';
-  };
-
-  const STATUS_META: Record<
-    ReturnType<typeof getItemStatus>,
-    { label: string; badge: string; border: string; progress: string }
-  > = {
-    pending: {
-      label: 'Не начато',
-      badge: 'bg-[#363636] text-[#c5c5c5]',
-      border: 'border-[#4f4f4f]',
-      progress: 'bg-[#4f4f4f]',
-    },
-    progress: {
-      label: 'В работе',
-      badge: 'bg-blue-500/15 text-blue-300 ring-1 ring-inset ring-blue-500/40',
-      border: 'border-blue-500/50',
-      progress: 'bg-blue-500/70',
-    },
-    done: {
-      label: 'Готово',
-      badge: 'bg-emerald-500/20 text-emerald-200 ring-1 ring-inset ring-emerald-400/40',
-      border: 'border-emerald-500/40',
-      progress: 'bg-emerald-400/90',
-    },
-    over: {
-      label: 'Переполнено',
-      badge: 'bg-amber-500/20 text-amber-100 ring-1 ring-inset ring-amber-400/40',
-      border: 'border-amber-500/50',
-      progress: 'bg-amber-400/90',
-    },
-  };
-
-  const statusCounters = items.reduce(
-    (acc, item) => {
-      const planned = typeof item.declaredQuantity === 'number'
-        ? item.declaredQuantity
-        : Number(item.quantityPlan ?? item.plan ?? 0);
-      const actualCandidate =
-        item.currentQuantity ?? item.currentQuantityWithBinding ?? item.quantityFact ?? item.factQuantity ?? 0;
-      const actual = typeof actualCandidate === 'number' ? actualCandidate : Number(actualCandidate || 0);
-
-      const status = getItemStatus(planned, actual);
-      acc[status] += 1;
-      return acc;
-    },
-    { pending: 0, progress: 0, done: 0, over: 0 },
-  );
-
   return (
     <div className="space-y-3">
       {/* Document header (compact) */}
@@ -286,21 +331,22 @@ const DocumentDetails: React.FC = () => {
       </div>
 
       {items.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-          {([
-            { key: 'progress', label: 'В работе', className: 'text-blue-300 bg-blue-500/20' },
-            { key: 'pending', label: 'Не начато', className: 'text-[#d0d0d0] bg-[#444]' },
-            { key: 'done', label: 'Готово', className: 'text-emerald-200 bg-emerald-500/20' },
-            { key: 'over', label: 'Переполнено', className: 'text-amber-100 bg-amber-500/20' },
-          ] as const).map((stat) => (
-            <div
-              key={stat.key}
-              className={`rounded-lg px-3 py-2 border border-white/5 ${stat.className}`}
-            >
-              <div className="text-[10px] uppercase tracking-wide opacity-70">{stat.label}</div>
-              <div className="text-xl font-semibold">{statusCounters[stat.key]}</div>
-            </div>
-          ))}
+        <div className="flex flex-wrap gap-1">
+          {STATUS_SUMMARY.map((stat) => {
+            const isActive = statusFilter === stat.key;
+            return (
+              <button
+                key={stat.key}
+                onClick={() => setStatusFilter(isActive ? 'all' : stat.key)}
+                className={`flex-1 min-w-[120px] px-3 py-2 rounded-lg text-left transition-all text-xs ${
+                  isActive ? 'ring-2 ring-offset-2 ring-brand-primary' : ''
+                } ${stat.className}`}
+              >
+                <div className="text-[10px] uppercase tracking-wide opacity-70">{stat.label}</div>
+                <div className="text-xl font-semibold">{statusCounters[stat.key]}</div>
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -315,12 +361,11 @@ const DocumentDetails: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-2">
-          {items.map((item, index) => {
+          {filteredItems.map(({ raw: item, index, planned, actual, status, diff, diffLabel, diffColor, completion }) => {
             const productName =
               item.product?.name || item.productName || item.productMarking || item.productId || '—';
             const article =
               item.product?.marking || item.product?.barcode || item.productBarcode || item.productMarking || '—';
-            const barcode = item.product?.barcode || item.productBarcode;
             const location =
               item.firstCellId ||
               item.secondCellId ||
@@ -330,26 +375,7 @@ const DocumentDetails: React.FC = () => {
               item.secondStorageId ||
               '—';
 
-            const plannedRaw =
-              typeof item.declaredQuantity === 'number'
-                ? item.declaredQuantity
-                : Number(item.quantityPlan ?? item.plan ?? 0);
-            const actualRawCandidate =
-              item.currentQuantity ?? item.currentQuantityWithBinding ?? item.quantityFact ?? item.factQuantity ?? 0;
-            const actualRaw = typeof actualRawCandidate === 'number' ? actualRawCandidate : Number(actualRawCandidate || 0);
-
-            const status = getItemStatus(plannedRaw, actualRaw);
             const statusMeta = STATUS_META[status];
-            const diff = actualRaw - plannedRaw;
-            const diffLabel = diff === 0 ? '0' : diff > 0 ? `+${formatQuantity(diff)}` : formatQuantity(diff);
-            const diffColor =
-              diff === 0 ? 'text-[#cfcfcf]' : diff > 0 ? 'text-amber-300' : 'text-red-300';
-            const completion =
-              plannedRaw <= 0 && actualRaw > 0
-                ? 100
-                : plannedRaw <= 0
-                ? 0
-                : Math.min(100, (actualRaw / plannedRaw) * 100);
 
             return (
               <div
@@ -361,9 +387,8 @@ const DocumentDetails: React.FC = () => {
                     <span
                       className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${diffColor} border border-white/10`}
                       style={{
-                        backgroundColor: diff > 0
-                          ? 'rgba(251,191,36,0.15)'
-                          : 'rgba(239,68,68,0.15)',
+                        backgroundColor:
+                          diff > 0 ? 'rgba(251,191,36,0.15)' : 'rgba(239,68,68,0.15)',
                       }}
                     >
                       {diffLabel}
@@ -379,8 +404,8 @@ const DocumentDetails: React.FC = () => {
                   <span className="bg-[#333] rounded px-2 py-0.5 truncate">Артикул: {article}</span>
                   <span className="bg-[#1f2937] text-[#9be7ff] rounded px-2 py-0.5 truncate">Место: {location}</span>
                   <div className="flex items-center gap-2 text-[11px] text-[#f5f5f5]">
-                    <span>Пл {formatQuantity(plannedRaw)}</span>
-                    <span>Факт {formatQuantity(actualRaw)}</span>
+                    <span>Пл {formatQuantity(planned)}</span>
+                    <span>Факт {formatQuantity(actual)}</span>
                     <span className={`${diffColor} font-semibold`}>{diffLabel}</span>
                   </div>
                 </div>
