@@ -17,7 +17,7 @@ interface ChipProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
  */
 export const Chip: React.FC<ChipProps> = ({ 
   label, 
-  variant = 'neutral',
+  variant = 'neutral', 
   active = false,
   icon,
   className = '',
@@ -30,21 +30,21 @@ export const Chip: React.FC<ChipProps> = ({
   // Variant styles (inactive state)
   const inactiveVariants = {
     neutral: 'bg-surface-primary text-content-secondary border-surface-tertiary hover:border-content-tertiary active:bg-surface-tertiary',
-    primary: 'bg-surface-primary text-brand-primary border-brand-primary/30 hover:border-brand-primary active:bg-brand-primary/10',
-    info: 'bg-surface-primary text-info border-info/30 hover:border-info active:bg-info/10',
-    success: 'bg-surface-primary text-success border-success/30 hover:border-success active:bg-success/10',
-    warning: 'bg-surface-primary text-warning border-warning/30 hover:border-warning active:bg-warning/10',
-    error: 'bg-surface-primary text-error border-error/30 hover:border-error active:bg-error/10',
+    primary: 'bg-surface-primary text-brand-primary border-brand-primary/30 hover:border-brand-primary',
+    info: 'bg-surface-primary text-status-info border-status-info/30 hover:border-status-info',
+    success: 'bg-surface-primary text-status-success border-status-success/30 hover:border-status-success',
+    warning: 'bg-surface-primary text-status-warning border-status-warning/30 hover:border-status-warning',
+    error: 'bg-surface-primary text-status-error border-status-error/30 hover:border-status-error',
   };
 
-  // Active state styles
+  // Active state styles - using solid backgrounds or strong borders
   const activeVariants = {
-    neutral: 'bg-content-tertiary/20 text-content-primary border-content-tertiary',
-    primary: 'bg-brand-primary/20 text-brand-primary border-brand-primary',
-    info: 'bg-info/20 text-info border-info',
-    success: 'bg-success/20 text-success border-success',
-    warning: 'bg-warning/20 text-warning border-warning',
-    error: 'bg-error/20 text-error border-error',
+    neutral: 'bg-surface-tertiary text-content-primary border-content-tertiary',
+    primary: 'bg-brand-primary text-brand-primaryDark border-brand-primary',
+    info: 'bg-status-info text-status-infoDark border-status-info',
+    success: 'bg-status-success text-status-successDark border-status-success',
+    warning: 'bg-status-warning text-status-warningDark border-status-warning',
+    error: 'bg-status-error text-status-errorDark border-status-error',
   };
 
   const variantStyles = active ? activeVariants[variant] : inactiveVariants[variant];
@@ -60,4 +60,3 @@ export const Chip: React.FC<ChipProps> = ({
     </button>
   );
 };
-
