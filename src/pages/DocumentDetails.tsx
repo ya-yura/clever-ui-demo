@@ -409,12 +409,7 @@ const DocumentDetails: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-1 h-1 bg-[#1a1a1a] rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${statusMeta.progress}`}
-                    style={{ width: `${completion}%` }}
-                  />
-                </div>
+                {/* Removed progress bar as per request */}
               </div>
             );
           })}
