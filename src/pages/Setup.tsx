@@ -128,8 +128,8 @@ const Setup: React.FC = () => {
             )}
 
             {/* Hint */}
-            <div className="bg-brand-secondary bg-opacity-10 border border-brand-secondary rounded-lg p-3">
-              <p className="text-xs text-brand-secondary">
+            <div className="bg-surface-tertiary border border-border-default rounded-lg p-3">
+              <p className="text-xs text-content-primary">
                 💡 Убедитесь, что сервер Cleverence Mobile SMARTS запущен и доступен по указанному адресу
               </p>
             </div>
