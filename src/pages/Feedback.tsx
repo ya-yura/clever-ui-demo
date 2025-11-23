@@ -84,7 +84,7 @@ const Feedback: React.FC = () => {
                 onClick={() => setType(option.value)}
                 className={`p-4 rounded-lg border-2 transition-all touch-manipulation ${
                   type === option.value
-                    ? 'border-blue-500 bg-blue-600/20'
+                    ? 'border-blue-500 bg-brand-primary/20'
                     : 'border-gray-600 hover:border-gray-500'
                 }`}
               >
@@ -130,10 +130,10 @@ const Feedback: React.FC = () => {
         </div>
 
         {/* Info Alert */}
-        <div className="bg-blue-600/20 border border-blue-600/50 rounded-xl p-4 flex gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+        <div className="bg-brand-primary/20 border border-blue-600/50 rounded-xl p-4 flex gap-3">
+          <AlertCircle className="w-5 h-5 text-brand-primary flex-shrink-0 mt-0.5" />
           <div className="text-sm text-gray-300">
-            <p className="font-semibold text-blue-400 mb-1">Обратная связь в оффлайн режиме</p>
+            <p className="font-semibold text-brand-primary mb-1">Обратная связь в оффлайн режиме</p>
             <p>
               Ваше сообщение будет сохранено локально и отправлено автоматически при восстановлении соединения.
             </p>
@@ -145,7 +145,7 @@ const Feedback: React.FC = () => {
           <button
             type="submit"
             disabled={message.length < 10}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-4 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 touch-manipulation"
+            className="flex-1 bg-brand-primary hover:brightness-90 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-4 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 touch-manipulation"
           >
             <Send className="w-5 h-5" />
             Отправить

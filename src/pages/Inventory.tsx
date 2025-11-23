@@ -400,7 +400,7 @@ const Inventory: React.FC = () => {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-4">
           <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <div className="text-2xl font-bold text-brand-primary dark:text-brand-primary">
               {document.completedLines}
             </div>
             <div className="text-xs text-gray-600 dark:text-gray-400">Пересчитано</div>
@@ -486,7 +486,7 @@ const Inventory: React.FC = () => {
                       </div>
                       <div className="bg-white dark:bg-gray-800 rounded p-2">
                         <div className="text-xs text-gray-600 dark:text-gray-400">Факт</div>
-                        <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                        <div className="text-lg font-bold text-brand-primary dark:text-brand-primary">
                           {line.quantityFact}
                         </div>
                       </div>

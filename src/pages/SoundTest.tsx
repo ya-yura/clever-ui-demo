@@ -123,7 +123,7 @@ export default function SoundTest() {
 
           {/* Сканирование */}
           <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-2 text-blue-600">
+            <h2 className="text-xl font-semibold mb-2 text-brand-primary">
               📱 Сканирование
             </h2>
             <p className="text-gray-600 mb-4">
@@ -132,13 +132,13 @@ export default function SoundTest() {
             <div className="flex gap-3">
               <button
                 onClick={() => testSound('scan', 'Сканирование (звук)')}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-brand-primary text-white rounded hover:bg-brand-primary transition-colors"
               >
                 🔊 Только звук
               </button>
               <button
                 onClick={() => testFeedback('scan', 'Сканирование')}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-brand-primary text-white rounded hover:brightness-90 transition-colors"
               >
                 🔊📳 Звук + Вибрация
               </button>

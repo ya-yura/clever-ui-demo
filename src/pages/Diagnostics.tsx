@@ -193,7 +193,7 @@ const Diagnostics: React.FC = () => {
           <button
             onClick={runDiagnostics}
             disabled={running}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center gap-2 touch-manipulation"
+            className="bg-brand-primary hover:brightness-90 disabled:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center gap-2 touch-manipulation"
           >
             <Activity className={`w-5 h-5 ${running ? 'animate-spin' : ''}`} />
             {running ? 'Проверка...' : 'Запустить проверку'}

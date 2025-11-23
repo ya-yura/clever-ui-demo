@@ -40,7 +40,7 @@ const Statistics: React.FC = () => {
           unit: 'док.',
           trend: 'up',
           icon: Package,
-          color: 'bg-blue-500',
+          color: 'bg-brand-primary',
         },
         {
           id: 'placement',

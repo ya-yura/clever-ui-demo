@@ -93,7 +93,7 @@ const Settings: React.FC = () => {
               className="bg-[#474747] rounded-xl p-6 shadow-lg"
             >
               <div className="flex items-center gap-3 mb-4">
-                <Icon className="w-6 h-6 text-blue-400" />
+                <Icon className="w-6 h-6 text-brand-primary" />
                 <h2 className="text-xl font-semibold text-[#e3e3dd]">
                   {section.title}
                 </h2>
@@ -138,7 +138,7 @@ const Settings: React.FC = () => {
                     {field.type === 'toggle' && (
                       <button
                         className={`relative w-14 h-8 rounded-full transition-colors ${
-                          field.value ? 'bg-blue-600' : 'bg-gray-600'
+                          field.value ? 'bg-brand-primary' : 'bg-gray-600'
                         }`}
                       >
                         <span
@@ -160,7 +160,7 @@ const Settings: React.FC = () => {
       <div className="flex gap-4 mt-8">
         <button
           onClick={handleSave}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 touch-manipulation"
+          className="flex-1 bg-brand-primary hover:brightness-90 text-white px-6 py-4 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 touch-manipulation"
         >
           {saved ? (
             <>

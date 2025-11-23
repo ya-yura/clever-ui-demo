@@ -242,7 +242,7 @@ const Return: React.FC = () => {
         <div className="flex justify-end">
           <button
             onClick={() => setShowTypeSelector(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-brand-primary text-white rounded-lg font-semibold hover:brightness-90 transition-colors"
           >
             + Создать
           </button>
@@ -256,7 +256,7 @@ const Return: React.FC = () => {
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => createDocument('return')}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                className="px-6 py-3 bg-brand-primary text-white rounded-lg font-semibold hover:brightness-90 transition-colors"
               >
                 ♻️ Возврат
               </button>
@@ -423,7 +423,7 @@ const Return: React.FC = () => {
                       setSelectedLineId(line.id);
                       setShowReasonModal(true);
                     }}
-                    className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                    className="px-3 py-1 bg-brand-primary text-white rounded text-sm hover:brightness-90"
                   >
                     Указать причину
                   </button>
@@ -462,7 +462,7 @@ const Return: React.FC = () => {
                   onClick={() => setSelectedReason(reason.value)}
                   className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-colors ${
                     selectedReason === reason.value
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-brand-primary text-white'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >

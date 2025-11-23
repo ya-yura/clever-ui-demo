@@ -169,7 +169,7 @@ const DocumentsByType: React.FC = () => {
           <div className="flex gap-4 justify-center">
             <button
               onClick={loadDocuments}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors"
+              className="bg-brand-primary hover:bg-brand-primary text-white px-6 py-3 rounded-lg transition-colors"
             >
               Повторить
             </button>

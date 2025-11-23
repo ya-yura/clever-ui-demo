@@ -52,14 +52,15 @@
         }
       },
       "brand": {
-        "primary": "#4480f3",
-        "primaryDark": "#3d75e4",
-        "primaryLight": "#6b9bf5",
-        "secondary": "#86e0cb",
-        "secondaryDark": "#2d7a6b",
-        "secondaryLight": "#b3f0e3",
-        "accent": "#fea079",
-        "accentDark": "#8c533b"
+        "primary": "#d4a938",
+        "primaryDark": "#a88a2d",
+        "primaryLight": "#f3d640",
+        "secondary": "#d89968",
+        "secondaryDark": "#a87548",
+        "secondaryLight": "#ffcda3",
+        "tertiary": "#f09283",
+        "tertiaryDark": "#c76b5b",
+        "tertiaryLight": "#fcd0d0"
       },
       "status": {
         "success": "#5fad05",

@@ -10,7 +10,7 @@ const About: React.FC = () => {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-600 rounded-full mb-4">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-brand-primary rounded-full mb-4">
           <Info className="w-10 h-10 text-white" />
         </div>
         <h1 className="text-4xl font-bold text-[#e3e3dd] mb-2">
@@ -73,7 +73,7 @@ const About: React.FC = () => {
           {['React 18', 'TypeScript', 'Tailwind CSS', 'Vite', 'IndexedDB', 'Dexie.js', 'Framer Motion', 'React Router'].map((tech) => (
             <span
               key={tech}
-              className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-sm font-medium"
+              className="px-3 py-1 bg-brand-primary/20 text-brand-primary rounded-full text-sm font-medium"
             >
               {tech}
             </span>
@@ -87,7 +87,7 @@ const About: React.FC = () => {
         <div className="space-y-3">
           <a
             href="mailto:support@cleverence.com"
-            className="flex items-center gap-3 text-gray-200 hover:text-blue-400 transition-colors"
+            className="flex items-center gap-3 text-gray-200 hover:text-brand-primary transition-colors"
           >
             <Mail className="w-5 h-5" />
             <span>support@cleverence.com</span>
@@ -96,7 +96,7 @@ const About: React.FC = () => {
             href="https://cleverence.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 text-gray-200 hover:text-blue-400 transition-colors"
+            className="flex items-center gap-3 text-gray-200 hover:text-brand-primary transition-colors"
           >
             <Globe className="w-5 h-5" />
             <span>cleverence.com</span>
@@ -105,7 +105,7 @@ const About: React.FC = () => {
             href="https://github.com/cleverence"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 text-gray-200 hover:text-blue-400 transition-colors"
+            className="flex items-center gap-3 text-gray-200 hover:text-brand-primary transition-colors"
           >
             <Github className="w-5 h-5" />
             <span>github.com/cleverence</span>

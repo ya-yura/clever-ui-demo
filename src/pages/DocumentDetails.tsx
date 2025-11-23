@@ -122,7 +122,7 @@ const DocumentDetails: React.FC = () => {
       return <span className="px-2 py-1 bg-green-600/80 text-white text-[10px] rounded-full uppercase tracking-wide">Завершён</span>;
     }
     if (document.inProcess) {
-      return <span className="px-2 py-1 bg-blue-500/80 text-white text-[10px] rounded-full uppercase tracking-wide">В работе</span>;
+      return <span className="px-2 py-1 bg-brand-primary/80 text-white text-[10px] rounded-full uppercase tracking-wide">В работе</span>;
     }
     return <span className="px-2 py-1 bg-gray-500/80 text-white text-[10px] rounded-full uppercase tracking-wide">Новый</span>;
   };
@@ -199,9 +199,9 @@ const DocumentDetails: React.FC = () => {
     },
     progress: {
       label: 'В работе',
-      badge: 'bg-blue-500/15 text-blue-300 ring-1 ring-inset ring-blue-500/40',
+      badge: 'bg-brand-primary/15 text-blue-300 ring-1 ring-inset ring-blue-500/40',
       border: 'border-blue-500/50',
-      progress: 'bg-blue-500/70',
+      progress: 'bg-brand-primary/70',
     },
     done: {
       label: 'Готово',
@@ -299,7 +299,7 @@ const DocumentDetails: React.FC = () => {
           <div className="flex gap-4 justify-center">
             <button
               onClick={loadDocument}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors"
+              className="bg-brand-primary hover:bg-brand-primary text-white px-6 py-3 rounded-lg transition-colors"
             >
               Повторить
             </button>
