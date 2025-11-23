@@ -31,11 +31,12 @@ export default {
           inverse: 'var(--color-content-inverse)',
         },
         
-        // Brand colors (consistent across themes)
+        // Brand colors (base palette from mockup)
         brand: {
           primary: 'var(--color-brand-primary)',
           dark: 'var(--color-brand-dark)',
           secondary: 'var(--color-brand-secondary)',
+          tertiary: 'var(--color-brand-tertiary)',
         },
         
         // Status colors (consistent across themes)
