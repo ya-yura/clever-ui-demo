@@ -59,6 +59,20 @@
   --color-warning: #e78018;           /* Orange */
   --color-error: #e35454;             /* Red */
   --color-info: #4480f3;              /* Blue (same as primary) */
+
+  /* Module colors */
+  --color-module-receiving-bg: #d1ae00;
+  --color-module-receiving-text: #4a3b00;
+  --color-module-picking-bg: #f5ab61;
+  --color-module-picking-text: #4d2900;
+  --color-module-shipment-bg: #5fad05;
+  --color-module-shipment-text: #ffffff;
+  --color-module-placement-bg: #86e0cb;
+  --color-module-placement-text: #154038;
+  --color-module-inventory-bg: #fb9898;
+  --color-module-inventory-text: #4d1a1a;
+  --color-module-return-bg: #e35454;
+  --color-module-return-text: #ffffff;
 }
 
 /* Light theme override - Extracted from Figma Colors Default */
