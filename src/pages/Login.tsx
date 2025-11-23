@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { configService } from '@/services/configService';
 import { authService } from '@/services/authService';
+import { Logo } from '@/components/Logo';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -136,7 +137,7 @@ const Login: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         {/* Logo and Title */}
         <div className="text-center">
-          <div className="text-6xl mb-4">🔐</div>
+          <Logo size={120} className="mb-6" />
           <h1 className="text-3xl font-bold text-[#e3e3dd] mb-2">
             Вход в систему
           </h1>

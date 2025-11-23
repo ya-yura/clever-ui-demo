@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { configService } from '@/services/configService';
+import { Logo } from '@/components/Logo';
 
 const Setup: React.FC = () => {
   const navigate = useNavigate();
@@ -83,7 +84,7 @@ const Setup: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         {/* Logo and Title */}
         <div className="text-center">
-          <div className="text-6xl mb-4">📦</div>
+          <Logo size={140} className="mb-6" />
           <h1 className="text-3xl font-bold text-[#e3e3dd] mb-2">
             Склад 15
           </h1>
