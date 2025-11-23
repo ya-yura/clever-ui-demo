@@ -210,11 +210,11 @@ body {
   }
 
   .tile-title-md {
-    @apply text-xl md:text-[18px] font-semibold mb-0.5 tracking-tight;
+    @apply text-base md:text-[16px] font-semibold mb-0.5 tracking-tight truncate;
   }
 
   .tile-title-sm {
-    @apply text-lg md:text-[16px] font-semibold mb-0.5 tracking-tight;
+    @apply text-sm md:text-[15px] font-semibold mb-0.5 tracking-tight truncate;
   }
 
   .tile-subtext {
