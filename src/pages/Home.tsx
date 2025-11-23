@@ -429,7 +429,7 @@ const Home: React.FC = () => {
         )}
       </div>
 
-      {/* Row: Учёт and Документооборот (neutral dark tiles) */}
+      {/* Row: Учёт (cyan) and Документооборот (green) */}
       <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-3">
         {tVozvrat && (
           <button
@@ -438,7 +438,7 @@ const Home: React.FC = () => {
             className="tile-secondary tone-medium tile-outline col-span-2 bg-surface-secondary border-border-default"
           >
             <div>
-              <h2 className="tile-title-sm text-content-primary">{tVozvrat.displayName}</h2>
+              <h2 className="tile-title-sm" style={{ color: 'var(--color-accent-cyan)' }}>{tVozvrat.displayName}</h2>
               <p className="tile-subtext text-content-secondary">{tVozvrat.description}</p>
             </div>
             <div className="tile-footer">

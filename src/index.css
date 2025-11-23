@@ -61,9 +61,10 @@
   --color-error: #e35454;             /* Red */
   --color-info: #4480f3;              /* Blue (same as primary) */
 
-  /* Accent colors for secondary tiles */
-  --color-accent-green: #7ed321;      /* Bright green accent */
-  --color-accent-yellow: #e0b536;     /* Yellow accent */
+  /* Accent colors for secondary tiles (from Figma mockup) */
+  --color-accent-cyan: #4dd0e1;       /* Cyan/turquoise accent (Учёт) */
+  --color-accent-green: #7ed321;      /* Bright green accent (Документооборот, Размещение) */
+  --color-accent-yellow: #e0b536;     /* Yellow accent (По складам, По ячейкам, etc) */
 
   /* Module colors (exact match from Figma mockup screenshot) */
   --color-module-receiving-bg: #c9a636;
