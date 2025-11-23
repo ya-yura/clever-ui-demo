@@ -464,20 +464,20 @@ const Home: React.FC = () => {
         )}
       </div>
 
-      {/* Full-width: Штрихкоды (neutral dark tile) */}
-      {tInvent && (
+      {/* Secondary row: Отгрузка (full-width neutral tile) */}
+      {tOtgruzka && (
         <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-3">
           <button
-            key={`${tInvent.uni}-full`}
-            onClick={() => navigate(`/docs/${tInvent.uni}`)}
+            key={`${tOtgruzka.uni}-full`}
+            onClick={() => navigate(`/docs/${tOtgruzka.uni}`)}
             className="tile-secondary tone-medium tile-outline col-span-4 bg-surface-secondary border-border-default"
           >
             <div>
-              <h2 className="tile-title-md text-content-primary">{tInvent.displayName}</h2>
-              <p className="tile-subtext text-content-secondary">{tInvent.description}</p>
+              <h2 className="tile-title-md text-content-primary">{tOtgruzka.displayName}</h2>
+              <p className="tile-subtext text-content-secondary">{tOtgruzka.description}</p>
             </div>
             <div className="tile-footer">
-              <span className="text-content-secondary">{tInvent.docsCount}</span>
+              <span className="text-content-secondary">{tOtgruzka.docsCount}</span>
             </div>
           </button>
         </div>
