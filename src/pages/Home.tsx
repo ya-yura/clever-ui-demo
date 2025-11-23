@@ -483,13 +483,9 @@ const Home: React.FC = () => {
         </div>
       )}
 
-      {/* Перемещения section with cycling accent colors */}
+      {/* Additional tiles with cycling accent colors */}
       {(secondaryTiles.length > 0 || tertiaryTiles.length > 0) && (
-        <>
-          <div className="mt-6 mb-2">
-            <h3 className="text-lg font-semibold text-content-tertiary">Перемещения</h3>
-          </div>
-          <div className="grid grid-cols-2 gap-1.5 md:gap-2">
+        <div className="grid grid-cols-2 gap-1.5 md:gap-2 mt-3">
             {[...secondaryTiles, ...tertiaryTiles].map((docType, index) => {
               // Cycling through accent colors: cyan, green, yellow, orange, pink
               const accentColors = [
@@ -517,8 +513,7 @@ const Home: React.FC = () => {
                 </button>
               );
             })}
-          </div>
-        </>
+        </div>
       )}
 
       {/* Empty state */}
