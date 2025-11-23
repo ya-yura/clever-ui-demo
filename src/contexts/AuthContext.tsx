@@ -8,10 +8,12 @@ import { authService } from '@/services/authService';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>;
+  loginDemo: () => void;
   logout: () => void;
   updateUser: (user: User) => void;
   isLoading: boolean;
   checkNoAuth: () => Promise<boolean>;
+  isDemo: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +27,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     token: null,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isDemo, setIsDemo] = useState(false);
 
   // Save auth state to localStorage
   const saveAuthState = useCallback((state: AuthState) => {
@@ -57,6 +60,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       user: null,
       token: null,
     });
+    setIsDemo(false);
+    localStorage.removeItem('demo_mode');
     console.log('✅ Logout successful');
   }, [saveAuthState]);
 
@@ -206,15 +211,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
+  // Demo mode login
+  const loginDemo = () => {
+    const demoUser: User = {
+      id: 'demo-user',
+      name: 'Демо Пользователь',
+      username: 'demo',
+      role: 'worker',
+    };
+
+    setAuthState({
+      isAuthenticated: true,
+      user: demoUser,
+      token: 'demo-token',
+    });
+    
+    setIsDemo(true);
+    localStorage.setItem('demo_mode', 'true');
+    console.log('✅ Demo mode activated');
+  };
+
   return (
     <AuthContext.Provider
       value={{
         ...authState,
         login,
+        loginDemo,
         logout,
         updateUser,
         isLoading,
         checkNoAuth,
+        isDemo,
       }}
     >
       {children}

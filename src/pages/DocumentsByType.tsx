@@ -7,6 +7,7 @@ import { odataCache } from '@/services/odataCache';
 import { ODataDocument, ODataDocumentType } from '@/types/odata';
 import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
 import { DocumentsByTypeSkeleton } from '@/components/documents/DocumentsByTypeSkeleton';
+import { Badge } from '@/design/components';
 
 // Short, human-friendly titles per document type
 const SHORT_TITLES: Record<string, string> = {
@@ -206,8 +207,8 @@ const DocumentsByType: React.FC = () => {
         </div>
       )}
 
-      {/* Status filter buttons */}
-      <div className="grid grid-cols-4 gap-1 px-0.5">
+      {/* Status filter badges */}
+      <div className="flex flex-wrap gap-1.5">
         {[
           { key: 'all', label: 'Все' },
           { key: 'new', label: 'Новые' },
@@ -218,12 +219,21 @@ const DocumentsByType: React.FC = () => {
           return (
             <button
               key={s.key}
+              type="button"
               onClick={() => setStatusFilter(s.key as any)}
-              className={`w-full px-2 py-2 rounded-md text-left text-[11px] transition-all ${
-                isActive ? 'ring-2 ring-offset-2 ring-brand-primary bg-[#2f2f2f]' : 'bg-[#3d3d3d]'
-              }`}
+              aria-pressed={isActive}
+              className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent transition-shadow duration-150"
             >
-              <div className="text-[9px] uppercase tracking-wide opacity-70">{s.label}</div>
+              <Badge
+                label={s.label}
+                size="sm"
+                variant="neutral"
+                className={`uppercase tracking-wide ${
+                  isActive
+                    ? 'bg-brand-primary border-brand-primary text-brand-primaryDark shadow-sm'
+                    : 'bg-transparent border-content-tertiary/70 text-content-tertiary'
+                }`}
+              />
             </button>
           );
         })}

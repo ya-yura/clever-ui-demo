@@ -5,6 +5,7 @@
 
 import type { ButtonAction } from '../types/ui-schema';
 import { api } from './api';
+import { demoDataService } from './demoDataService';
 
 export interface DocumentCount {
   action: ButtonAction;
@@ -55,6 +56,13 @@ export class DocumentCounterService {
   }
 
   /**
+   * Проверить демо-режим
+   */
+  private isDemoMode(): boolean {
+    return localStorage.getItem('demo_mode') === 'true';
+  }
+
+  /**
    * Запрос к API функциональной программы
    */
   private async fetchCount(action: ButtonAction): Promise<number> {
@@ -70,6 +78,28 @@ export class DocumentCounterService {
       TRANSFER: '/Docs/Peremeshenie',
       MARKING: '/Docs/Markirovka',
     };
+
+    const uniMap: Record<ButtonAction, string> = {
+      none: '',
+      RECEIVING: 'PrihodNaSklad',
+      ORDER_PICKING: 'PodborZakaza',
+      SHIPPING: 'Otgruzka',
+      INVENTORY: 'Inventarizaciya',
+      PLACEMENT: 'RazmeshhenieVYachejki',
+      RETURN: 'Vozvrat',
+      TRANSFER: 'Peremeshenie',
+      MARKING: 'Markirovka',
+    };
+
+    // Demo mode - return data from JSON
+    if (this.isDemoMode()) {
+      const uni = uniMap[action];
+      if (!uni) return 0;
+      
+      const count = demoDataService.getDocumentsCount(uni);
+      console.log(`🎭 [DEMO] ${action}: ${count} documents`);
+      return count;
+    }
 
     const endpoint = endpointMap[action];
     if (!endpoint) {

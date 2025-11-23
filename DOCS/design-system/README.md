@@ -94,9 +94,9 @@ const color = accentColors[index % accentColors.length];
 
 **Dark Theme:**
 ```css
---color-surface-primary: #121721;   /* Основной фон */
---color-surface-secondary: #1d222a; /* Карточки, плитки */
---color-surface-tertiary: #2a2f38;  /* Inputs, hover */
+--color-surface-primary: #343436;   /* Основной фон */
+--color-surface-secondary: #343436; /* Карточки, плитки */
+--color-surface-tertiary: #343436;  /* Inputs, hover */
 ```
 
 **Light Theme:**

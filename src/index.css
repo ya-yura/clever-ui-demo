@@ -34,18 +34,18 @@
   --font-family-mono: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', ui-monospace, monospace;
 
   /* Surface colors (backgrounds) */
-  --color-surface-primary: #121721;
-  --color-surface-secondary: #1d222a;
-  --color-surface-tertiary: #2a2f38;
+  --color-surface-primary: #343436;
+  --color-surface-secondary: #343436;
+  --color-surface-tertiary: #343436;
   --color-surface-inverse: #ffffff;
-  --color-surface-overlay: rgba(18, 23, 33, 0.8);
-  --color-surface-disabled: #2a2f38;
+  --color-surface-overlay: rgba(52, 52, 54, 0.85);
+  --color-surface-disabled: #343436;
 
   /* Content colors (text) */
   --color-content-primary: #eaecf0;
   --color-content-secondary: #aaaeb6;
   --color-content-tertiary: #80858e;
-  --color-content-inverse: #121721;
+  --color-content-inverse: #343436;
   --color-content-disabled: #525760;
 
   /* Border colors */
@@ -56,7 +56,7 @@
 
   /* Brand colors (base palette from Figma) */
   --color-brand-primary: #d89668;
-  --color-brand-dark: #a87548;
+  --color-brand-dark: #3d2817;
   --color-brand-light: #ffcda3;
   --color-brand-secondary: #c9a636;
   --color-brand-secondary-dark: #a88a2d;
@@ -114,7 +114,7 @@
   --color-surface-primary: #f5f6f8;
   --color-surface-secondary: #ffffff;
   --color-surface-tertiary: #eaecf0;
-  --color-surface-inverse: #121721;
+  --color-surface-inverse: #343436;
   --color-surface-overlay: rgba(255, 255, 255, 0.8);
   --color-surface-disabled: #f5f6f8;
 

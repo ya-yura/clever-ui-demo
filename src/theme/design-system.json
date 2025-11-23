@@ -7,18 +7,18 @@
     "colors": {
       "dark": {
         "surface": {
-          "primary": "#121721",
-          "secondary": "#1d222a",
-          "tertiary": "#2a2f38",
+          "primary": "#343436",
+          "secondary": "#343436",
+          "tertiary": "#343436",
           "inverse": "#ffffff",
-          "overlay": "rgba(18, 23, 33, 0.8)",
-          "disabled": "#2a2f38"
+          "overlay": "rgba(52, 52, 54, 0.85)",
+          "disabled": "#343436"
         },
         "content": {
           "primary": "#eaecf0",
           "secondary": "#aaaeb6",
           "tertiary": "#80858e",
-          "inverse": "#121721",
+          "inverse": "#343436",
           "disabled": "#525760"
         },
         "border": {
@@ -33,7 +33,7 @@
           "primary": "#f5f6f8",
           "secondary": "#ffffff",
           "tertiary": "#eaecf0",
-          "inverse": "#121721",
+          "inverse": "#343436",
           "overlay": "rgba(255, 255, 255, 0.8)",
           "disabled": "#f5f6f8"
         },
@@ -53,7 +53,7 @@
       },
       "brand": {
         "primary": "#d89668",
-        "primaryDark": "#a87548",
+        "primaryDark": "#3d2817",
         "primaryLight": "#ffcda3",
         "secondary": "#c9a636",
         "secondaryDark": "#a88a2d",

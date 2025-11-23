@@ -9,7 +9,7 @@ PWA-приложение для управления складскими опе
 1. ✅ **Настроена работа с API** - загрузка данных с реального сервера
 2. ✅ **Удалены моковые данные** - только реальные данные с API
 3. ✅ **Правильный baseURL** - http://localhost:9000/MobileSMARTS/api/v1
-4. ✅ **OData endpoints** - /DocTypes, /Docs/{uni} согласно $metadata.xml
+4. ✅ **OData endpoints** - /DocTypes, /Docs/{uni} согласно DOCS/$metadata.xml
 5. ✅ **Заголовки списков в Header** - название типа и счётчик в шапке (+60px)
 6. ✅ **Информация документа в Header** - номер и прогресс в шапке (+60px)
 7. ✅ **Убраны информационные блоки** - вся информация в Header
@@ -244,7 +244,7 @@ npm install
    - URL: `http://localhost:9000`
    - Убедитесь, что API доступен: `http://localhost:9000/MobileSMARTS/api/v1/DocTypes`
 
-2. **Проверьте $metadata.xml:**
+2. **Проверьте DOCS/$metadata.xml:**
    - Должен находиться в корне проекта
    - Содержит описание OData схемы
 

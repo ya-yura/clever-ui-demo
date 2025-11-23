@@ -36,3 +36,8 @@ build/
 sw.js.map
 workbox-*.js
 workbox-*.js.map
+
+# Scripts output
+scripts/figma-token
+scripts/found_*.json
+scripts/test-interface.json

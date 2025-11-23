@@ -11,7 +11,7 @@ import { Logo } from '@/components/Logo';
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login, checkNoAuth } = useAuth();
+  const { login, loginDemo, checkNoAuth } = useAuth();
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -90,25 +90,17 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleDemoLogin = async () => {
+  const handleDemoLogin = () => {
     setError('');
     setIsDemoLogging(true);
 
     try {
-      const result = await login({
-        username: 'demo',
-        password: 'demo',
-        mode: 'demo',
-      });
-
-      if (result.success) {
+      loginDemo();
+      setTimeout(() => {
         navigate('/');
-      } else {
-        setError(result.error || 'Не удалось выполнить демо-вход');
-      }
+      }, 300);
     } catch (err: any) {
-      setError(err.message || 'Ошибка подключения к серверу');
-    } finally {
+      setError(err.message || 'Ошибка входа в демо-режим');
       setIsDemoLogging(false);
     }
   };
@@ -249,14 +241,12 @@ const Login: React.FC = () => {
             disabled={isDemoLogging}
             className="w-full py-3 px-4 border border-[#5a5a5a] bg-[#393939] text-[#b3b3b3] font-medium rounded-lg transition-colors hover:bg-[#454545] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            {isDemoLogging ? 'Запуск демо...' : 'Войти без авторизации'}
+            {isDemoLogging ? 'Запуск демо...' : 'Демо-режим'}
           </button>
 
-          {!requiresAuth && (
-            <div className="text-xs text-[#a7a7a7] text-center">
-              Этот сервер не требует авторизации. Используйте демо-режим для моментального доступа.
-            </div>
-          )}
+          <div className="text-xs text-[#a7a7a7] text-center">
+            В демо-режиме используются локальные данные без подключения к серверу
+          </div>
 
           {error && (
             <div className="bg-red-500 bg-opacity-10 border border-red-500 rounded-lg p-3">

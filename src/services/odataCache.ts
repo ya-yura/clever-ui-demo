@@ -4,11 +4,19 @@
 import { db } from './db';
 import { ODataDocumentType, ODataDocument, ODataCollection } from '@/types/odata';
 import { api } from './api';
+import { demoDataService } from './demoDataService';
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const ALL_DOCS_CACHE_KEY = 'docs_all';
 
 class ODataCacheService {
+  /**
+   * Check if demo mode is enabled
+   */
+  private isDemoMode(): boolean {
+    return localStorage.getItem('demo_mode') === 'true';
+  }
+
   /**
    * Check if cache is still valid
    */
@@ -34,6 +42,13 @@ class ODataCacheService {
    * Get document types with caching
    */
   async getDocTypes(forceRefresh = false): Promise<ODataDocumentType[]> {
+    // Demo mode - return data from JSON
+    if (this.isDemoMode()) {
+      console.log('🎭 [DEMO] Loading DocTypes from demo data');
+      const demoData = demoDataService.getDocTypes();
+      return demoData.value;
+    }
+
     const cacheKey = 'docTypes';
 
     // Try cache first (if not forcing refresh)
@@ -208,6 +223,13 @@ class ODataCacheService {
     docTypeUni: string,
     options?: { names?: string[]; forceRefresh?: boolean }
   ): Promise<ODataDocument[]> {
+    // Demo mode - return data from JSON
+    if (this.isDemoMode()) {
+      console.log(`🎭 [DEMO] Loading documents for ${docTypeUni}`);
+      const demoData = demoDataService.getDocuments(docTypeUni);
+      return demoData.value;
+    }
+
     const cacheKey = `docs_${docTypeUni}`;
     const forceRefresh = options?.forceRefresh === true;
 
