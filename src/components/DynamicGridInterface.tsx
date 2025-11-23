@@ -133,41 +133,87 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({
         const isDark = button.style === 'dark';
         const count = documentCounts.get(button.action as ButtonAction) ?? button.documentCount;
         
-        // Determine colors based on style or explicit override
-        let bg = isDark ? 'bg-surface-tertiary' : 'bg-brand-primary';
-        let text = isDark ? 'text-content-primary' : 'text-brand-dark';
-        let border = isDark ? 'border-surface-tertiary/50' : 'border-transparent';
+        // Module color mapping based on action
+        const MODULE_COLORS: Record<string, { bg: string; text: string }> = {
+          'RECEIVING': { bg: 'var(--color-module-receiving-bg)', text: 'var(--color-module-receiving-text)' },
+          'ORDER_PICKING': { bg: 'var(--color-module-picking-bg)', text: 'var(--color-module-picking-text)' },
+          'SHIPPING': { bg: 'var(--color-module-shipment-bg)', text: 'var(--color-module-shipment-text)' },
+          'INVENTORY': { bg: 'var(--color-module-inventory-bg)', text: 'var(--color-module-inventory-text)' },
+          'PLACEMENT': { bg: 'var(--color-module-placement-bg)', text: 'var(--color-module-placement-text)' },
+          'RETURN': { bg: 'var(--color-module-return-bg)', text: 'var(--color-module-return-text)' },
+          'TRANSFER': { bg: 'var(--color-module-transfer-bg)', text: 'var(--color-module-transfer-text)' },
+          'MARKING': { bg: 'var(--color-module-marking-bg)', text: 'var(--color-module-marking-text)' },
+        };
 
+        // Accent colors for dark (secondary) tiles
+        const accentColors = [
+          'var(--color-accent-cyan)',
+          'var(--color-accent-green)',
+          'var(--color-accent-yellow)',
+          'var(--color-brand-primary)',
+          'var(--color-brand-tertiary)',
+        ];
+        
         // Inline style overrides if provided in schema
         const styleOverrides: React.CSSProperties = {
           gridColumn: `${button.position.startCol + 1} / ${button.position.endCol + 2}`,
           gridRow: `${button.position.startRow + 1} / ${button.position.endRow + 2}`,
         };
 
-        // If custom color provided, use it (fallback logic if needed)
+        // Determine colors
+        let bgClass = '';
+        let textClass = '';
+        let borderClass = 'border-transparent';
+
         if (button.color) {
+          // Explicit color override from schema
           styleOverrides.backgroundColor = button.color;
+          textClass = isDark ? 'text-content-primary' : 'text-white';
+        } else if (!isDark && MODULE_COLORS[button.action]) {
+          // Light style (hero tiles) - use module-specific colors
+          const moduleColor = MODULE_COLORS[button.action];
+          styleOverrides.backgroundColor = moduleColor.bg;
+          styleOverrides.color = moduleColor.text;
+        } else if (isDark) {
+          // Dark style (secondary tiles) - gray background with accent title
+          bgClass = 'bg-surface-secondary';
+          textClass = 'text-content-primary';
+          borderClass = 'border-border-default';
+        } else {
+          // Fallback for light tiles without module mapping
+          styleOverrides.backgroundColor = 'var(--color-brand-primary)';
+          styleOverrides.color = 'var(--color-brand-dark)';
         }
+
+        // Get button index for accent color cycling
+        const buttonIndex = schema.buttons.indexOf(button);
+        const accentColor = isDark ? accentColors[buttonIndex % accentColors.length] : undefined;
 
         return (
           <button
             key={button.id}
             onClick={() => handleButtonClick(button)}
             className={`
-              ${bg} ${text} border ${border}
-              rounded-xl font-bold text-xl leading-tight
+              ${bgClass} ${textClass} border ${borderClass}
+              rounded-xl font-semibold leading-tight
               flex flex-col items-start justify-between
               p-4 md:p-5 text-left min-h-full cursor-pointer
-              transition-all duration-150 ease-out shadow-soft
+              transition-all duration-150 ease-out shadow-lg
               active:scale-[0.98] active:opacity-90 hover:brightness-110
             `}
             style={styleOverrides}
           >
-            <span className="flex-none max-w-full overflow-hidden text-ellipsis font-sans">
+            <span 
+              className="tile-title-sm flex-none max-w-full font-sans"
+              style={accentColor ? { color: accentColor } : {}}
+            >
               {button.label}
             </span>
             {count !== undefined && count > 0 && (
-              <span className="self-end text-white font-bold text-[28px] leading-none mt-auto drop-shadow-md font-sans">
+              <span 
+                className="self-end font-bold text-[28px] leading-none mt-auto drop-shadow-md font-sans"
+                style={{ opacity: 0.9 }}
+              >
                 {count}
               </span>
             )}

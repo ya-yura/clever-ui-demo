@@ -123,6 +123,18 @@
           "text": "#ffffff",
           "light": "#fb9898",
           "dark": "#4d2827"
+        },
+        "transfer": {
+          "bg": "#4dd0e1",
+          "text": "#154038",
+          "light": "#80deea",
+          "dark": "#26a69a"
+        },
+        "marking": {
+          "bg": "#7ed321",
+          "text": "#154038",
+          "light": "#a8e063",
+          "dark": "#5a9c15"
         }
       },
       "palette": {

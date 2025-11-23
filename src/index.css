@@ -99,6 +99,10 @@
   --color-module-inventory-text: #7d4a2d;
   --color-module-return-bg: #e35454;
   --color-module-return-text: #ffffff;
+  --color-module-transfer-bg: #4dd0e1;
+  --color-module-transfer-text: #154038;
+  --color-module-marking-bg: #7ed321;
+  --color-module-marking-text: #154038;
 }
 
 /* Light theme override */

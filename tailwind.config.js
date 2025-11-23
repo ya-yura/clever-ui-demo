@@ -58,6 +58,10 @@ export default {
         'module-inventory-text': 'var(--color-module-inventory-text)',
         'module-return-bg': 'var(--color-module-return-bg)',
         'module-return-text': 'var(--color-module-return-text)',
+        'module-transfer-bg': 'var(--color-module-transfer-bg)',
+        'module-transfer-text': 'var(--color-module-transfer-text)',
+        'module-marking-bg': 'var(--color-module-marking-bg)',
+        'module-marking-text': 'var(--color-module-marking-text)',
       },
       borderRadius: {
         DEFAULT: designSystem.dna.borderRadius.md,
