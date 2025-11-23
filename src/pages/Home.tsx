@@ -426,20 +426,20 @@ const Home: React.FC = () => {
         )}
       </div>
 
-      {/* Row: Return and Placement (2 columns each), smaller titles */}
+      {/* Row: Учёт and Документооборот (neutral dark tiles) */}
       <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-3">
         {tVozvrat && (
           <button
             key={`${tVozvrat.uni}-small`}
             onClick={() => navigate(`/docs/${tVozvrat.uni}`)}
-            className="tile-secondary tone-medium tile-outline col-span-2"
+            className="tile-secondary tone-medium tile-outline col-span-2 bg-surface-secondary border-border-default"
           >
             <div>
-              <h2 className="tile-title-sm text-brand-secondary">{tVozvrat.displayName}</h2>
-              <p className="tile-subtext text-content-primary">{tVozvrat.description}</p>
+              <h2 className="tile-title-sm text-content-primary">{tVozvrat.displayName}</h2>
+              <p className="tile-subtext text-content-secondary">{tVozvrat.description}</p>
             </div>
             <div className="tile-footer">
-              <span className="text-content-primary">{tVozvrat.docsCount}</span>
+              <span className="text-content-secondary">{tVozvrat.docsCount}</span>
             </div>
           </button>
         )}
@@ -448,79 +448,62 @@ const Home: React.FC = () => {
           <button
             key={`${tPlacement.uni}-small`}
             onClick={() => navigate(`/docs/${tPlacement.uni}`)}
-            className="tile-secondary tone-medium tile-outline col-span-2"
+            className="tile-secondary tone-medium tile-outline col-span-2 bg-surface-secondary border-border-default"
           >
             <div>
               <h2 className="tile-title-sm text-success">{tPlacement.displayName}</h2>
-              <p className="tile-subtext text-content-primary">{tPlacement.description}</p>
+              <p className="tile-subtext text-content-secondary">{tPlacement.description}</p>
             </div>
             <div className="tile-footer">
-              <span className="text-content-primary">{tPlacement.docsCount}</span>
+              <span className="text-content-secondary">{tPlacement.docsCount}</span>
             </div>
           </button>
         )}
       </div>
 
-      {/* Full-width: Inventory */}
+      {/* Full-width: Штрихкоды (neutral dark tile) */}
       {tInvent && (
         <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-3">
           <button
             key={`${tInvent.uni}-full`}
             onClick={() => navigate(`/docs/${tInvent.uni}`)}
-            className="tile-secondary tone-medium tile-outline col-span-4"
+            className="tile-secondary tone-medium tile-outline col-span-4 bg-surface-secondary border-border-default"
           >
             <div>
-              <h2 className="tile-title-md text-error">{tInvent.displayName}</h2>
-              <p className="tile-subtext text-content-primary">{tInvent.description}</p>
+              <h2 className="tile-title-md text-content-primary">{tInvent.displayName}</h2>
+              <p className="tile-subtext text-content-secondary">{tInvent.description}</p>
             </div>
             <div className="tile-footer">
-              <span className="text-content-primary">{tInvent.docsCount}</span>
+              <span className="text-content-secondary">{tInvent.docsCount}</span>
             </div>
           </button>
         </div>
       )}
 
-      {/* Secondary tiles */}
-      {secondaryTiles.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
-          {secondaryTiles.map((docType, idx) => (
-            <button
-              key={docType.uni}
-              onClick={() => navigate(`/docs/${docType.uni}`)}
-              className={`tile-secondary tone-medium ${['bg-palette-3','bg-palette-4','bg-palette-3'][idx % 3]} text-white`}
-            >
-              <div>
-                <h2 className="tile-title-md text-white">{docType.displayName}</h2>
-                <p className="tile-subtext text-white/80">
-                  {docType.description}
-                </p>
-              </div>
-              <div className="tile-footer">
-                <span className="tile-count-dark text-white/90">{docType.docsCount}</span>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Tertiary tiles */}
-      {tertiaryTiles.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5 md:gap-2">
-          {tertiaryTiles.map((docType) => (
-            <button
-              key={docType.uni}
-              onClick={() => navigate(`/docs/${docType.uni}`)}
-              className={`tile-tertiary tone-muted tile-outline`}
-            >
-              <div>
-                <h2 className="text-base md:text-lg font-semibold tile-title-light text-content-primary">{docType.displayName}</h2>
-              </div>
-              <div className="tile-footer">
-                <span className="tile-count-light text-content-primary">{docType.docsCount}</span>
-              </div>
-            </button>
-          ))}
-        </div>
+      {/* Перемещения section (neutral dark tiles) */}
+      {(secondaryTiles.length > 0 || tertiaryTiles.length > 0) && (
+        <>
+          <div className="mt-6 mb-2">
+            <h3 className="text-lg font-semibold text-content-tertiary">Перемещения</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5 md:gap-2">
+            {[...secondaryTiles, ...tertiaryTiles].map((docType) => (
+              <button
+                key={docType.uni}
+                onClick={() => navigate(`/docs/${docType.uni}`)}
+                className="tile-secondary tone-medium tile-outline bg-surface-secondary border-border-default"
+              >
+                <div>
+                  <h2 className="tile-title-sm text-content-primary">{docType.displayName}</h2>
+                  <p className="tile-subtext text-content-secondary">{docType.description}</p>
+                </div>
+                <div className="tile-footer">
+                  <span className="text-content-secondary">{docType.docsCount}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Empty state */}
