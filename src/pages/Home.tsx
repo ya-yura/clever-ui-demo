@@ -329,15 +329,15 @@ const Home: React.FC = () => {
   const included = new Set<string>();
   const byUni = (uni: string) => docTypes.find((d) => d.uni === uni);
 
-  // Hero-specific tiles
-  const tPrihod = byUni('PrihodNaSklad');
-  const tPodbor = byUni('PodborZakaza');
+  // Hero-specific tiles (matching Figma mockup layout)
+  const tPrihod = byUni('PrihodNaSklad');        // 1. Left large tile (yellow)
+  const tOstatki = byUni('Inventarizaciya');    // 2. Right top tile (coral) - "Остатки"
+  const tPodbor = byUni('PodborZakaza');        // 3. Right bottom tile (orange)
   const tOtgruzka = byUni('Otgruzka');
-  const tInvent = byUni('Inventarizaciya');
   const tVozvrat = byUni('Vozvrat');
   const tPlacement = byUni('RazmeshhenieVYachejki');
 
-  [tPrihod, tPodbor, tOtgruzka, tInvent, tVozvrat, tPlacement].forEach((t) => {
+  [tPrihod, tOstatki, tPodbor, tOtgruzka, tVozvrat, tPlacement].forEach((t) => {
     if (t) included.add(t.uni);
   });
 
@@ -375,8 +375,9 @@ const Home: React.FC = () => {
         </div>
       )}
 
-      {/* Hero layout: 4-column grid */}
+      {/* Hero layout: 4-column grid (matching Figma mockup) */}
       <div className="grid grid-cols-4 gap-1.5 md:gap-2">
+        {/* 1. Приход - Left large tile (yellow) */}
         {tPrihod && (
           <button
             key={tPrihod.uni}
@@ -393,6 +394,24 @@ const Home: React.FC = () => {
           </button>
         )}
 
+        {/* 2. Остатки (Inventory) - Right top tile (coral) */}
+        {tOstatki && (
+          <button
+            key={tOstatki.uni}
+            onClick={() => navigate(`/docs/${tOstatki.uni}`)}
+            className="tile-primary tone-strong col-span-2 bg-module-inventory-bg text-module-inventory-text"
+          >
+            <div>
+              <h2 className="tile-title-lg">{tOstatki.displayName}</h2>
+              <p className="tile-subtext opacity-80">{tOstatki.description}</p>
+            </div>
+            <div className="tile-footer">
+              <span className="tile-count-hero">{tOstatki.docsCount}</span>
+            </div>
+          </button>
+        )}
+
+        {/* 3. Подбор - Right bottom tile (orange) */}
         {tPodbor && (
           <button
             key={tPodbor.uni}
@@ -405,22 +424,6 @@ const Home: React.FC = () => {
             </div>
             <div className="tile-footer">
               <span className="tile-count-hero">{tPodbor.docsCount}</span>
-            </div>
-          </button>
-        )}
-
-        {tOtgruzka && (
-          <button
-            key={tOtgruzka.uni}
-            onClick={() => navigate(`/docs/${tOtgruzka.uni}`)}
-            className="tile-primary tone-strong col-span-2 bg-module-shipment-bg text-module-shipment-text"
-          >
-            <div>
-              <h2 className="tile-title-lg">{tOtgruzka.displayName}</h2>
-              <p className="tile-subtext opacity-80">{tOtgruzka.description}</p>
-            </div>
-            <div className="tile-footer">
-              <span className="tile-count-hero">{tOtgruzka.docsCount}</span>
             </div>
           </button>
         )}
