@@ -331,13 +331,13 @@ const Home: React.FC = () => {
 
   // Hero-specific tiles (matching Figma mockup layout)
   const tPrihod = byUni('PrihodNaSklad');        // 1. Left large tile (yellow)
-  const tOstatki = byUni('Inventarizaciya');    // 2. Right top tile (coral) - "Остатки"
-  const tPodbor = byUni('PodborZakaza');        // 3. Right bottom tile (orange)
-  const tOtgruzka = byUni('Otgruzka');
+  const tOtgruzka = byUni('Otgruzka');           // 2. Right top tile (coral) - "Отгрузка"
+  const tPodbor = byUni('PodborZakaza');         // 3. Right bottom tile (orange)
+  const tInvent = byUni('Inventarizaciya');      // Full-width below
   const tVozvrat = byUni('Vozvrat');
   const tPlacement = byUni('RazmeshhenieVYachejki');
 
-  [tPrihod, tOstatki, tPodbor, tOtgruzka, tVozvrat, tPlacement].forEach((t) => {
+  [tPrihod, tOtgruzka, tPodbor, tInvent, tVozvrat, tPlacement].forEach((t) => {
     if (t) included.add(t.uni);
   });
 
@@ -394,19 +394,19 @@ const Home: React.FC = () => {
           </button>
         )}
 
-        {/* 2. Остатки (Inventory) - Right top tile (coral) */}
-        {tOstatki && (
+        {/* 2. Отгрузка - Right top tile (coral) */}
+        {tOtgruzka && (
           <button
-            key={tOstatki.uni}
-            onClick={() => navigate(`/docs/${tOstatki.uni}`)}
+            key={tOtgruzka.uni}
+            onClick={() => navigate(`/docs/${tOtgruzka.uni}`)}
             className="tile-primary tone-strong col-span-2 bg-module-inventory-bg text-module-inventory-text"
           >
             <div>
-              <h2 className="tile-title-lg">{tOstatki.displayName}</h2>
-              <p className="tile-subtext opacity-80">{tOstatki.description}</p>
+              <h2 className="tile-title-lg">{tOtgruzka.displayName}</h2>
+              <p className="tile-subtext opacity-80">{tOtgruzka.description}</p>
             </div>
             <div className="tile-footer">
-              <span className="tile-count-hero">{tOstatki.docsCount}</span>
+              <span className="tile-count-hero">{tOtgruzka.docsCount}</span>
             </div>
           </button>
         )}
@@ -464,20 +464,20 @@ const Home: React.FC = () => {
         )}
       </div>
 
-      {/* Secondary row: Отгрузка (full-width neutral tile) */}
-      {tOtgruzka && (
+      {/* Secondary row: Инвентаризация (full-width neutral tile) */}
+      {tInvent && (
         <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-3">
           <button
-            key={`${tOtgruzka.uni}-full`}
-            onClick={() => navigate(`/docs/${tOtgruzka.uni}`)}
+            key={`${tInvent.uni}-full`}
+            onClick={() => navigate(`/docs/${tInvent.uni}`)}
             className="tile-secondary tone-medium tile-outline col-span-4 bg-surface-secondary border-border-default"
           >
             <div>
-              <h2 className="tile-title-md text-content-primary">{tOtgruzka.displayName}</h2>
-              <p className="tile-subtext text-content-secondary">{tOtgruzka.description}</p>
+              <h2 className="tile-title-md text-content-primary">{tInvent.displayName}</h2>
+              <p className="tile-subtext text-content-secondary">{tInvent.description}</p>
             </div>
             <div className="tile-footer">
-              <span className="text-content-secondary">{tOtgruzka.docsCount}</span>
+              <span className="text-content-secondary">{tInvent.docsCount}</span>
             </div>
           </button>
         </div>
