@@ -48,15 +48,15 @@
   --color-border-default: #2a2f38;
   --color-border-light: #343a46;
   --color-border-strong: #525760;
-  --color-border-focus: #c9a636;
+  --color-border-focus: #d89668;
 
   /* Brand colors (base palette from Figma) */
-  --color-brand-primary: #c9a636;
-  --color-brand-dark: #a88a2d;
-  --color-brand-light: #f3d640;
-  --color-brand-secondary: #d89668;
-  --color-brand-secondary-dark: #a87548;
-  --color-brand-secondary-light: #ffcda3;
+  --color-brand-primary: #d89668;
+  --color-brand-dark: #a87548;
+  --color-brand-light: #ffcda3;
+  --color-brand-secondary: #c9a636;
+  --color-brand-secondary-dark: #a88a2d;
+  --color-brand-secondary-light: #f3d640;
   --color-brand-tertiary: #f0a58a;
   --color-brand-tertiary-dark: #c76b5b;
   --color-brand-tertiary-light: #fcd0d0;
@@ -87,10 +87,10 @@
   --color-info-light: #80deea;
 
   /* Module colors */
-  --color-module-receiving-bg: #c9a636;
-  --color-module-receiving-text: #5a4a1a;
-  --color-module-picking-bg: #d89668;
-  --color-module-picking-text: #7d4a2d;
+  --color-module-receiving-bg: #d89668;
+  --color-module-receiving-text: #7d4a2d;
+  --color-module-picking-bg: #c9a636;
+  --color-module-picking-text: #5a4a1a;
   --color-module-shipment-bg: #a0d995;
   --color-module-shipment-text: #1f4d1f;
   --color-module-placement-bg: #86e0cb;
@@ -119,7 +119,7 @@
   --color-border-default: #d4d5d9;
   --color-border-light: #eaecf0;
   --color-border-strong: #80858e;
-  --color-border-focus: #c9a636;
+  --color-border-focus: #d89668;
 }
 
 html {
@@ -155,8 +155,8 @@ body {
 @layer components {
   .btn-primary {
     @apply px-4 py-2 rounded-lg font-semibold hover:brightness-90 active:brightness-95 transition-all min-h-[44px] min-w-[44px];
-    background-color: var(--color-brand-secondary);
-    color: var(--color-module-picking-text);
+    background-color: var(--color-brand-primary);
+    color: var(--color-brand-dark);
   }
 
   .btn-secondary {
@@ -204,7 +204,7 @@ body {
   }
   
   .tile-base:focus {
-    box-shadow: 0 0 0 3px rgba(201, 166, 54, 0.4);
+    box-shadow: 0 0 0 3px rgba(216, 150, 104, 0.4);
   }
 
   .tile-primary {

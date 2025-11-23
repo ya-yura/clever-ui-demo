@@ -215,7 +215,7 @@ const Login: React.FC = () => {
                   type="submit"
                   disabled={isLogging || !username.trim() || !password.trim()}
                   className="w-full py-3 px-4 font-semibold rounded-lg transition-all disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center hover:brightness-90"
-                  style={{ backgroundColor: 'var(--color-brand-secondary)', color: 'var(--color-module-picking-text)' }}
+                  style={{ backgroundColor: 'var(--color-brand-primary)', color: 'var(--color-brand-dark)' }}
                 >
                   {isLogging ? (
                     <>

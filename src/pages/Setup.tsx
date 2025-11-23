@@ -140,8 +140,8 @@ const Setup: React.FC = () => {
             <button
               type="submit"
               disabled={isValidating || !serverUrl.trim()}
-              className="w-full py-3 px-4 bg-brand-secondary hover:brightness-90 font-semibold rounded-lg transition-all disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
-              style={{ backgroundColor: 'var(--color-brand-secondary)', color: 'var(--color-module-picking-text)' }}
+              className="w-full py-3 px-4 bg-brand-primary hover:brightness-90 font-semibold rounded-lg transition-all disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
+              style={{ backgroundColor: 'var(--color-brand-primary)', color: 'var(--color-brand-dark)' }}
             >
               {isValidating ? (
                 <>
