@@ -9,11 +9,11 @@
    🎨 CSS VARIABLES FOR THEME SWITCHING
    ============================================ */
 
-/* Default theme (Dark) - Extracted from Figma Node 1159:12640 */
+/* Default theme (Dark) - Extracted from Figma Colors Dark (5583:45261) */
 :root {
   /* Surface colors (backgrounds) */
-  --color-surface-primary: #121721;   /* Main background (Deep Blue/Black) */
-  --color-surface-secondary: #1d222a; /* Cards/Modals (Dark Grey/Blue) */
+  --color-surface-primary: #121721;   /* Main background */
+  --color-surface-secondary: #1d222a; /* Cards/Modals */
   --color-surface-tertiary: #2a2f38;  /* Inputs/Hovers */
   --color-surface-inverse: #ffffff;
   --color-surface-overlay: rgba(18, 23, 33, 0.8);
@@ -35,16 +35,16 @@
   /* Brand colors */
   --color-brand-primary: #4480f3;     /* Primary Blue */
   --color-brand-dark: #3d75e4;        /* Slightly darker blue */
-  --color-brand-secondary: #86e0cb;   /* Kept from previous (Teal) - adjust if needed */
+  --color-brand-secondary: #86e0cb;   /* Teal */
 
-  /* Status colors */
-  --color-success: #91ed91;           /* Kept existing */
-  --color-warning: #f3a361;           /* Kept existing */
-  --color-error: #ba8f8e;             /* Kept existing */
-  --color-info: #4480f3;              /* Use primary blue for info */
+  /* Status colors (Updated from Dark Theme Palette) */
+  --color-success: #5fad05;           /* Green */
+  --color-warning: #e78018;           /* Orange */
+  --color-error: #e35454;             /* Red */
+  --color-info: #4480f3;              /* Blue (same as primary) */
 }
 
-/* Light theme override - Extracted from Figma Node 1159:12640 */
+/* Light theme override - Extracted from Figma Colors Default */
 [data-theme='light'] {
   /* Surface colors (backgrounds) */
   --color-surface-primary: #f5f6f8;   /* Light Grey bg */
@@ -66,6 +66,9 @@
   --color-border-light: #eaecf0;
   --color-border-strong: #80858e;
   --color-border-focus: #4480f3;
+  
+  /* Status colors (Light theme specific if needed, currently shared but usually inverted) */
+  /* Keeping shared for consistency unless specific light tokens found */
 }
 
 html {
@@ -108,11 +111,11 @@ body {
   }
 
   .btn-success {
-    @apply px-4 py-2 bg-[var(--color-success)] text-[#2d6b2d] rounded-lg font-bold hover:brightness-110 active:brightness-95 transition-colors min-h-[44px] min-w-[44px];
+    @apply px-4 py-2 bg-[var(--color-success)] text-white rounded-lg font-bold hover:brightness-110 active:brightness-95 transition-colors min-h-[44px] min-w-[44px];
   }
 
   .btn-danger {
-    @apply px-4 py-2 bg-[var(--color-error)] text-[#6b3d3c] rounded-lg font-bold hover:brightness-110 active:brightness-95 transition-colors min-h-[44px] min-w-[44px];
+    @apply px-4 py-2 bg-[var(--color-error)] text-white rounded-lg font-bold hover:brightness-110 active:brightness-95 transition-colors min-h-[44px] min-w-[44px];
   }
 
   .card {
@@ -140,6 +143,73 @@ body {
   .chip:hover:not(.chip-active) { @apply bg-[var(--color-surface-tertiary)] border-[var(--color-border-strong)]; }
 
   .chip-active { @apply bg-[var(--color-brand-primary)] text-white border-[var(--color-brand-primary)] font-semibold shadow-sm; }
+
+  /* Tiles */
+  .tile-base {
+    @apply rounded-xl text-left transition-all shadow-lg relative overflow-hidden flex flex-col justify-between focus:outline-none focus:ring-2 focus:ring-[#4480f3]/60 border border-transparent;
+  }
+
+  .tile-primary {
+    @apply tile-base p-4 md:p-5 min-h-[108px] hover:brightness-110 active:scale-[0.99];
+  }
+
+  .tile-secondary {
+    @apply tile-base p-4 md:p-5 min-h-[96px] hover:brightness-110 active:scale-[0.99];
+  }
+
+  .tile-tertiary {
+    @apply tile-base p-3 md:p-4 min-h-[72px] hover:brightness-110 active:scale-[0.99];
+  }
+
+  .tile-outline {
+    @apply bg-transparent border border-[var(--color-border-strong)];
+  }
+
+  /* Tile Typography */
+  .tile-title-lg {
+    @apply text-xl md:text-[20px] font-bold mb-1 tracking-tight;
+  }
+
+  .tile-title-md {
+    @apply text-xl md:text-[18px] font-semibold mb-0.5 tracking-tight;
+  }
+
+  .tile-title-sm {
+    @apply text-lg md:text-[16px] font-semibold mb-0.5 tracking-tight;
+  }
+
+  .tile-subtext {
+    @apply text-xs md:text-sm opacity-80 leading-relaxed;
+  }
+
+  .tile-footer {
+    @apply mt-1 pt-1 flex items-center justify-end;
+  }
+
+  .tile-count-hero {
+    @apply text-2xl md:text-3xl font-bold;
+  }
+
+  .tile-count-dark {
+    @apply text-xs font-semibold opacity-80;
+  }
+
+  .tile-count-light {
+    @apply text-xs font-semibold opacity-80;
+  }
+
+  /* Priority tones */
+  .tone-strong {
+    @apply filter saturate-100;
+  }
+
+  .tone-medium {
+    @apply filter saturate-100;
+  }
+
+  .tone-muted {
+    @apply filter saturate-50 brightness-95;
+  }
 }
 
 /* Touch targets */

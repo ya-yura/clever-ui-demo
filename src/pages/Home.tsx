@@ -381,7 +381,7 @@ const Home: React.FC = () => {
           <button
             key={tPrihod.uni}
             onClick={() => navigate(`/docs/${tPrihod.uni}`)}
-            className="tile-primary tone-strong col-span-2 row-span-2 bg-brand-primary text-brand-dark"
+            className="tile-primary tone-strong col-span-2 row-span-2 bg-modules-receiving-bg text-modules-receiving-text"
           >
             <div>
               <h2 className="tile-title-lg">{tPrihod.displayName}</h2>
@@ -397,7 +397,7 @@ const Home: React.FC = () => {
           <button
             key={tPodbor.uni}
             onClick={() => navigate(`/docs/${tPodbor.uni}`)}
-            className="tile-primary tone-strong col-span-2 bg-modules-inventory-bg text-surface-secondary"
+            className="tile-primary tone-strong col-span-2 bg-modules-picking-bg text-modules-picking-text"
           >
             <div>
               <h2 className="tile-title-lg">{tPodbor.displayName}</h2>
@@ -413,7 +413,7 @@ const Home: React.FC = () => {
           <button
             key={tOtgruzka.uni}
             onClick={() => navigate(`/docs/${tOtgruzka.uni}`)}
-            className="tile-primary tone-strong col-span-2 bg-modules-picking-bg text-surface-secondary"
+            className="tile-primary tone-strong col-span-2 bg-modules-shipment-bg text-modules-shipment-text"
           >
             <div>
               <h2 className="tile-title-lg">{tOtgruzka.displayName}</h2>
@@ -487,16 +487,16 @@ const Home: React.FC = () => {
             <button
               key={docType.uni}
               onClick={() => navigate(`/docs/${docType.uni}`)}
-              className={`tile-secondary tone-medium ${['bg-palette-3','bg-palette-4','bg-palette-3'][idx % 3]}`}
+              className={`tile-secondary tone-medium ${['bg-palette-3','bg-palette-4','bg-palette-3'][idx % 3]} text-white`}
             >
               <div>
-                <h2 className="tile-title-md text-surface-secondary">{docType.displayName}</h2>
-                <p className="tile-subtext text-surface-secondary">
+                <h2 className="tile-title-md text-white">{docType.displayName}</h2>
+                <p className="tile-subtext text-white/80">
                   {docType.description}
                 </p>
               </div>
               <div className="tile-footer">
-                <span className="tile-count-dark">{docType.docsCount}</span>
+                <span className="tile-count-dark text-white/90">{docType.docsCount}</span>
               </div>
             </button>
           ))}

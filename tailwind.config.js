@@ -44,31 +44,31 @@ export default {
         error: 'var(--color-error)',
         info: 'var(--color-info)',
         
-        // Legacy Modules (using brand colors)
+        // Modules (dynamically loaded from design-system.json)
         modules: {
           receiving: { 
-            bg: designSystem.dna.colors.brand.primary, 
-            text: designSystem.dna.colors.brand.primaryDark 
+            bg: designSystem.dna.colors.modules.receiving.bg, 
+            text: designSystem.dna.colors.modules.receiving.text 
           },
           inventory: { 
-            bg: '#fea079', 
-            text: '#8c533b' 
+            bg: designSystem.dna.colors.modules.inventory.bg, 
+            text: designSystem.dna.colors.modules.inventory.text 
           },
           picking: { 
-            bg: designSystem.dna.colors.status.warning, 
-            text: '#8b5931' 
+            bg: designSystem.dna.colors.modules.picking.bg, 
+            text: designSystem.dna.colors.modules.picking.text 
           },
           placement: { 
-            bg: designSystem.dna.colors.brand.secondary, 
-            text: '#2d7a6b' 
+            bg: designSystem.dna.colors.modules.placement.bg, 
+            text: designSystem.dna.colors.modules.placement.text 
           },
           shipment: { 
-            bg: designSystem.dna.colors.status.success, 
-            text: '#2d6b2d' 
+            bg: designSystem.dna.colors.modules.shipment.bg, 
+            text: designSystem.dna.colors.modules.shipment.text 
           },
           return: { 
-            bg: designSystem.dna.colors.status.error, 
-            text: '#6b3d3c' 
+            bg: designSystem.dna.colors.modules.return.bg, 
+            text: designSystem.dna.colors.modules.return.text 
           },
         },
       },

@@ -1,6 +1,6 @@
 {
   "name": "Cleverence Mobile Proto – Design System",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Полноценная дизайн-система для PWA приложения Склад-15",
   
   "dna": {
@@ -62,13 +62,13 @@
         "accentDark": "#8c533b"
       },
       "status": {
-        "success": "#91ed91",
+        "success": "#5fad05",
         "successDark": "#2d6b2d",
         "successLight": "#d4f8d4",
-        "warning": "#f3a361",
+        "warning": "#e78018",
         "warningDark": "#8b5931",
         "warningLight": "#ffd9b3",
-        "error": "#ba8f8e",
+        "error": "#e35454",
         "errorDark": "#6b3d3c",
         "errorLight": "#f0d6d6",
         "info": "#4480f3",
@@ -80,36 +80,36 @@
           "bg": "#4480f3",
           "text": "#ffffff",
           "light": "#6b9bf5",
-          "dark": "#3d75e4"
+          "dark": "#113079"
         },
         "inventory": {
-          "bg": "#fea079",
-          "text": "#8c533b",
-          "light": "#ffc8a8",
+          "bg": "#e78018",
+          "text": "#ffffff",
+          "light": "#f5ab61",
           "dark": "#6e3e2a"
         },
         "picking": {
-          "bg": "#f3a361",
-          "text": "#8b5931",
+          "bg": "#f5ab61",
+          "text": "#4a2e18",
           "light": "#ffc799",
           "dark": "#6e4625"
         },
         "placement": {
           "bg": "#86e0cb",
-          "text": "#2d7a6b",
+          "text": "#154038",
           "light": "#b3f0e3",
           "dark": "#1f5a4f"
         },
         "shipment": {
-          "bg": "#91ed91",
-          "text": "#2d6b2d",
-          "light": "#c8f5c8",
+          "bg": "#5fad05",
+          "text": "#ffffff",
+          "light": "#8cce5a",
           "dark": "#1f4d1f"
         },
         "return": {
-          "bg": "#ba8f8e",
-          "text": "#6b3d3c",
-          "light": "#e0c4c3",
+          "bg": "#e35454",
+          "text": "#ffffff",
+          "light": "#fb9898",
           "dark": "#4d2827"
         }
       },

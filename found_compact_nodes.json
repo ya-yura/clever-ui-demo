@@ -1,0 +1,122 @@
+[
+  {
+    "id": "3618:26643",
+    "name": "Dashboard_≥1360 — menu compact",
+    "type": "FRAME"
+  },
+  {
+    "id": "3618:26652",
+    "name": "Dashboard_≥1360 — menu compact, scroll",
+    "type": "FRAME"
+  },
+  {
+    "id": "3618:26660",
+    "name": "Dashboard_≥1360 — menu compact, scroll down",
+    "type": "FRAME"
+  },
+  {
+    "id": "3618:26729",
+    "name": "Dashboard_≥1920 — menu compact",
+    "type": "FRAME"
+  },
+  {
+    "id": "3618:26738",
+    "name": "Dashboard_≥1920 — menu compact, scroll",
+    "type": "FRAME"
+  },
+  {
+    "id": "3618:26746",
+    "name": "Dashboard_≥1920 — menu compact, scroll down",
+    "type": "FRAME"
+  },
+  {
+    "id": "832:21505",
+    "name": "Compact",
+    "type": "TEXT"
+  },
+  {
+    "id": "1810:18849",
+    "name": "Compact",
+    "type": "TEXT"
+  },
+  {
+    "id": "3465:22567",
+    "name": "Compact=false, Selected=false, Disabled=false",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3465:22585",
+    "name": "Compact=false, Selected=true, Disabled=false",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3465:22599",
+    "name": "Compact=true, Selected=false, Disabled=false",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3497:23424",
+    "name": "Compact=true, Selected=true, Disabled=false",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3465:22627",
+    "name": "Compact=false, Selected=false, Disabled=true",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3465:22634",
+    "name": "Compact=true, Selected=false, Disabled=true",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3497:23070",
+    "name": "Collapse=true, Selected=false, Compact=false",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3497:23295",
+    "name": "Collapse=true, Selected=true, Compact=false",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3497:23283",
+    "name": "Collapse=false, Selected=false, Compact=false",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3497:23309",
+    "name": "Collapse=false, Selected=true, Compact=false",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3497:23487",
+    "name": "Collapse=true, Selected=false, Compact=true",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3497:23509",
+    "name": "Collapse=true, Selected=true, Compact=true",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3497:23555",
+    "name": "Collapse=false, Selected=false, Compact=true",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3497:23567",
+    "name": "Collapse=false, Selected=true, Compact=true",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3499:24659",
+    "name": "Compact=false",
+    "type": "COMPONENT"
+  },
+  {
+    "id": "3499:25436",
+    "name": "Compact=true",
+    "type": "COMPONENT"
+  }
+]
