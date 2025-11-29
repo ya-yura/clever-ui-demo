@@ -1,3 +1,10 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// Читаем Design System DNA напрямую из файла источника
+const designSystemPath = join(process.cwd(), 'src/theme/design-system.json');
+const designSystem = JSON.parse(readFileSync(designSystemPath, 'utf-8'));
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -102,14 +109,14 @@ export default {
         'module-marking-text': 'var(--color-module-marking-text)',
       },
       borderRadius: {
-        DEFAULT: '8px', // designSystem.dna.borderRadius.md
-        lg: '12px',     // designSystem.dna.borderRadius.lg
-        sm: '4px',      // designSystem.dna.borderRadius.sm
-        full: '9999px', // designSystem.dna.borderRadius.full
+        DEFAULT: designSystem.dna.borderRadius.md,
+        lg: designSystem.dna.borderRadius.lg,
+        sm: designSystem.dna.borderRadius.sm,
+        full: designSystem.dna.borderRadius.full,
       },
       boxShadow: {
-        soft: '0 2px 3px rgba(0, 0, 0, 0.5)', // designSystem.dna.shadows.md
-        card: '0 4px 6px rgba(0, 0, 0, 0.5)', // designSystem.dna.shadows.lg
+        soft: designSystem.dna.shadows.md,
+        card: designSystem.dna.shadows.lg,
       }
     },
   },
