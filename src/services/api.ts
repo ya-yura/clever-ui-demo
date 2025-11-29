@@ -477,19 +477,33 @@ class ApiService {
    * GET /api/v1/Docs('id')?$expand=declaredItems,currentItems
    */
   async getDocumentById(docId: string, expand?: string[]) {
-     if (!docId) {
-       return { success: false, error: 'Document ID is required' };
-     }
- 
+    if (!docId) {
+      return { success: false, error: 'Document ID is required' };
+    }
+
+    // Check if demo mode is enabled
+    const isDemoMode = localStorage.getItem('demo_mode') === 'true';
+    if (isDemoMode) {
+      console.log('🎭 [DEMO] Loading document from demo data:', docId);
+      const { demoDataService } = await import('./demoDataService');
+      const doc = demoDataService.getDocumentById(docId, expand);
+      
+      if (!doc) {
+        return { success: false, error: 'Document not found in demo data' };
+      }
+      
+      return { success: true, data: doc };
+    }
+
     const sanitizedId = docId.replace(/'/g, "''");
     const keySegment = `('${sanitizedId}')`;
- 
+
     const params = expand && expand.length > 0
       ? { $expand: expand.join(',') }
       : undefined;
- 
-     return this.get(`/Docs${keySegment}`, params);
-   }
+
+    return this.get(`/Docs${keySegment}`, params);
+  }
 
   /**
    * Get documents by type - tries multiple approaches
