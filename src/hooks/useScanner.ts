@@ -2,13 +2,9 @@
 // Scanner hook for barcode/QR scanning
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-// import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
+import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
 import { playSound } from '@/utils/sound';
 import analytics, { EventType } from '@/lib/analytics';
-
-// Temporary type placeholders
-type Html5QrcodeScanner = any;
-type Html5Qrcode = any;
 
 export type ScanMode = 'camera' | 'keyboard' | 'bluetooth';
 
@@ -69,7 +65,7 @@ export const useScanner = ({
           fps: 10,
           qrbox: { width: 250, height: 250 },
         },
-        (decodedText) => {
+        (decodedText: string) => {
           setLastScan(decodedText);
           playSound('scan');
           
@@ -83,7 +79,7 @@ export const useScanner = ({
             stopScanner();
           }
         },
-        (errorMessage) => {
+        (errorMessage: string) => {
           // Ignore frequent errors
           if (!errorMessage.includes('NotFoundException')) {
             onError?.(errorMessage);
