@@ -205,7 +205,19 @@ class Analytics {
             name: error.name,
           };
   
-      this.track(EventType.ERROR_NETWORK, { ...errorData, ...context }); // Use EventType.ERROR_NETWORK or generic 'error'
+      this.track(EventType.ERROR_NETWORK, { ...errorData, ...context });
+  }
+
+  public trackCustomInterfaceLoaded(properties?: Record<string, any>): void {
+    this.track('custom_interface.loaded', properties);
+  }
+
+  public trackCustomButtonClick(properties?: Record<string, any>): void {
+    this.track('custom_interface.button_click', properties);
+  }
+
+  public trackCustomInterfaceQRScan(success?: boolean): void {
+    this.track('custom_interface.qr_scan', { success });
   }
 
   public flush(): void {
@@ -386,6 +398,9 @@ export const useAnalytics = () => {
         setUserId: (id: string) => analytics.setUserId(id),
         trackPageView: (screenName?: string) => analytics.trackPageView(screenName),
         trackError: (error: Error | string, context?: any) => analytics.trackError(error, context),
+        trackCustomInterfaceLoaded: (props?: any) => analytics.trackCustomInterfaceLoaded(props),
+        trackCustomButtonClick: (props?: any) => analytics.trackCustomButtonClick(props),
+        trackCustomInterfaceQRScan: (success?: boolean) => analytics.trackCustomInterfaceQRScan(success),
     };
 };
 

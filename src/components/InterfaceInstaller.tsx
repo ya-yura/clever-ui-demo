@@ -62,7 +62,7 @@ export const InterfaceInstaller: React.FC<InterfaceInstallerProps> = ({
     } catch (err: any) {
       console.error('QR scan error:', err);
       setError(`Ошибка: ${err.message}`);
-      analytics.trackCustomInterfaceQRScan(false, err.message);
+      analytics.trackCustomInterfaceQRScan(false);
     } finally {
       setLoading(false);
     }
