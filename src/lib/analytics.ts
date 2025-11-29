@@ -61,7 +61,7 @@ export interface AnalyticsConfig {
 
 // ==================== ANALYTICS CLASS ====================
 
-class Analytics {
+export class Analytics {
   private config: Required<AnalyticsConfig>;
   private userId: string;
   private sessionId: string;
@@ -206,6 +206,52 @@ class Analytics {
           };
   
       this.track(EventType.ERROR_NETWORK, { ...errorData, ...context }); // Use EventType.ERROR_NETWORK or generic 'error'
+  }
+
+  public trackCustomInterfaceLoaded(schemaInfo: {
+    id: string;
+    version: string;
+    buttonsCount: number;
+    source: 'qr' | 'localStorage' | 'file';
+  }): void {
+    this.track('custom_interface.loaded', {
+      schema_id: schemaInfo.id,
+      schema_version: schemaInfo.version,
+      buttons_count: schemaInfo.buttonsCount,
+      load_source: schemaInfo.source,
+    });
+  }
+
+  public trackCustomButtonClick(buttonConfig: {
+    label: string;
+    action: string;
+    params?: any;
+    position?: { row: number; col: number };
+    color?: string;
+  }): void {
+    this.track('custom_interface.button_click', {
+      button_label: buttonConfig.label,
+      button_action: buttonConfig.action,
+      button_params: buttonConfig.params,
+      button_position: buttonConfig.position,
+      button_color: buttonConfig.color,
+    });
+  }
+
+  public trackCustomInterfaceQRScan(success: boolean, error?: string): void {
+    this.track('custom_interface.qr_scan', {
+      success,
+      error,
+    });
+  }
+
+  public trackMetric(name: string, value: number, unit?: string, context?: Record<string, any>): void {
+    this.track('metric', {
+      name,
+      value,
+      unit,
+      ...context
+    });
   }
 
   public flush(): void {
