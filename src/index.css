@@ -24,7 +24,7 @@
 
 /* ============================================
    🎨 CSS VARIABLES FOR THEME SWITCHING
-   Design System v3.0.0
+   Design System v3.1.0
    ============================================ */
 
 /* Default theme (Dark) */
@@ -128,6 +128,10 @@
   --color-border-light: #f2f4f7;
   --color-border-strong: #d0d5dd;
   --color-border-focus: #d89668;
+  
+  /* In light mode, we might want to adjust some module colors if they are too light/dark, 
+     but for now we keep branding consistent. 
+     If needed, we can override them here using the 'light' variant from design system. */
 }
 
 html {
@@ -183,27 +187,27 @@ samp {
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-[var(--color-surface-tertiary)] text-[var(--color-content-primary)] rounded-lg font-semibold hover:brightness-110 active:brightness-95 transition-colors min-h-[44px] min-w-[44px];
+    @apply px-4 py-2 bg-surface-tertiary text-content-primary rounded-lg font-semibold hover:brightness-110 active:brightness-95 transition-colors min-h-[44px] min-w-[44px];
   }
 
   .btn-success {
-    @apply px-4 py-2 bg-[var(--color-success)] text-white rounded-lg font-bold hover:brightness-110 active:brightness-95 transition-colors min-h-[44px] min-w-[44px];
+    @apply px-4 py-2 bg-success text-white rounded-lg font-bold hover:brightness-110 active:brightness-95 transition-colors min-h-[44px] min-w-[44px];
   }
 
   .btn-danger {
-    @apply px-4 py-2 bg-[var(--color-error)] text-white rounded-lg font-bold hover:brightness-110 active:brightness-95 transition-colors min-h-[44px] min-w-[44px];
+    @apply px-4 py-2 bg-error text-white rounded-lg font-bold hover:brightness-110 active:brightness-95 transition-colors min-h-[44px] min-w-[44px];
   }
 
   .card {
-    @apply bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg shadow-md p-4 text-[var(--color-content-primary)];
+    @apply bg-surface-secondary border border-border-default rounded-lg shadow-md p-4 text-content-primary;
   }
 
   .card-compact {
-    @apply bg-[var(--color-surface-secondary)] border border-[var(--color-border-default)] rounded-lg shadow-md px-3 py-2 text-[var(--color-content-primary)];
+    @apply bg-surface-secondary border border-border-default rounded-lg shadow-md px-3 py-2 text-content-primary;
   }
 
   .input-field {
-    @apply w-full px-3 py-2 border border-[var(--color-border-default)] rounded-lg bg-[var(--color-surface-secondary)] text-[var(--color-content-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)] focus:border-[var(--color-brand-primary)] min-h-[44px] placeholder:text-[var(--color-content-tertiary)];
+    @apply w-full px-3 py-2 border border-border-default rounded-lg bg-surface-secondary text-content-primary focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary min-h-[44px] placeholder:text-content-tertiary;
   }
 
   .status-badge {
@@ -213,12 +217,12 @@ samp {
   /* Chips */
   .chip {
     @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-sm leading-tight whitespace-nowrap min-w-0 shrink-0 select-none font-medium
-           border border-[var(--color-border-default)] bg-transparent text-[var(--color-content-secondary)] transition-all;
+           border border-border-default bg-transparent text-content-secondary transition-all;
   }
 
-  .chip:hover:not(.chip-active) { @apply bg-[var(--color-surface-tertiary)] border-[var(--color-border-strong)]; }
+  .chip:hover:not(.chip-active) { @apply bg-surface-tertiary border-border-strong; }
 
-  .chip-active { @apply bg-[var(--color-brand-primary)] text-white border-[var(--color-brand-primary)] font-semibold shadow-sm; }
+  .chip-active { @apply bg-brand-primary text-white border-brand-primary font-semibold shadow-sm; }
 
   /* Tiles */
   .tile-base {
@@ -243,7 +247,7 @@ samp {
   }
 
   .tile-outline {
-    @apply bg-transparent border border-[var(--color-border-strong)];
+    @apply bg-transparent border border-border-strong;
   }
 
   /* Tile Typography */

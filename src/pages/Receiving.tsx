@@ -274,10 +274,10 @@ const Receiving: React.FC = () => {
     updateDocumentProgress();
   };
 
-  if (loading) {
+    if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#86e0cb]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
       </div>
     );
   }
@@ -317,11 +317,11 @@ const Receiving: React.FC = () => {
                     )}
                   </div>
                   <div className="text-right">
-                    <span className={
-                      doc.status === 'completed' ? 'status-success' :
-                      doc.status === 'in_progress' ? 'status-warning' :
-                      'status-pending'
-                    }>
+                    <span className={`status-badge ${
+                      doc.status === 'completed' ? 'bg-success-light text-success-dark' :
+                      doc.status === 'in_progress' ? 'bg-warning-light text-warning-dark' :
+                      'bg-surface-tertiary text-content-secondary'
+                    }`}>
                       {doc.status === 'completed' ? 'Завершен' :
                        doc.status === 'in_progress' ? 'В работе' :
                        'Ожидает'}
@@ -342,7 +342,7 @@ const Receiving: React.FC = () => {
   if (!document) {
     return (
       <div className="text-center py-12">
-        <p className="text-[#a7a7a7]">Документ не найден</p>
+        <p className="text-content-secondary">Документ не найден</p>
       </div>
     );
   }

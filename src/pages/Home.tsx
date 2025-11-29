@@ -85,14 +85,14 @@ const getIconForDocType = (name: string): string => {
 // Color mapping based on index (returns raw color values)
 const getColorForIndex = (index: number): string => {
   const colors = [
-    '#daa420', // yellow
-    '#fea079', // orange
-    '#f3a361', // light orange
-    '#86e0cb', // mint
-    '#91ed91', // green
-    '#ba8f8e', // rose
-    '#f0e78d', // pale yellow
-    '#deb887', // burlywood (converted to hex)
+    'var(--color-accent-yellow)', 
+    'var(--color-brand-primary)',
+    'var(--color-brand-light)',
+    'var(--color-module-placement-bg)',
+    'var(--color-accent-green)',
+    'var(--color-module-return-bg)',
+    'var(--color-accent-cyan)',
+    'var(--color-brand-tertiary)',
   ];
   return colors[index % colors.length];
 };

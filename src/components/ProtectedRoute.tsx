@@ -36,10 +36,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   // Show loading state while checking auth
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#343436] flex items-center justify-center">
+      <div className="min-h-screen bg-surface-primary flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4 animate-pulse">📦</div>
-          <p className="text-xl text-[#a7a7a7]">Проверка авторизации...</p>
+          <p className="text-xl text-content-secondary">Проверка авторизации...</p>
         </div>
       </div>
     );
@@ -59,10 +59,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   if (!isAuthenticated || !user || !token) {
     // Show loading while auto-login kicks in
     return (
-      <div className="min-h-screen bg-[#343436] flex items-center justify-center">
+      <div className="min-h-screen bg-surface-primary flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4 animate-pulse">📦</div>
-          <p className="text-xl text-[#a7a7a7]">Вход в систему...</p>
+          <p className="text-xl text-content-secondary">Вход в систему...</p>
         </div>
       </div>
     );

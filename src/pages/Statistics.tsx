@@ -66,7 +66,7 @@ const Statistics: React.FC = () => {
           unit: 'док.',
           trend: 'stable',
           icon: Package,
-          color: 'bg-brand-primary',
+          color: 'bg-module-receiving-bg',
         },
         {
           id: 'placement',
@@ -75,7 +75,7 @@ const Statistics: React.FC = () => {
           unit: 'док.',
           trend: 'stable',
           icon: CheckCircle,
-          color: 'bg-green-500',
+          color: 'bg-module-placement-bg',
         },
         {
           id: 'picking',
@@ -84,7 +84,7 @@ const Statistics: React.FC = () => {
           unit: 'док.',
           trend: 'stable',
           icon: BarChart3,
-          color: 'bg-yellow-500',
+          color: 'bg-module-picking-bg',
         },
         {
           id: 'shipment',
@@ -93,7 +93,7 @@ const Statistics: React.FC = () => {
           unit: 'док.',
           trend: 'stable',
           icon: TrendingUp,
-          color: 'bg-purple-500',
+          color: 'bg-module-shipment-bg',
         },
         {
           id: 'avgTime',
@@ -102,7 +102,7 @@ const Statistics: React.FC = () => {
           unit: 'мин',
           trend: 'stable',
           icon: Clock,
-          color: 'bg-orange-500',
+          color: 'bg-accent-yellow',
         },
         {
           id: 'errors',
@@ -111,7 +111,7 @@ const Statistics: React.FC = () => {
           unit: 'шт.',
           trend: errors > 0 ? 'down' : 'stable',
           icon: AlertCircle,
-          color: 'bg-red-500',
+          color: 'bg-status-error',
         },
       ];
 
@@ -126,7 +126,7 @@ const Statistics: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary" />
       </div>
     );
   }
@@ -135,8 +135,8 @@ const Statistics: React.FC = () => {
     <div className="max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-[#e3e3dd] mb-2">📊 Статистика и KPI</h1>
-        <p className="text-gray-400">Ключевые показатели эффективности за сегодня</p>
+        <h1 className="text-3xl font-bold text-content-primary mb-2">📊 Статистика и KPI</h1>
+        <p className="text-content-secondary">Ключевые показатели эффективности за сегодня</p>
       </div>
 
       {/* KPI Grid */}
@@ -146,29 +146,29 @@ const Statistics: React.FC = () => {
           return (
             <div
               key={kpi.id}
-              className="bg-[#474747] rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+              className="bg-surface-secondary rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-border-default"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className={`${kpi.color} p-3 rounded-lg`}>
-                  <Icon className="w-6 h-6 text-white" />
+                  <Icon className="w-6 h-6 text-surface-primary" />
                 </div>
                 <div className="flex items-center gap-1">
                   <TrendingUp
                     className={`w-4 h-4 ${
                       kpi.trend === 'up'
-                        ? 'text-green-400 rotate-0'
+                        ? 'text-status-success rotate-0'
                         : kpi.trend === 'down'
-                        ? 'text-red-400 rotate-180'
-                        : 'text-gray-400 rotate-90'
+                        ? 'text-status-error rotate-180'
+                        : 'text-content-tertiary rotate-90'
                     }`}
                   />
                   <span
                     className={`text-sm ${
                       kpi.trend === 'up'
-                        ? 'text-green-400'
+                        ? 'text-status-success'
                         : kpi.trend === 'down'
-                        ? 'text-red-400'
-                        : 'text-gray-400'
+                        ? 'text-status-error'
+                        : 'text-content-tertiary'
                     }`}
                   >
                     {kpi.trend === 'up' ? '+12%' : kpi.trend === 'down' ? '-5%' : '0%'}
@@ -176,10 +176,10 @@ const Statistics: React.FC = () => {
                 </div>
               </div>
 
-              <h3 className="text-gray-400 text-sm mb-2">{kpi.label}</h3>
+              <h3 className="text-content-secondary text-sm mb-2">{kpi.label}</h3>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-[#e3e3dd]">{kpi.value}</span>
-                <span className="text-gray-500">{kpi.unit}</span>
+                <span className="text-3xl font-bold text-content-primary">{kpi.value}</span>
+                <span className="text-content-tertiary">{kpi.unit}</span>
               </div>
             </div>
           );
@@ -187,10 +187,10 @@ const Statistics: React.FC = () => {
       </div>
 
       {/* Charts Placeholder */}
-      <div className="mt-8 bg-[#474747] rounded-xl p-6 shadow-lg">
-        <h2 className="text-xl font-semibold text-[#e3e3dd] mb-4">График активности</h2>
-        <div className="h-64 flex items-center justify-center border-2 border-dashed border-gray-600 rounded-lg">
-          <p className="text-gray-500">
+      <div className="mt-8 bg-surface-secondary rounded-xl p-6 shadow-lg border border-border-default">
+        <h2 className="text-xl font-semibold text-content-primary mb-4">График активности</h2>
+        <div className="h-64 flex items-center justify-center border-2 border-dashed border-border-strong rounded-lg">
+          <p className="text-content-tertiary">
             Графики будут доступны после интеграции библиотеки Chart.js
           </p>
         </div>

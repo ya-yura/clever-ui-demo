@@ -24,28 +24,72 @@ export default {
           secondary: 'var(--color-surface-secondary)',
           tertiary: 'var(--color-surface-tertiary)',
           inverse: 'var(--color-surface-inverse)',
+          disabled: 'var(--color-surface-disabled)',
+          overlay: 'var(--color-surface-overlay)',
         },
         content: {
           primary: 'var(--color-content-primary)',
           secondary: 'var(--color-content-secondary)',
           tertiary: 'var(--color-content-tertiary)',
           inverse: 'var(--color-content-inverse)',
+          disabled: 'var(--color-content-disabled)',
         },
         
+        border: {
+          default: 'var(--color-border-default)',
+          light: 'var(--color-border-light)',
+          strong: 'var(--color-border-strong)',
+          focus: 'var(--color-border-focus)',
+        },
+
         // Brand colors (base palette from mockup)
         brand: {
           primary: 'var(--color-brand-primary)',
           dark: 'var(--color-brand-dark)',
+          light: 'var(--color-brand-light)',
           secondary: 'var(--color-brand-secondary)',
+          'secondary-dark': 'var(--color-brand-secondary-dark)',
+          'secondary-light': 'var(--color-brand-secondary-light)',
           tertiary: 'var(--color-brand-tertiary)',
+          'tertiary-dark': 'var(--color-brand-tertiary-dark)',
+          'tertiary-light': 'var(--color-brand-tertiary-light)',
         },
         
         // Status colors (consistent across themes)
-        success: 'var(--color-success)',
-        warning: 'var(--color-warning)',
-        error: 'var(--color-error)',
-        info: 'var(--color-info)',
+        success: {
+          DEFAULT: 'var(--color-success)',
+          dark: 'var(--color-success-dark)',
+          light: 'var(--color-success-light)',
+        },
+        warning: {
+          DEFAULT: 'var(--color-warning)',
+          dark: 'var(--color-warning-dark)',
+          light: 'var(--color-warning-light)',
+        },
+        error: {
+          DEFAULT: 'var(--color-error)',
+          dark: 'var(--color-error-dark)',
+          light: 'var(--color-error-light)',
+        },
+        info: {
+          DEFAULT: 'var(--color-info)',
+          dark: 'var(--color-info-dark)',
+          light: 'var(--color-info-light)',
+        },
         
+        // Accent colors
+        accent: {
+          cyan: 'var(--color-accent-cyan)',
+          'cyan-dark': 'var(--color-accent-cyan-dark)',
+          'cyan-light': 'var(--color-accent-cyan-light)',
+          green: 'var(--color-accent-green)',
+          'green-dark': 'var(--color-accent-green-dark)',
+          'green-light': 'var(--color-accent-green-light)',
+          yellow: 'var(--color-accent-yellow)',
+          'yellow-dark': 'var(--color-accent-yellow-dark)',
+          'yellow-light': 'var(--color-accent-yellow-light)',
+        },
+
         // Module colors (using CSS variables for consistency)
         'module-receiving-bg': 'var(--color-module-receiving-bg)',
         'module-receiving-text': 'var(--color-module-receiving-text)',

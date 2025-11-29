@@ -84,29 +84,29 @@ const Setup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#343436] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-surface-primary flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8">
         {/* Logo and Title */}
         <div className="text-center">
           <Logo size={140} className="mb-6" />
-          <h1 className="text-3xl font-bold text-[#e3e3dd] mb-2">
+          <h1 className="text-3xl font-bold text-content-primary mb-2">
             Склад 15
           </h1>
-          <h2 className="text-xl text-[#a7a7a7] mb-2">
+          <h2 className="text-xl text-content-secondary mb-2">
             Первоначальная настройка
           </h2>
-          <p className="text-sm text-[#a7a7a7]">
+          <p className="text-sm text-content-secondary">
             Укажите адрес сервера для подключения
           </p>
         </div>
 
         {/* Setup Form */}
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          <div className="bg-[#474747] rounded-lg p-6 space-y-4">
+          <div className="bg-surface-secondary rounded-lg p-6 space-y-4">
             <div>
               <label
                 htmlFor="serverUrl"
-                className="block text-sm font-medium text-[#e3e3dd] mb-2"
+                className="block text-sm font-medium text-content-primary mb-2"
               >
                 Адрес сервера
               </label>
@@ -116,19 +116,19 @@ const Setup: React.FC = () => {
                 required
                 value={serverUrl}
                 onChange={(e) => setServerUrl(e.target.value)}
-                className="w-full px-4 py-3 bg-[#343436] border border-[#555] rounded-lg text-[#e3e3dd] placeholder-[#777] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-surface-primary border border-border-default rounded-lg text-content-primary placeholder-content-tertiary focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
                 placeholder="http://localhost:9000/MobileSMARTS/api/v1"
                 disabled={isValidating}
               />
-              <p className="mt-2 text-xs text-[#a7a7a7]">
+              <p className="mt-2 text-xs text-content-secondary">
                 Пример: http://localhost:9000/MobileSMARTS/api/v1
               </p>
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-500 bg-opacity-10 border border-red-500 rounded-lg p-3">
-                <p className="text-sm text-red-400">⚠️ {error}</p>
+              <div className="bg-error/10 border border-error rounded-lg p-3">
+                <p className="text-sm text-error">⚠️ {error}</p>
               </div>
             )}
 
@@ -145,8 +145,7 @@ const Setup: React.FC = () => {
             <button
               type="submit"
               disabled={isValidating || !serverUrl.trim()}
-              className="w-full py-3 px-4 bg-brand-primary hover:brightness-90 font-semibold rounded-lg transition-all disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
-              style={{ backgroundColor: 'var(--color-brand-primary)', color: 'var(--color-brand-dark)' }}
+              className="w-full py-3 px-4 bg-brand-primary text-brand-dark hover:brightness-90 font-semibold rounded-lg transition-all disabled:bg-surface-disabled disabled:text-content-disabled disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isValidating ? (
                 <>
@@ -165,7 +164,7 @@ const Setup: React.FC = () => {
               type="button"
               onClick={handleTestConnection}
               disabled={isValidating || !serverUrl.trim()}
-              className="w-full py-3 px-4 bg-[#474747] hover:bg-[#525252] text-[#e3e3dd] font-medium rounded-lg transition-colors disabled:bg-gray-700 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 bg-surface-secondary hover:bg-surface-tertiary text-content-primary border border-border-default font-medium rounded-lg transition-colors disabled:bg-surface-disabled disabled:text-content-disabled disabled:cursor-not-allowed"
             >
               Проверить соединение
             </button>
@@ -173,7 +172,7 @@ const Setup: React.FC = () => {
         </form>
 
         {/* Footer */}
-        <div className="text-center text-xs text-[#777]">
+        <div className="text-center text-xs text-content-tertiary">
           <p>Cleverence Mobile SMARTS</p>
           <p className="mt-1">Версия 1.0.0</p>
         </div>

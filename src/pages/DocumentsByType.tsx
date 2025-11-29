@@ -191,16 +191,16 @@ const DocumentsByType: React.FC = () => {
     }
   };
 
-  const getStatusBadge = (doc: ODataDocument) => {
+    const getStatusBadge = (doc: ODataDocument) => {
     // Compact badges: reduced height, smaller font, tighter padding
     const base = 'inline-flex items-center h-[18px] px-1.5 rounded text-[9px] font-bold uppercase tracking-wider border';
     if (doc.finished) {
-      return <span className={`${base} bg-[#1f3324] text-[#74ff9c] border-transparent`}>Завершён</span>;
+      return <span className={`${base} bg-success-dark text-success-light border-transparent dark:bg-success-dark dark:text-success-light bg-success-light text-success-dark border-success-light`}>Завершён</span>;
     }
     if (doc.inProcess) {
-      return <span className={`${base} bg-[#1d2f3c] text-[#7ad4ff] border-transparent`}>В работе</span>;
+      return <span className={`${base} bg-info-dark text-info-light border-transparent dark:bg-info-dark dark:text-info-light bg-info-light text-info-dark border-info-light`}>В работе</span>;
     }
-    return <span className={`${base} bg-[#353535] text-[#d7d7d7] border-[#4e4e4e]`}>Новый</span>;
+    return <span className={`${base} bg-surface-tertiary text-content-secondary border-border-default`}>Новый</span>;
   };
 
   const formatDateShort = (dateString: string) => {
@@ -228,8 +228,8 @@ const DocumentsByType: React.FC = () => {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-red-500 mb-2">Ошибка загрузки</h2>
-          <p className="text-[#a7a7a7] mb-6">{error}</p>
+          <h2 className="text-2xl font-bold text-error mb-2">Ошибка загрузки</h2>
+          <p className="text-content-secondary mb-6">{error}</p>
           <div className="flex gap-4 justify-center">
             <button
               onClick={loadDocuments}
@@ -280,7 +280,7 @@ const DocumentsByType: React.FC = () => {
             // So I should use `bg-surface-secondary` etc.
             
             // UPDATED: Using theme-specific colors for tags to avoid eye strain in light mode
-            const activeStyleFinal = "bg-[#1f3324] text-[#74ff9c] border-transparent shadow-sm dark:bg-[#1f3324] dark:text-[#74ff9c] bg-green-100 text-green-800 border-green-200"; 
+            const activeStyleFinal = "bg-success-dark text-success-light border-transparent shadow-sm dark:bg-success-dark dark:text-success-light bg-success-light text-success-dark border-success-light"; 
             
             // Let's use the logic:
             // Inactive: bg-surface-secondary text-content-secondary border-border-default hover:bg-surface-tertiary
@@ -318,7 +318,7 @@ const DocumentsByType: React.FC = () => {
            const baseStyle = "inline-flex items-center justify-center h-[18px] min-h-0 min-w-0 px-1.5 rounded text-[9px] leading-none font-bold uppercase tracking-wider border transition-colors";
            
            // UPDATED: Theme-aware colors for active state (Dark: Blue-ish, Light: Light Blue)
-           const activeStyle = "bg-[#1d2f3c] text-[#7ad4ff] border-transparent dark:bg-[#1d2f3c] dark:text-[#7ad4ff] bg-blue-100 text-blue-700 border-blue-200"; 
+           const activeStyle = "bg-info-dark text-info-light border-transparent dark:bg-info-dark dark:text-info-light bg-info-light text-info-dark border-info-light"; 
            const inactiveStyle = "bg-surface-secondary text-content-secondary border-border-default hover:bg-surface-tertiary";
 
           return (

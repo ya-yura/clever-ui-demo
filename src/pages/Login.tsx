@@ -115,43 +115,43 @@ const Login: React.FC = () => {
   // Show loading while checking auth requirements
   if (checkingAuth) {
     return (
-      <div className="min-h-screen bg-[#343436] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-surface-primary flex items-center justify-center px-4">
         <div className="text-center">
           <div className="text-6xl mb-4 animate-pulse">🔐</div>
-          <p className="text-xl text-[#a7a7a7]">Проверка требований аутентификации...</p>
+          <p className="text-xl text-content-secondary">Проверка требований аутентификации...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#343436] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-surface-primary flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8">
         {/* Logo and Title */}
         <div className="text-center">
           <Logo size={120} className="mb-6" />
-          <h1 className="text-3xl font-bold text-[#e3e3dd] mb-2">
+          <h1 className="text-3xl font-bold text-content-primary mb-2">
             Вход в систему
           </h1>
-          <h2 className="text-sm text-[#a7a7a7] mb-4">
+          <h2 className="text-sm text-content-secondary mb-4">
             Авторизуйтесь для доступа к приложению
           </h2>
           
           {/* Server Info */}
-          <div className="bg-[#474747] rounded-lg p-3 inline-block">
-            <p className="text-xs text-[#a7a7a7]">Сервер:</p>
-            <p className="text-sm text-[#e3e3dd] font-mono break-all">{serverUrl}</p>
+          <div className="bg-surface-secondary rounded-lg p-3 inline-block">
+            <p className="text-xs text-content-secondary">Сервер:</p>
+            <p className="text-sm text-content-primary font-mono break-all">{serverUrl}</p>
           </div>
         </div>
 
         <div className="mt-8 space-y-6">
           {requiresAuth && (
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="bg-[#474747] rounded-lg p-6 space-y-4 border border-[#5a5a5a]">
+              <div className="bg-surface-secondary rounded-lg p-6 space-y-4 border border-border-default">
                 <div>
                   <label
                     htmlFor="username"
-                    className="block text-sm font-medium text-[#e3e3dd] mb-2"
+                    className="block text-sm font-medium text-content-primary mb-2"
                   >
                     Имя пользователя
                   </label>
@@ -163,18 +163,18 @@ const Login: React.FC = () => {
                       autoComplete="username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="w-full px-4 py-3 pl-10 bg-[#343436] border border-[#555] rounded-lg text-[#e3e3dd] placeholder-[#777] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-4 py-3 pl-10 bg-surface-primary border border-border-default rounded-lg text-content-primary placeholder-content-tertiary focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
                       placeholder="Введите имя пользователя"
                       disabled={isLogging}
                     />
-                    <span className="absolute left-3 top-3 text-[#777]">👤</span>
+                    <span className="absolute left-3 top-3 text-content-tertiary">👤</span>
                   </div>
                 </div>
 
                 <div>
                   <label
                     htmlFor="password"
-                    className="block text-sm font-medium text-[#e3e3dd] mb-2"
+                    className="block text-sm font-medium text-content-primary mb-2"
                   >
                     Пароль
                   </label>
@@ -186,15 +186,15 @@ const Login: React.FC = () => {
                       autoComplete="current-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-4 py-3 pl-10 pr-12 bg-[#343436] border border-[#555] rounded-lg text-[#e3e3dd] placeholder-[#777] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-4 py-3 pl-10 pr-12 bg-surface-primary border border-border-default rounded-lg text-content-primary placeholder-content-tertiary focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
                       placeholder="Введите пароль"
                       disabled={isLogging}
                     />
-                    <span className="absolute left-3 top-3 text-[#777]">🔒</span>
+                    <span className="absolute left-3 top-3 text-content-tertiary">🔒</span>
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-[#777] hover:text-[#e3e3dd] transition-colors"
+                      className="absolute right-3 top-3 text-content-tertiary hover:text-content-primary transition-colors"
                     >
                       {showPassword ? '👁️' : '👁️‍🗨️'}
                     </button>
@@ -207,8 +207,7 @@ const Login: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isLogging || !username.trim() || !password.trim()}
-                  className="w-full py-3 px-4 font-semibold rounded-lg transition-all disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center hover:brightness-90"
-                  style={{ backgroundColor: 'var(--color-brand-primary)', color: 'var(--color-brand-dark)' }}
+                  className="w-full py-3 px-4 bg-brand-primary text-brand-dark font-semibold rounded-lg transition-all disabled:bg-surface-disabled disabled:text-content-disabled disabled:cursor-not-allowed flex items-center justify-center hover:brightness-90"
                 >
                   {isLogging ? (
                     <>
@@ -227,7 +226,7 @@ const Login: React.FC = () => {
                   type="button"
                   onClick={handleBackToSetup}
                   disabled={isLogging}
-                  className="w-full py-2 px-4 text-[#a7a7a7] hover:text-[#e3e3dd] text-sm transition-colors disabled:text-gray-700"
+                  className="w-full py-2 px-4 text-content-secondary hover:text-content-primary text-sm transition-colors disabled:text-content-disabled"
                 >
                   ← Изменить сервер
                 </button>
@@ -239,24 +238,24 @@ const Login: React.FC = () => {
             type="button"
             onClick={handleDemoLogin}
             disabled={isDemoLogging}
-            className="w-full py-3 px-4 border border-[#5a5a5a] bg-[#393939] text-[#b3b3b3] font-medium rounded-lg transition-colors hover:bg-[#454545] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+            className="w-full py-3 px-4 border border-border-default bg-surface-tertiary text-content-secondary font-medium rounded-lg transition-colors hover:bg-surface-secondary disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {isDemoLogging ? 'Запуск демо...' : 'Демо-режим'}
           </button>
 
-          <div className="text-xs text-[#a7a7a7] text-center">
+          <div className="text-xs text-content-secondary text-center">
             В демо-режиме используются локальные данные без подключения к серверу
           </div>
 
           {error && (
-            <div className="bg-red-500 bg-opacity-10 border border-red-500 rounded-lg p-3">
-              <p className="text-sm text-red-400 text-center">⚠️ {error}</p>
+            <div className="bg-error/10 border border-error rounded-lg p-3">
+              <p className="text-sm text-error text-center">⚠️ {error}</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="text-center text-xs text-[#777]">
+        <div className="text-center text-xs text-content-tertiary">
           <p>Cleverence Mobile SMARTS</p>
           <p className="mt-1">{requiresAuth ? 'Требуется авторизация сервера' : 'Работа без авторизации'}</p>
         </div>
