@@ -288,7 +288,7 @@ const Receiving: React.FC = () => {
       <div className="space-y-4">
         {documents.length === 0 ? (
           <div className="card text-center py-12">
-            <p className="text-[#a7a7a7]">
+            <p className="text-content-tertiary">
               Нет документов приёмки
             </p>
           </div>
@@ -298,20 +298,20 @@ const Receiving: React.FC = () => {
               <button
                 key={doc.id}
                 onClick={() => navigate(`/receiving/${doc.id}`)}
-                className="card hover:shadow-lg hover:border-[#86e0cb] transition-all text-left p-6"
+                className="card hover:shadow-lg hover:border-brand-primary transition-all text-left p-6"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold text-[#e3e3dd]">
+                    <h3 className="text-lg font-semibold text-content-primary">
                       {doc.id}
                     </h3>
                     {doc.supplier && (
-                      <p className="text-sm text-[#a7a7a7] mt-1">
+                      <p className="text-sm text-content-secondary mt-1">
                         Поставщик: {doc.supplier}
                       </p>
                     )}
                     {doc.deliveryNumber && (
-                      <p className="text-sm text-[#a7a7a7]">
+                      <p className="text-sm text-content-secondary">
                         Номер поставки: {doc.deliveryNumber}
                       </p>
                     )}
@@ -326,7 +326,7 @@ const Receiving: React.FC = () => {
                        doc.status === 'in_progress' ? 'В работе' :
                        'Ожидает'}
                     </span>
-                    <p className="text-sm text-[#a7a7a7] mt-2">
+                    <p className="text-sm text-content-tertiary mt-2">
                       {doc.completedLines} / {doc.totalLines} строк
                     </p>
                   </div>

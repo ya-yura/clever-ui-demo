@@ -34,24 +34,24 @@
   --font-family-mono: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', ui-monospace, monospace;
 
   /* Surface colors (backgrounds) */
-  --color-surface-primary: #343436;
-  --color-surface-secondary: #343436;
-  --color-surface-tertiary: #343436;
+  --color-surface-primary: #2c2c2e; /* Main app background - slightly darker */
+  --color-surface-secondary: #3c3c3e; /* Cards, Inputs - slightly lighter */
+  --color-surface-tertiary: #48484a; /* Hovers, secondary elements */
   --color-surface-inverse: #ffffff;
-  --color-surface-overlay: rgba(52, 52, 54, 0.85);
-  --color-surface-disabled: #343436;
+  --color-surface-overlay: rgba(44, 44, 46, 0.85);
+  --color-surface-disabled: #2c2c2e;
 
   /* Content colors (text) */
-  --color-content-primary: #eaecf0;
-  --color-content-secondary: #aaaeb6;
-  --color-content-tertiary: #80858e;
-  --color-content-inverse: #343436;
+  --color-content-primary: #f0f0f0;
+  --color-content-secondary: #b0b0b0;
+  --color-content-tertiary: #808080;
+  --color-content-inverse: #2c2c2e;
   --color-content-disabled: #525760;
 
   /* Border colors */
-  --color-border-default: #2a2f38;
-  --color-border-light: #343a46;
-  --color-border-strong: #525760;
+  --color-border-default: #4c4c4c;
+  --color-border-light: #5c5c5c;
+  --color-border-strong: #707070;
   --color-border-focus: #d89668;
 
   /* Brand colors (base palette from Figma) */

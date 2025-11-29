@@ -11,10 +11,10 @@ interface Props {
 
 const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
   const statusColor = 
-    line.status === 'completed' ? 'bg-[#2d6b2d] border-[#91ed91]' :
-    line.status === 'partial' ? 'bg-[#8b5931] border-[#f3a361]' :
-    line.status === 'error' ? 'bg-[#6b3d3c] border-[#ba8f8e]' :
-    'bg-[#2a2a2c] border-[#474747]';
+    line.status === 'completed' ? 'bg-green-900/30 border-green-500/50 dark:bg-green-900/30 dark:border-green-500/50 bg-green-50 border-green-200' :
+    line.status === 'partial' ? 'bg-orange-900/30 border-orange-500/50 dark:bg-orange-900/30 dark:border-orange-500/50 bg-orange-50 border-orange-200' :
+    line.status === 'error' ? 'bg-red-900/30 border-red-500/50 dark:bg-red-900/30 dark:border-red-500/50 bg-red-50 border-red-200' :
+    'bg-surface-secondary border-border-default';
 
   const statusIcon =
     line.status === 'completed' ? '🟢' :
@@ -32,14 +32,14 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
           <div className="flex items-center space-x-2 mb-2">
             <span className="text-2xl">{statusIcon}</span>
             <div>
-              <h3 className="font-semibold text-[#e3e3dd]">
+              <h3 className="font-semibold text-content-primary">
                 {line.productName}
               </h3>
-              <p className="text-sm text-[#a7a7a7]">
+              <p className="text-sm text-content-secondary">
                 Артикул: {line.productSku}
               </p>
               {line.barcode && (
-                <p className="text-xs text-[#a7a7a7]">
+                <p className="text-xs text-content-tertiary">
                   ШК: {line.barcode}
                 </p>
               )}
@@ -47,26 +47,26 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center mt-4">
-            <div className="bg-[#343436] border border-[#474747] rounded p-2">
-              <div className="text-xs text-[#a7a7a7]">План</div>
-              <div className="text-lg font-bold text-[#e3e3dd]">
+            <div className="bg-surface-tertiary border border-border-default rounded p-2">
+              <div className="text-xs text-content-secondary">План</div>
+              <div className="text-lg font-bold text-content-primary">
                 {line.quantityPlan}
               </div>
             </div>
-            <div className="bg-[#343436] border border-[#474747] rounded p-2">
-              <div className="text-xs text-[#a7a7a7]">Факт</div>
-              <div className="text-lg font-bold text-[#86e0cb]">
+            <div className="bg-surface-tertiary border border-border-default rounded p-2">
+              <div className="text-xs text-content-secondary">Факт</div>
+              <div className="text-lg font-bold text-brand-primary">
                 {line.quantityFact}
               </div>
             </div>
-            <div className="bg-[#343436] border border-[#474747] rounded p-2">
-              <div className="text-xs text-[#a7a7a7]">Остаток</div>
+            <div className="bg-surface-tertiary border border-border-default rounded p-2">
+              <div className="text-xs text-content-secondary">Остаток</div>
               <div className={`text-lg font-bold ${
                 showDifference 
                   ? difference > 0 
-                    ? 'text-[#f0e78d]' 
-                    : 'text-[#ba8f8e]'
-                  : 'text-[#91ed91]'
+                    ? 'text-warning' 
+                    : 'text-error'
+                  : 'text-success'
               }`}>
                 {Math.abs(line.quantityPlan - line.quantityFact)}
               </div>
@@ -79,7 +79,7 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
       <div className="flex gap-2 mt-4">
         <button
           onClick={() => onAdjust(-1)}
-          className="btn-secondary flex-1"
+          className="btn-secondary flex-1 border border-border-default"
           disabled={line.quantityFact === 0}
         >
           −1
@@ -95,8 +95,8 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
       {showDifference && (
         <div className={`mt-2 p-2 rounded text-sm text-center ${
           difference > 0 
-            ? 'bg-[#8b5931] text-[#f0e78d]'
-            : 'bg-[#6b3d3c] text-[#ba8f8e]'
+            ? 'bg-warning/20 text-warning-dark'
+            : 'bg-error/20 text-error-dark'
         }`}>
           {difference > 0 ? '⚠️ Излишки' : '⚠️ Недостача'}: {Math.abs(difference)} шт.
         </div>
