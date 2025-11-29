@@ -2,6 +2,7 @@
 // Main application component
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Setup from './pages/Setup';
@@ -32,13 +33,12 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { NavigationTracker } from './components/NavigationTracker';
 
 function App() {
-  // Initial data loading disabled - using API server data
-  // To load mock data for development, uncomment:
-  // useEffect(() => {
-  //   import('./utils/loadInitialData').then(({ loadInitialData }) => {
-  //     loadInitialData();
-  //   });
-  // }, []);
+  // Initial data loading
+  useEffect(() => {
+    import('./utils/loadInitialData').then(({ loadInitialData }) => {
+      loadInitialData();
+    });
+  }, []);
 
   return (
     <ThemeProvider>

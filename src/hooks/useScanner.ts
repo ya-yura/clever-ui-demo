@@ -2,7 +2,7 @@
 // Scanner hook for barcode/QR scanning
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeScanner } from 'html5-qrcode';
 import { playSound } from '@/utils/sound';
 import analytics, { EventType } from '@/lib/analytics';
 
