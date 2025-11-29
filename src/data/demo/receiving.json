@@ -1,0 +1,106 @@
+{
+  "documents": [
+    {
+      "id": "RCV-001",
+      "status": "in_progress",
+      "supplier": "ООО Поставщик №1",
+      "deliveryNumber": "ДН-12345",
+      "expectedDate": 1729670400000,
+      "totalLines": 8,
+      "completedLines": 5,
+      "createdAt": 1729584000000,
+      "updatedAt": 1729670400000
+    },
+    {
+      "id": "RCV-002",
+      "status": "completed",
+      "supplier": "ИП Иванов",
+      "deliveryNumber": "ДН-12346",
+      "expectedDate": 1729497600000,
+      "totalLines": 5,
+      "completedLines": 5,
+      "createdAt": 1729411200000,
+      "updatedAt": 1729584000000
+    },
+    {
+      "id": "RCV-003",
+      "status": "pending",
+      "supplier": "ООО Продукты Оптом",
+      "deliveryNumber": "ДН-12347",
+      "expectedDate": 1729756800000,
+      "totalLines": 12,
+      "completedLines": 0,
+      "createdAt": 1729670400000,
+      "updatedAt": 1729670400000
+    },
+    {
+      "id": "RCV-004",
+      "status": "in_progress",
+      "supplier": "ООО Торговый Дом Напитки",
+      "deliveryNumber": "ДН-12348",
+      "expectedDate": 1729670400000,
+      "totalLines": 6,
+      "completedLines": 3,
+      "createdAt": 1729584000000,
+      "updatedAt": 1729670400000
+    },
+    {
+      "id": "RCV-005",
+      "status": "completed",
+      "supplier": "ЗАО Молочный Мир",
+      "deliveryNumber": "ДН-12349",
+      "expectedDate": 1729411200000,
+      "totalLines": 10,
+      "completedLines": 10,
+      "createdAt": 1729324800000,
+      "updatedAt": 1729497600000
+    }
+  ],
+  "lines": [
+    { "id": "RCV-001-L1", "documentId": "RCV-001", "productId": "P001", "productName": "Кофе Lavazza 250г", "productSku": "LAV-250", "barcode": "8000070001234", "quantityPlan": 50, "quantityFact": 50, "status": "completed" },
+    { "id": "RCV-001-L2", "documentId": "RCV-001", "productId": "P002", "productName": "Чай Ahmad Earl Grey 100г", "productSku": "AHM-100-EG", "barcode": "5054881234567", "quantityPlan": 100, "quantityFact": 98, "status": "partial" },
+    { "id": "RCV-001-L3", "documentId": "RCV-001", "productId": "P003", "productName": "Сахар 1кг", "productSku": "SUG-1000", "barcode": "4607001234567", "quantityPlan": 200, "quantityFact": 200, "status": "completed" },
+    { "id": "RCV-001-L4", "documentId": "RCV-001", "productId": "P028", "productName": "Шоколад Milka 90г", "productSku": "CHOC-MILK-90", "barcode": "7622210123457", "quantityPlan": 150, "quantityFact": 150, "status": "completed" },
+    { "id": "RCV-001-L5", "documentId": "RCV-001", "productId": "P005", "productName": "Печенье Oreo 95г", "productSku": "OREO-95", "barcode": "7622210123456", "quantityPlan": 120, "quantityFact": 120, "status": "completed" },
+    { "id": "RCV-001-L6", "documentId": "RCV-001", "productId": "P034", "productName": "Чипсы Lays 150г", "productSku": "CHIPS-LAYS-150", "barcode": "4823063111867", "quantityPlan": 80, "quantityFact": 80, "status": "completed" },
+    { "id": "RCV-001-L7", "documentId": "RCV-001", "productId": "P006", "productName": "Масло подсолнечное 1л", "productSku": "OIL-SUN-1L", "barcode": "4601234567890", "quantityPlan": 60, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-001-L8", "documentId": "RCV-001", "productId": "P011", "productName": "Мука пшеничная 2кг", "productSku": "FLOUR-2K", "barcode": "4606789012345", "quantityPlan": 100, "quantityFact": 0, "status": "pending" },
+    
+    { "id": "RCV-002-L1", "documentId": "RCV-002", "productId": "P004", "productName": "Молоко 3.2% 1л", "productSku": "MLK-32-1L", "barcode": "4607012345678", "quantityPlan": 200, "quantityFact": 200, "status": "completed" },
+    { "id": "RCV-002-L2", "documentId": "RCV-002", "productId": "P012", "productName": "Йогурт питьевой 250мл", "productSku": "YOG-DR-250", "barcode": "4607890123456", "quantityPlan": 150, "quantityFact": 150, "status": "completed" },
+    { "id": "RCV-002-L3", "documentId": "RCV-002", "productId": "P013", "productName": "Сметана 20% 200г", "productSku": "SOUR-20-200", "barcode": "4608901234567", "quantityPlan": 100, "quantityFact": 100, "status": "completed" },
+    { "id": "RCV-002-L4", "documentId": "RCV-002", "productId": "P014", "productName": "Творог 9% 200г", "productSku": "COT-9-200", "barcode": "4609012345678", "quantityPlan": 80, "quantityFact": 80, "status": "completed" },
+    { "id": "RCV-002-L5", "documentId": "RCV-002", "productId": "P015", "productName": "Сыр Российский 200г", "productSku": "CHE-RUS-200", "barcode": "4610123456789", "quantityPlan": 60, "quantityFact": 60, "status": "completed" },
+    
+    { "id": "RCV-003-L1", "documentId": "RCV-003", "productId": "P007", "productName": "Гречка 900г", "productSku": "BUCK-900", "barcode": "4602345678901", "quantityPlan": 300, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-003-L2", "documentId": "RCV-003", "productId": "P008", "productName": "Рис круглый 1кг", "productSku": "RICE-R-1K", "barcode": "4603456789012", "quantityPlan": 250, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-003-L3", "documentId": "RCV-003", "productId": "P009", "productName": "Макароны спагетти 500г", "productSku": "PAST-SPG-500", "barcode": "4604567890123", "quantityPlan": 200, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-003-L4", "documentId": "RCV-003", "productId": "P010", "productName": "Соль 1кг", "productSku": "SALT-1K", "barcode": "4605678901234", "quantityPlan": 150, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-003-L5", "documentId": "RCV-003", "productId": "P021", "productName": "Томатная паста 140г", "productSku": "TOM-PAST-140", "barcode": "4616789012345", "quantityPlan": 180, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-003-L6", "documentId": "RCV-003", "productId": "P022", "productName": "Горошек консервированный 400г", "productSku": "PEA-CAN-400", "barcode": "4617890123456", "quantityPlan": 120, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-003-L7", "documentId": "RCV-003", "productId": "P023", "productName": "Кукуруза консервированная 340г", "productSku": "CORN-CAN-340", "barcode": "4618901234567", "quantityPlan": 140, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-003-L8", "documentId": "RCV-003", "productId": "P024", "productName": "Тунец в масле 185г", "productSku": "TUNA-OIL-185", "barcode": "4619012345678", "quantityPlan": 90, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-003-L9", "documentId": "RCV-003", "productId": "P031", "productName": "Майонез Провансаль 400г", "productSku": "MAYO-PROV-400", "barcode": "4624567890123", "quantityPlan": 100, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-003-L10", "documentId": "RCV-003", "productId": "P032", "productName": "Кетчуп Heinz 500г", "productSku": "KETCH-HZ-500", "barcode": "8715700421234", "quantityPlan": 80, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-003-L11", "documentId": "RCV-003", "productId": "P033", "productName": "Горчица столовая 170г", "productSku": "MUST-170", "barcode": "4625678901234", "quantityPlan": 60, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-003-L12", "documentId": "RCV-003", "productId": "P016", "productName": "Колбаса докторская 500г", "productSku": "SAUS-DOC-500", "barcode": "4611234567890", "quantityPlan": 50, "quantityFact": 0, "status": "pending" },
+    
+    { "id": "RCV-004-L1", "documentId": "RCV-004", "productId": "P025", "productName": "Сок яблочный 1л", "productSku": "JUICE-APP-1L", "barcode": "4620123456789", "quantityPlan": 200, "quantityFact": 200, "status": "completed" },
+    { "id": "RCV-004-L2", "documentId": "RCV-004", "productId": "P026", "productName": "Вода минеральная 1.5л", "productSku": "WATER-MIN-1.5", "barcode": "4621234567890", "quantityPlan": 300, "quantityFact": 300, "status": "completed" },
+    { "id": "RCV-004-L3", "documentId": "RCV-004", "productId": "P027", "productName": "Coca-Cola 2л", "productSku": "COKE-2L", "barcode": "5449000000996", "quantityPlan": 150, "quantityFact": 150, "status": "completed" },
+    { "id": "RCV-004-L4", "documentId": "RCV-004", "productId": "P001", "productName": "Кофе Lavazza 250г", "productSku": "LAV-250", "barcode": "8000070001234", "quantityPlan": 100, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-004-L5", "documentId": "RCV-004", "productId": "P002", "productName": "Чай Ahmad Earl Grey 100г", "productSku": "AHM-100-EG", "barcode": "5054881234567", "quantityPlan": 120, "quantityFact": 0, "status": "pending" },
+    { "id": "RCV-004-L6", "documentId": "RCV-004", "productId": "P003", "productName": "Сахар 1кг", "productSku": "SUG-1000", "barcode": "4607001234567", "quantityPlan": 150, "quantityFact": 0, "status": "pending" },
+    
+    { "id": "RCV-005-L1", "documentId": "RCV-005", "productId": "P017", "productName": "Хлеб белый нарезной 400г", "productSku": "BREAD-W-400", "barcode": "4612345678901", "quantityPlan": 80, "quantityFact": 80, "status": "completed" },
+    { "id": "RCV-005-L2", "documentId": "RCV-005", "productId": "P018", "productName": "Хлеб черный 500г", "productSku": "BREAD-B-500", "barcode": "4613456789012", "quantityPlan": 60, "quantityFact": 60, "status": "completed" },
+    { "id": "RCV-005-L3", "documentId": "RCV-005", "productId": "P019", "productName": "Батон нарезной 350г", "productSku": "BATON-350", "barcode": "4614567890123", "quantityPlan": 100, "quantityFact": 100, "status": "completed" },
+    { "id": "RCV-005-L4", "documentId": "RCV-005", "productId": "P020", "productName": "Яйца куриные С1 10шт", "productSку": "EGG-C1-10", "barcode": "4615678901234", "quantityPlan": 120, "quantityFact": 120, "status": "completed" },
+    { "id": "RCV-005-L5", "documentId": "RCV-005", "productId": "P029", "productName": "Вафли Коломенские 220г", "productSku": "WAFF-KOL-220", "barcode": "4622345678901", "quantityPlan": 90, "quantityFact": 90, "status": "completed" },
+    { "id": "RCV-005-L6", "documentId": "RCV-005", "productId": "P030", "productName": "Пряники Тульские 350г", "productSku": "GINGER-TUL-350", "barcode": "4623456789012", "quantityPlan": 70, "quantityFact": 70, "status": "completed" },
+    { "id": "RCV-005-L7", "documentId": "RCV-005", "productId": "P035", "productName": "Сухарики Кириешки 100г", "productSku": "CRACK-KIR-100", "barcode": "4626789012345", "quantityPlan": 100, "quantityFact": 100, "status": "completed" },
+    { "id": "RCV-005-L8", "documentId": "RCV-005", "productId": "P004", "productName": "Молоко 3.2% 1л", "productSku": "MLK-32-1L", "barcode": "4607012345678", "quantityPlan": 150, "quantityFact": 150, "status": "completed" },
+    { "id": "RCV-005-L9", "documentId": "RCV-005", "productId": "P012", "productName": "Йогурт питьевой 250мл", "productSku": "YOG-DR-250", "barcode": "4607890123456", "quantityPlan": 100, "quantityFact": 100, "status": "completed" },
+    { "id": "RCV-005-L10", "documentId": "RCV-005", "productId": "P015", "productName": "Сыр Российский 200г", "productSku": "CHE-RUS-200", "barcode": "4610123456789", "quantityPlan": 40, "quantityFact": 40, "status": "completed" }
+  ]
+}
