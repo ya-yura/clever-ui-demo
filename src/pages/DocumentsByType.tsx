@@ -377,7 +377,7 @@ const DocumentsByType: React.FC = () => {
             onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
             className="h-full w-9 flex items-center justify-center bg-transparent text-content-primary hover:bg-surface-tertiary transition-colors m-0 p-0 focus:outline-none"
           >
-            <span className="text-lg leading-none mb-0.5">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+            <span className="text-base leading-none mb-0.5 font-normal opacity-80">{sortDirection === 'asc' ? '↑' : '↓'}</span>
           </button>
         </div>
       </div>
