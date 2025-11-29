@@ -326,26 +326,30 @@ const DocumentsByType: React.FC = () => {
         </div>
         
         {/* Compact Sort Group */}
-        <div className="flex shrink-0">
-          <div className="relative">
+        <div className="flex shrink-0 h-full border border-[#4c4c4c] bg-[#3c3c3c] rounded-md overflow-hidden">
+          <div className="relative h-full">
             <select
               value={sortField}
               onChange={(e) => setSortField(e.target.value as any)}
-              className="h-full appearance-none bg-[#3c3c3c] text-[#e3e3e3] border border-[#4c4c4c] border-r-0 rounded-l-md rounded-r-none pl-3 pr-7 text-sm focus:outline-none focus:border-[#86e0cb] focus:z-10 m-0"
+              className="h-full appearance-none bg-transparent text-[#e3e3e3] border-none pl-3 pr-6 text-sm focus:ring-0 focus:outline-none m-0"
             >
               <option value="date">Дата</option>
               <option value="number">Номер</option>
               <option value="status">Статус</option>
             </select>
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[#888]">
+            <div className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#888]">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </div>
           </div>
+          
+          {/* Vertical Divider */}
+          <div className="w-[1px] bg-[#4c4c4c] h-full" />
+          
           <button
             onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
-            className="h-full w-8 flex items-center justify-center bg-[#3c3c3c] text-[#e3e3e3] border border-[#4c4c4c] rounded-r-md rounded-l-none hover:bg-[#4c4c4c] m-0 p-0 focus:z-10"
+            className="h-full w-9 flex items-center justify-center bg-transparent text-[#e3e3e3] hover:bg-[#444] transition-colors m-0 p-0 focus:outline-none"
           >
             <span className="text-lg leading-none mb-0.5">{sortDirection === 'asc' ? '↑' : '↓'}</span>
           </button>
