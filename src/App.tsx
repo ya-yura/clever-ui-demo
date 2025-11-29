@@ -5,7 +5,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Setup from './pages/Setup';
-import Login from './pages/Login';
 import Home from './pages/Home';
 import Documents from './pages/Documents';
 import DocumentsByType from './pages/DocumentsByType';

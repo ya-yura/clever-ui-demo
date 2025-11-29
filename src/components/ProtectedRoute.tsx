@@ -1,8 +1,8 @@
 // === 📁 src/components/ProtectedRoute.tsx ===
 // Protected route wrapper for authenticated routes
 
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { configService } from '@/services/configService';
 
@@ -11,17 +11,26 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading, user, token } = useAuth();
+  const { isAuthenticated, isLoading, loginDemo } = useAuth();
   const isConfigured = configService.isConfigured();
-  const location = useLocation();
+  const [autoLoginAttempted, setAutoLoginAttempted] = useState(false);
 
-  // Show loading state while checking auth
-  if (isLoading) {
+  // Auto-login in demo mode if not authenticated
+  useEffect(() => {
+    if (isConfigured && !isLoading && !isAuthenticated && !autoLoginAttempted) {
+      console.log('🔄 Auto-logging in demo mode...');
+      loginDemo();
+      setAutoLoginAttempted(true);
+    }
+  }, [isConfigured, isLoading, isAuthenticated, autoLoginAttempted, loginDemo]);
+
+  // Show loading state while checking auth or attempting auto-login
+  if (isLoading || (isConfigured && !isAuthenticated && !autoLoginAttempted)) {
     return (
       <div className="min-h-screen bg-surface-primary flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4 animate-pulse">📦</div>
-          <p className="text-xl text-content-secondary">Проверка авторизации...</p>
+          <p className="text-xl text-content-secondary">Загрузка...</p>
         </div>
       </div>
     );
@@ -33,17 +42,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to="/setup" replace />;
   }
 
-  // Allow access if authenticated (or while auto-login is happening, effectively)
-  // We check isAuthenticated to prevent flickering, but since we call loginDemo in useEffect, 
-  // we might need to show loading or just allow it to proceed if loginDemo is synchronous-ish or fast enough.
-  // However, loginDemo updates state which triggers re-render.
-  
-  if (!isAuthenticated || !user || !token) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  // Allow access if authenticated
+  if (isAuthenticated) {
+    return <>{children}</>;
   }
 
-  // All checks passed - render protected content
-  return <>{children}</>;
+  // If we got here, something went wrong with auto-login
+  // Show loading screen to prevent rendering errors
+  return (
+    <div className="min-h-screen bg-surface-primary flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-6xl mb-4 animate-pulse">📦</div>
+        <p className="text-xl text-content-secondary">Вход в систему...</p>
+      </div>
+    </div>
+  );
 };
 
 export default ProtectedRoute;
