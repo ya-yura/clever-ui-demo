@@ -258,7 +258,8 @@ const DocumentsByType: React.FC = () => {
             const short = SHORT_TITLES[t.uni] || toShortTitle(String(t.displayName || t.name || t.uni));
             const isActive = t.uni === docTypeUni;
             // Style matching status badges (Elements 2)
-            const baseStyle = "inline-flex items-center h-[18px] px-1.5 rounded text-[9px] font-bold uppercase tracking-wider border whitespace-nowrap transition-colors";
+            // Added min-h-0 and min-w-0 to override global touch target styles
+            const baseStyle = "inline-flex items-center justify-center h-[18px] min-h-0 min-w-0 px-1.5 rounded text-[9px] leading-none font-bold uppercase tracking-wider border whitespace-nowrap transition-colors";
             const activeStyle = "bg-[#1f3324] text-[#74ff9c] border-transparent";
             const inactiveStyle = "bg-[#353535] text-[#d7d7d7] border-[#4e4e4e] hover:bg-[#3f3f3f]";
             
@@ -285,7 +286,8 @@ const DocumentsByType: React.FC = () => {
         ].map((s) => {
           const isActive = statusFilter === s.key;
            // Style matching status badges (Elements 2)
-           const baseStyle = "inline-flex items-center h-[18px] px-1.5 rounded text-[9px] font-bold uppercase tracking-wider border transition-colors";
+           // Added min-h-0 and min-w-0 to override global touch target styles
+           const baseStyle = "inline-flex items-center justify-center h-[18px] min-h-0 min-w-0 px-1.5 rounded text-[9px] leading-none font-bold uppercase tracking-wider border transition-colors";
            const activeStyle = "bg-[#1d2f3c] text-[#7ad4ff] border-transparent"; // Blueish for active filter to distinguish
            const inactiveStyle = "bg-[#353535] text-[#d7d7d7] border-[#4e4e4e] hover:bg-[#3f3f3f]";
 
