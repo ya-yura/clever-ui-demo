@@ -138,6 +138,13 @@ class ODataCacheService {
    * Get all documents (with caching)
    */
   async getAllDocuments(options?: { forceRefresh?: boolean }): Promise<ODataDocument[]> {
+    // Demo mode - return data from JSON
+    if (this.isDemoMode()) {
+      console.log('🎭 [DEMO] Loading all documents from demo data');
+      const allDocs = demoDataService.getAllDocuments();
+      return allDocs;
+    }
+
     const forceRefresh = options?.forceRefresh === true;
 
     if (!forceRefresh && await this.isCacheValid(ALL_DOCS_CACHE_KEY)) {
