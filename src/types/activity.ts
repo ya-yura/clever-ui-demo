@@ -20,31 +20,7 @@ export type EventSeverity = 'info' | 'warning' | 'error' | 'critical';
 
 export type ScanContext = 'product' | 'cell' | 'licensePlate' | 'unknown';
 
-export type EventType =
-  | 'app.start'
-  | 'app.background'
-  | 'app.foreground'
-  | 'login.success'
-  | 'login.failure'
-  | 'logout'
-  | 'receiving.document.open'
-  | 'receiving.document.complete'
-  | 'receiving.line.scan'
-  | 'receiving.line.adjust'
-  | 'placement.cell.scan'
-  | 'placement.line.complete'
-  | 'picking.route.start'
-  | 'picking.route.step'
-  | 'picking.line.confirm'
-  | 'inventory.count.start'
-  | 'inventory.count.submit'
-  | 'scan.barcode'
-  | 'scan.error'
-  | 'sync.start'
-  | 'sync.success'
-  | 'sync.failure'
-  | 'config.update'
-  | 'app.error';
+export type EventType = string;
 
 export type EventStatus = 'pending' | 'sending' | 'synced' | 'error';
 
@@ -63,6 +39,7 @@ export interface BaseActivityPayload {
   result?: EventResult;
   durationMs?: number;
   metadata?: Record<string, unknown>;
+  context?: any;
 }
 
 export interface ReceivingEventPayload extends BaseActivityPayload {
@@ -133,4 +110,5 @@ export interface ActivityEvent<TPayload extends ActivityEventPayload = ActivityE
   retryCount: number;
   lastError?: string;
   createdAt: number;
+  userId?: string;
 }

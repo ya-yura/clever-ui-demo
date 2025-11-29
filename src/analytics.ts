@@ -245,13 +245,14 @@ class Analytics {
         createdAt: Date.now(),
         status: 'pending', 
         retryCount: 0,
-        userId: event.userId, // Indexed field
+        userId: event.userId,
         payload: {
-          ...event.properties,
+          module: 'system',
           userId: event.userId,
           sessionId: event.sessionId,
+          metadata: event.properties,
           context: event.context
-        }
+        } as any
       });
     } catch (error) {
       // Silent fail for stats to not interrupt main flow
@@ -779,6 +780,9 @@ export const {
   trackError,
   trackTiming,
   trackScreenLoadTime,
+  startTimer,
+  stopTimer,
+  trackMetric,
   flush,
   clear,
 } = {

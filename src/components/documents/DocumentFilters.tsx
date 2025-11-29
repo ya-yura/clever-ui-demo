@@ -162,10 +162,13 @@ export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
               {(Object.keys(STATUS_LABELS) as DocumentStatus[]).map(status => {
                 // Map status to chip variant
                 const variantMap: Record<DocumentStatus, 'success' | 'warning' | 'error' | 'neutral'> = {
-                  'completed': 'success',
-                  'in_progress': 'warning',
-                  'pending': 'neutral',
-                  'cancelled': 'error',
+                  pending: 'neutral',
+                  draft: 'neutral',
+                  in_progress: 'warning',
+                  completed: 'success',
+                  cancelled: 'error',
+                  synced: 'success',
+                  error: 'error',
                 };
                 
                 return (

@@ -2,7 +2,7 @@
  * Interface Installer Component
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { X, QrCode, Upload, FileJson } from 'lucide-react';
 import { SchemaLoader } from '../services/schemaLoader';
 import { QRScanner } from './QRScanner';
@@ -27,6 +27,7 @@ export const InterfaceInstaller: React.FC<InterfaceInstallerProps> = ({
   const [jsonText, setJsonText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle QR code scan
   const handleQRScan = (data: string) => {
@@ -243,24 +244,26 @@ export const InterfaceInstaller: React.FC<InterfaceInstallerProps> = ({
               <p className="text-sm text-content-tertiary mb-6 leading-relaxed">
                 Выберите файл с конфигурацией интерфейса (.json)
               </p>
-              <label className="inline-block">
+              <div className="flex flex-col items-center gap-3">
                 <Button 
                   variant="primary" 
                   size="lg" 
                   isLoading={loading}
-                  as="div" // Render as div to allow wrapping label behavior
-                  className="cursor-pointer"
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
                 >
                   Выбрать файл
                 </Button>
                 <input
+                  ref={fileInputRef}
+                  id="interface-file-input"
                   type="file"
                   accept=".json,application/json"
                   onChange={handleFileUpload}
                   disabled={loading}
                   className="hidden"
                 />
-              </label>
+              </div>
             </div>
           )}
 
@@ -305,8 +308,7 @@ export const InterfaceInstaller: React.FC<InterfaceInstallerProps> = ({
             <Button 
               variant="danger" 
               fullWidth 
-              variant="ghost" 
-              className="text-error border-error/30 hover:bg-error/10"
+              className="border border-error/30 hover:bg-error/20"
               onClick={handleClearInterface}
             >
               Сбросить интерфейс (вернуться к стандартному)

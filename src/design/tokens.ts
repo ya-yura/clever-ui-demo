@@ -45,9 +45,11 @@ export const tokens = {
       secondary: designSystem.dna.colors.brand.secondary,
       secondaryDark: designSystem.dna.colors.brand.secondaryDark,
       secondaryLight: designSystem.dna.colors.brand.secondaryLight,
-      accent: designSystem.dna.colors.brand.accent,
-      accentDark: designSystem.dna.colors.brand.accentDark,
+      tertiary: designSystem.dna.colors.brand.tertiary,
+      tertiaryDark: designSystem.dna.colors.brand.tertiaryDark,
+      tertiaryLight: designSystem.dna.colors.brand.tertiaryLight,
     },
+    accent: designSystem.dna.colors.accent,
     // Status: Semantic feedback colors (consistent across themes)
     status: {
       success: designSystem.dna.colors.status.success,

@@ -2,6 +2,7 @@
 // Common types used across modules
 
 export type DocumentStatus = 
+  | 'pending'
   | 'draft'
   | 'in_progress'
   | 'completed'

@@ -154,6 +154,7 @@ export const DOCUMENT_TYPE_ICONS: Record<DocumentType, string> = {
  * Status labels for UI
  */
 export const STATUS_LABELS: Record<DocumentStatus, string> = {
+  pending: 'Новый',
   draft: 'Черновик',
   in_progress: 'В работе',
   completed: 'Завершён',
@@ -167,6 +168,7 @@ export const STATUS_LABELS: Record<DocumentStatus, string> = {
  * Updated for Dark Theme design system
  */
 export const STATUS_COLORS: Record<DocumentStatus, string> = {
+  pending: 'bg-surface-tertiary text-content-secondary',
   draft: 'bg-surface-tertiary text-content-secondary',
   in_progress: 'bg-brand-secondary/20 text-brand-secondary',
   completed: 'bg-success/20 text-success',
