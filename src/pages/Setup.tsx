@@ -9,7 +9,6 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const Setup: React.FC = () => {
   const navigate = useNavigate();
-  const { loginDemo } = useAuth();
   const [serverUrl, setServerUrl] = useState('http://localhost:9000/MobileSMARTS/api/v1');
   const [error, setError] = useState('');
   const [isValidating, setIsValidating] = useState(false);
@@ -33,11 +32,9 @@ const Setup: React.FC = () => {
       
       console.log('✅ Server URL configured:', serverUrl);
       
-      // Auto-login as default user and go to home
-      loginDemo();
-      
+      // Navigate to login page
       setTimeout(() => {
-        navigate('/');
+        navigate('/login');
       }, 100);
     } catch (err: any) {
       setError(err.message || 'Ошибка сохранения настроек');

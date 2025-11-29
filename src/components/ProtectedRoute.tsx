@@ -1,8 +1,8 @@
 // === 📁 src/components/ProtectedRoute.tsx ===
 // Protected route wrapper for authenticated routes
 
-import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { configService } from '@/services/configService';
 
@@ -11,21 +11,12 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading, loginDemo } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const isConfigured = configService.isConfigured();
-  const [autoLoginAttempted, setAutoLoginAttempted] = useState(false);
+  const location = useLocation();
 
-  // Auto-login in demo mode if not authenticated
-  useEffect(() => {
-    if (isConfigured && !isLoading && !isAuthenticated && !autoLoginAttempted) {
-      console.log('🔄 Auto-logging in demo mode...');
-      loginDemo();
-      setAutoLoginAttempted(true);
-    }
-  }, [isConfigured, isLoading, isAuthenticated, autoLoginAttempted, loginDemo]);
-
-  // Show loading state while checking auth or attempting auto-login
-  if (isLoading || (isConfigured && !isAuthenticated && !autoLoginAttempted)) {
+  // Show loading state while checking auth
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-surface-primary flex items-center justify-center">
         <div className="text-center">
@@ -42,21 +33,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to="/setup" replace />;
   }
 
-  // Allow access if authenticated
-  if (isAuthenticated) {
-    return <>{children}</>;
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    console.warn('⚠️ Not authenticated, redirecting to /login');
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  // If we got here, something went wrong with auto-login
-  // Show loading screen to prevent rendering errors
-  return (
-    <div className="min-h-screen bg-surface-primary flex items-center justify-center">
-      <div className="text-center">
-        <div className="text-6xl mb-4 animate-pulse">📦</div>
-        <p className="text-xl text-content-secondary">Вход в систему...</p>
-      </div>
-    </div>
-  );
+  // All checks passed - render protected content
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;

@@ -40,9 +40,9 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5174,
+    port: 5180,
     host: true,
-    open: true,
+    open: false,
     // Proxy to bypass CORS in development
     proxy: {
       '/MobileSMARTS': {
