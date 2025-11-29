@@ -1,0 +1,118 @@
+{
+  "version": "1.0.0",
+  "frozen": true,
+  "freezeDate": "2025-11-12",
+  "description": "Frozen route constants for external program integration. DO NOT MODIFY!",
+  "warning": "These routes are used by multiple programs. Changing them will break integration!",
+  
+  "operations": {
+    "RECEIVING": {
+      "route": "/docs/PrihodNaSklad",
+      "label": "Приход на склад",
+      "description": "Приём товаров от поставщиков с проверкой план/факт",
+      "icon": "📦",
+      "color": "#DAA420"
+    },
+    "PICKING": {
+      "route": "/docs/PodborZakaza",
+      "label": "Подбор заказа",
+      "description": "Сборка заказа по маршруту ячеек для отгрузки",
+      "icon": "🚚",
+      "color": "#FEA079"
+    },
+    "SHIPMENT": {
+      "route": "/docs/Otgruzka",
+      "label": "Отгрузка",
+      "description": "Проверка комплектности и оформление отгрузки клиенту",
+      "icon": "📄",
+      "color": "#F3A361"
+    },
+    "INVENTORY": {
+      "route": "/docs/Inventarizaciya",
+      "label": "Инвентаризация",
+      "description": "Пересчет остатков и фиксация расхождений",
+      "icon": "📊",
+      "color": "#86E0CB"
+    },
+    "PLACEMENT": {
+      "route": "/docs/RazmeshhenieVYachejki",
+      "label": "Размещение в ячейки",
+      "description": "Размещение принятого товара по ячейкам хранения",
+      "icon": "📝",
+      "color": "#91ED91"
+    },
+    "RETURN": {
+      "route": "/docs/Vozvrat",
+      "label": "Возврат",
+      "description": "Оформление возврата или списания с указанием причины",
+      "icon": "♻️",
+      "color": "#BA8F8E"
+    },
+    "MOVEMENT": {
+      "route": "/docs/Peremeshenie",
+      "label": "Перемещение",
+      "description": "Перемещение товара между ячейками или зонами",
+      "icon": "🔄",
+      "color": "#F0E78D"
+    },
+    "LABELING": {
+      "route": "/docs/Markirovka",
+      "label": "Маркировка",
+      "description": "Нанесение или перепечатка этикеток и кодов",
+      "icon": "🏷️",
+      "color": "#DEB887"
+    }
+  },
+
+  "system": {
+    "HOME": "/",
+    "DOCUMENTS": "/documents",
+    "PARTNER": "/partner",
+    "SETTINGS": "/settings",
+    "STATISTICS": "/statistics",
+    "DIAGNOSTICS": "/diagnostics",
+    "ABOUT": "/about",
+    "FEEDBACK": "/feedback"
+  },
+
+  "public": {
+    "SETUP": "/setup",
+    "LOGIN": "/login"
+  },
+
+  "dynamic": {
+    "DOCUMENTS_BY_TYPE": "/docs/:docTypeUni",
+    "DOCUMENT_DETAILS": "/docs/:docTypeUni/:docId"
+  },
+
+  "helpers": {
+    "getDocTypeRoute": {
+      "template": "/docs/{docTypeUni}",
+      "example": "/docs/CustomDocType"
+    },
+    "getDocumentRoute": {
+      "template": "/docs/{docTypeUni}/{docId}",
+      "example": "/docs/PrihodNaSklad/DOC-12345"
+    }
+  },
+
+  "usage": {
+    "typescript": "import { OPERATION_ROUTES } from '@/config/routes';\nnavigate(OPERATION_ROUTES.RECEIVING);",
+    "javascript": "fetch('/routes-config.json').then(r => r.json()).then(config => {\n  window.location.href = config.operations.RECEIVING.route;\n});",
+    "python": "import json\nwith open('routes-config.json') as f:\n    routes = json.load(f)\nreceiving_url = routes['operations']['RECEIVING']['route']",
+    "api": "GET http://localhost:5173/routes-config.json"
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-12",
+      "changes": "Initial frozen version",
+      "status": "FROZEN"
+    }
+  ]
+}
+
+
+
+

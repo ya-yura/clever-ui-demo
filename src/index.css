@@ -1,105 +1,363 @@
+/* === 📁 src/index.css === */
+/* Global styles */
+
+/* Fonts */
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/AtkinsonHyperlegible-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./assets/fonts/AtkinsonHyperlegible-Bold.ttf') format('truetype');
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* ============================================
+   🎨 CSS VARIABLES FOR THEME SWITCHING
+   Design System v3.1.0
+   ============================================ */
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+/* Default theme (Dark) */
+:root {
+  /* Typography */
+  --font-family-base: 'Atkinson Hyperlegible', 'Noto Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Avenir, Helvetica, Arial, sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', ui-monospace, monospace;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+  /* Surface colors (backgrounds) */
+  --color-surface-primary: #2c2c2e; /* Main app background - slightly darker */
+  --color-surface-secondary: #3c3c3e; /* Cards, Inputs - slightly lighter */
+  --color-surface-tertiary: #48484a; /* Hovers, secondary elements */
+  --color-surface-inverse: #ffffff;
+  --color-surface-overlay: rgba(44, 44, 46, 0.85);
+  --color-surface-disabled: #2c2c2e;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+  /* Content colors (text) */
+  --color-content-primary: #f0f0f0;
+  --color-content-secondary: #b0b0b0;
+  --color-content-tertiary: #808080;
+  --color-content-inverse: #2c2c2e;
+  --color-content-disabled: #525760;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+  /* Border colors */
+  --color-border-default: #3a3a3c; /* Dark mode: slightly lighter than bg, darker than content */
+  --color-border-light: #5c5c5c;
+  --color-border-strong: #707070;
+  --color-border-focus: #d89668;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+  /* Brand colors (base palette from Figma) */
+  --color-brand-primary: #d89668;
+  --color-brand-dark: #3d2817;
+  --color-brand-light: #ffcda3;
+  --color-brand-secondary: #c9a636;
+  --color-brand-secondary-dark: #a88a2d;
+  --color-brand-secondary-light: #f3d640;
+  --color-brand-tertiary: #f0a58a;
+  --color-brand-tertiary-dark: #c76b5b;
+  --color-brand-tertiary-light: #fcd0d0;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+  /* Accent colors for secondary elements */
+  --color-accent-cyan: #4dd0e1;
+  --color-accent-cyan-dark: #26a69a;
+  --color-accent-cyan-light: #80deea;
+  --color-accent-green: #7ed321;
+  --color-accent-green-dark: #5a9c15;
+  --color-accent-green-light: #a8e063;
+  --color-accent-yellow: #e0b536;
+  --color-accent-yellow-dark: #b8942a;
+  --color-accent-yellow-light: #f3d640;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+  /* Status colors */
+  --color-success: #5fad05;
+  --color-success-dark: #2d6b2d;
+  --color-success-light: #d4f8d4;
+  --color-warning: #e78018;
+  --color-warning-dark: #8b5931;
+  --color-warning-light: #ffd9b3;
+  --color-error: #e35454;
+  --color-error-dark: #6b3d3c;
+  --color-error-light: #f0d6d6;
+  --color-info: #4dd0e1;
+  --color-info-dark: #26a69a;
+  --color-info-light: #80deea;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+  /* Module colors */
+  --color-module-receiving-bg: #d89668;
+  --color-module-receiving-text: #7d4a2d;
+  --color-module-picking-bg: #c9a636;
+  --color-module-picking-text: #5a4a1a;
+  --color-module-shipment-bg: #a0d995;
+  --color-module-shipment-text: #1f4d1f;
+  --color-module-placement-bg: #86e0cb;
+  --color-module-placement-text: #154038;
+  --color-module-inventory-bg: #f0a58a;
+  --color-module-inventory-text: #7d4a2d;
+  --color-module-return-bg: #e35454;
+  --color-module-return-text: #ffffff;
+  --color-module-transfer-bg: #4dd0e1;
+  --color-module-transfer-text: #154038;
+  --color-module-marking-bg: #7ed321;
+  --color-module-marking-text: #154038;
+}
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+/* Light theme override */
+[data-theme='light'] {
+  --color-surface-primary: #f5f6f8;
+  --color-surface-secondary: #ffffff;
+  --color-surface-tertiary: #eaecf0;
+  --color-surface-inverse: #343436;
+  --color-surface-overlay: rgba(255, 255, 255, 0.8);
+  --color-surface-disabled: #f5f6f8;
 
-    --radius: 0.5rem;
+  --color-content-primary: #1d222a;
+  --color-content-secondary: #525760;
+  --color-content-tertiary: #80858e;
+  --color-content-inverse: #ffffff;
+  --color-content-disabled: #d4d5d9;
 
-    --sidebar-background: 0 0% 98%;
+  --color-border-default: #eaecf0; /* Light mode: very subtle border */
+  --color-border-light: #f2f4f7;
+  --color-border-strong: #d0d5dd;
+  --color-border-focus: #d89668;
+  
+  /* In light mode, we might want to adjust some module colors if they are too light/dark, 
+     but for now we keep branding consistent. 
+     If needed, we can override them here using the 'light' variant from design system. */
+}
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+html {
+  font-family: var(--font-family-base, 'Atkinson Hyperlegible', 'Noto Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Avenir, Helvetica, Arial, sans-serif);
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: dark;
+  color: var(--color-content-secondary);
+  background-color: var(--color-surface-primary);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
 
-    --sidebar-primary: 240 5.9% 10%;
+html[data-theme='light'] {
+  color-scheme: light;
+}
 
-    --sidebar-primary-foreground: 0 0% 98%;
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: var(--color-surface-primary);
+  color: var(--color-content-secondary);
+  font-family: inherit;
+}
 
-    --sidebar-accent: 240 4.8% 95.9%;
+* {
+  box-sizing: border-box;
+}
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
 
-    --sidebar-border: 220 13% 91%;
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--font-family-mono, 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', ui-monospace, monospace);
+}
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg font-semibold hover:brightness-90 active:brightness-95 transition-all min-h-[44px] min-w-[44px];
+    background-color: var(--color-brand-primary);
+    color: var(--color-brand-dark);
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+  .btn-secondary {
+    @apply px-4 py-2 bg-surface-tertiary text-content-primary rounded-lg font-semibold hover:brightness-110 active:brightness-95 transition-colors min-h-[44px] min-w-[44px];
+  }
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+  .btn-success {
+    @apply px-4 py-2 bg-success text-white rounded-lg font-bold hover:brightness-110 active:brightness-95 transition-colors min-h-[44px] min-w-[44px];
+  }
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+  .btn-danger {
+    @apply px-4 py-2 bg-error text-white rounded-lg font-bold hover:brightness-110 active:brightness-95 transition-colors min-h-[44px] min-w-[44px];
+  }
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+  .card {
+    @apply bg-surface-secondary border border-borders-default rounded-lg shadow-md p-4 text-content-primary;
+  }
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+  .card-compact {
+    @apply bg-surface-secondary border border-borders-default rounded-lg shadow-md px-3 py-2 text-content-primary;
+  }
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+  .input-field {
+    @apply w-full px-3 py-2 border border-borders-default rounded-lg bg-surface-secondary text-content-primary focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary min-h-[44px] placeholder:text-content-tertiary;
+  }
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+  .status-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+  /* Chips */
+  .chip {
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-sm leading-tight whitespace-nowrap min-w-0 shrink-0 select-none font-medium
+           border border-borders-default bg-transparent text-content-secondary transition-all;
+  }
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  .chip:hover:not(.chip-active) { @apply bg-surface-tertiary border-borders-strong; }
+
+  .chip-active { @apply bg-brand-primary text-white border-brand-primary font-semibold shadow-sm; }
+
+  /* Tiles */
+  .tile-base {
+    @apply rounded-xl text-left transition-all shadow-lg relative overflow-hidden flex flex-col justify-between focus:outline-none focus:ring-2 border border-transparent;
+    box-shadow: 0 0 0 0 transparent;
+  }
+  
+  .tile-base:focus {
+    box-shadow: 0 0 0 3px rgba(216, 150, 104, 0.4);
+  }
+
+  .tile-primary {
+    @apply tile-base p-4 md:p-5 min-h-[108px] hover:brightness-110 active:scale-[0.99];
+  }
+
+  .tile-secondary {
+    @apply tile-base p-4 md:p-5 min-h-[96px] hover:brightness-110 active:scale-[0.99];
+  }
+
+  .tile-tertiary {
+    @apply tile-base p-3 md:p-4 min-h-[72px] hover:brightness-110 active:scale-[0.99];
+  }
+
+  .tile-outline {
+    @apply bg-transparent border border-borders-strong;
+  }
+
+  /* Tile Typography */
+  .tile-title-lg {
+    @apply text-xl md:text-[20px] font-bold mb-1 tracking-tight;
+  }
+
+  .tile-title-md {
+    @apply text-base md:text-[16px] font-semibold mb-0.5 tracking-tight truncate;
+  }
+
+  .tile-title-sm {
+    @apply text-sm md:text-[15px] font-semibold mb-0.5 tracking-tight truncate;
+  }
+
+  .tile-subtext {
+    @apply text-xs md:text-sm opacity-80 leading-relaxed;
+  }
+
+  .tile-footer {
+    @apply mt-1 pt-1 flex items-center justify-end;
+  }
+
+  .tile-count-hero {
+    @apply text-2xl md:text-3xl font-bold;
+  }
+
+  .tile-count-dark {
+    @apply text-xs font-semibold opacity-80;
+  }
+
+  .tile-count-light {
+    @apply text-xs font-semibold opacity-80;
+  }
+
+  /* Priority tones */
+  .tone-strong {
+    @apply filter saturate-100;
+  }
+
+  .tone-medium {
+    @apply filter saturate-100;
+  }
+
+  .tone-muted {
+    @apply filter saturate-50 brightness-95;
+  }
+
+  .theme-chip-active-success {
+    background-color: var(--color-success-dark);
+    color: var(--color-success-light);
+    border-color: transparent;
+  }
+
+  html[data-theme='light'] .theme-chip-active-success {
+    background-color: var(--color-success-light);
+    color: var(--color-success-dark);
+  }
+
+  .theme-chip-active-info {
+    background-color: var(--color-info-dark);
+    color: var(--color-info-light);
+    border-color: transparent;
+  }
+
+  html[data-theme='light'] .theme-chip-active-info {
+    background-color: var(--color-info-light);
+    color: var(--color-info-dark);
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
+/* Touch targets */
+button, a, input[type="button"], input[type="submit"] {
+  min-height: 44px;
+  min-width: 44px;
+}
 
-  body {
-    @apply bg-background text-foreground;
+/* Loading animations */
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
   }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 37%, rgba(255,255,255,0.05) 63%);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-wave {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-tertiary) 0%,
+    var(--color-surface-tertiary) 40%,
+    var(--color-surface-secondary) 50%,
+    var(--color-surface-tertiary) 60%,
+    var(--color-surface-tertiary) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+html[data-theme='light'] .skeleton {
+    background: linear-gradient(90deg, rgba(0,0,0,0.05) 25%, rgba(0,0,0,0.12) 37%, rgba(0,0,0,0.05) 63%);
 }

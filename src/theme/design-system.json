@@ -1,0 +1,406 @@
+{
+  "name": "Cleverence Mobile Proto – Design System",
+  "version": "3.1.0",
+  "description": "Полноценная дизайн-система для PWA приложения Склад-15 (обновлено на основе Figma макета Android Compact - 22)",
+  
+  "dna": {
+    "colors": {
+      "dark": {
+        "surface": {
+          "primary": "#343436",
+          "secondary": "#343436",
+          "tertiary": "#343436",
+          "inverse": "#ffffff",
+          "overlay": "rgba(52, 52, 54, 0.85)",
+          "disabled": "#343436"
+        },
+        "content": {
+          "primary": "#eaecf0",
+          "secondary": "#aaaeb6",
+          "tertiary": "#80858e",
+          "inverse": "#343436",
+          "disabled": "#525760"
+        },
+        "border": {
+          "default": "#2a2f38",
+          "light": "#343a46",
+          "strong": "#525760",
+          "focus": "#c9a636"
+        }
+      },
+      "light": {
+        "surface": {
+          "primary": "#f5f6f8",
+          "secondary": "#ffffff",
+          "tertiary": "#eaecf0",
+          "inverse": "#343436",
+          "overlay": "rgba(255, 255, 255, 0.8)",
+          "disabled": "#f5f6f8"
+        },
+        "content": {
+          "primary": "#1d222a",
+          "secondary": "#525760",
+          "tertiary": "#80858e",
+          "inverse": "#ffffff",
+          "disabled": "#d4d5d9"
+        },
+        "border": {
+          "default": "#d4d5d9",
+          "light": "#eaecf0",
+          "strong": "#80858e",
+          "focus": "#c9a636"
+        }
+      },
+      "brand": {
+        "primary": "#d89668",
+        "primaryDark": "#3d2817",
+        "primaryLight": "#ffcda3",
+        "secondary": "#c9a636",
+        "secondaryDark": "#a88a2d",
+        "secondaryLight": "#f3d640",
+        "tertiary": "#f0a58a",
+        "tertiaryDark": "#c76b5b",
+        "tertiaryLight": "#fcd0d0"
+      },
+      "accent": {
+        "cyan": "#4dd0e1",
+        "cyanDark": "#26a69a",
+        "cyanLight": "#80deea",
+        "green": "#7ed321",
+        "greenDark": "#5a9c15",
+        "greenLight": "#a8e063",
+        "yellow": "#e0b536",
+        "yellowDark": "#b8942a",
+        "yellowLight": "#f3d640"
+      },
+      "status": {
+        "success": "#5fad05",
+        "successDark": "#2d6b2d",
+        "successLight": "#d4f8d4",
+        "warning": "#e78018",
+        "warningDark": "#8b5931",
+        "warningLight": "#ffd9b3",
+        "error": "#e35454",
+        "errorDark": "#6b3d3c",
+        "errorLight": "#f0d6d6",
+        "info": "#4dd0e1",
+        "infoDark": "#26a69a",
+        "infoLight": "#80deea"
+      },
+      "modules": {
+        "receiving": {
+          "bg": "#d89668",
+          "text": "#7d4a2d",
+          "light": "#ffcda3",
+          "dark": "#9e5700"
+        },
+        "inventory": {
+          "bg": "#f0a58a",
+          "text": "#7d4a2d",
+          "light": "#fcd0d0",
+          "dark": "#a33030"
+        },
+        "picking": {
+          "bg": "#c9a636",
+          "text": "#5a4a1a",
+          "light": "#f3d640",
+          "dark": "#8a7300"
+        },
+        "placement": {
+          "bg": "#86e0cb",
+          "text": "#154038",
+          "light": "#b3f0e3",
+          "dark": "#1f5a4f"
+        },
+        "shipment": {
+          "bg": "#a0d995",
+          "text": "#1f4d1f",
+          "light": "#c8f5c8",
+          "dark": "#1f4d1f"
+        },
+        "return": {
+          "bg": "#e35454",
+          "text": "#ffffff",
+          "light": "#fb9898",
+          "dark": "#4d2827"
+        },
+        "transfer": {
+          "bg": "#4dd0e1",
+          "text": "#154038",
+          "light": "#80deea",
+          "dark": "#26a69a"
+        },
+        "marking": {
+          "bg": "#7ed321",
+          "text": "#154038",
+          "light": "#a8e063",
+          "dark": "#5a9c15"
+        }
+      },
+      "palette": {
+        "gray": {
+          "50": "#f9fafb",
+          "100": "#f3f4f6",
+          "200": "#e5e7eb",
+          "300": "#d1d5db",
+          "400": "#9ca3af",
+          "500": "#6b7280",
+          "600": "#4b5563",
+          "700": "#374151",
+          "800": "#1f2937",
+          "900": "#111827"
+        }
+      }
+    },
+    
+    "typography": {
+      "family": {
+        "primary": "\"Atkinson Hyperlegible\", sans-serif",
+        "mono": "\"JetBrains Mono\", \"Fira Code\", monospace"
+      },
+      "weights": {
+        "regular": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700
+      },
+      "sizes": {
+        "xs": "10px",
+        "sm": "12px",
+        "base": "14px",
+        "md": "16px",
+        "lg": "18px",
+        "xl": "20px",
+        "2xl": "24px",
+        "3xl": "32px",
+        "4xl": "40px"
+      },
+      "lineHeights": {
+        "tight": 1.1,
+        "snug": 1.25,
+        "base": 1.4,
+        "relaxed": 1.6,
+        "loose": 1.8
+      },
+      "letterSpacing": {
+        "tight": "-0.02em",
+        "normal": "0",
+        "wide": "0.02em",
+        "wider": "0.05em"
+      }
+    },
+    
+    "spacing": {
+      "scale": {
+        "0": "0px",
+        "0.5": "2px",
+        "1": "4px",
+        "1.5": "6px",
+        "2": "8px",
+        "2.5": "10px",
+        "3": "12px",
+        "3.5": "14px",
+        "4": "16px",
+        "5": "20px",
+        "6": "24px",
+        "7": "28px",
+        "8": "32px",
+        "9": "36px",
+        "10": "40px",
+        "12": "48px",
+        "16": "64px",
+        "20": "80px",
+        "24": "96px"
+      },
+      "touch": {
+        "min": "44px",
+        "comfortable": "48px",
+        "spacious": "56px"
+      }
+    },
+    
+    "borderRadius": {
+      "none": "0px",
+      "xs": "2px",
+      "sm": "4px",
+      "md": "8px",
+      "lg": "12px",
+      "xl": "16px",
+      "2xl": "18px",
+      "3xl": "24px",
+      "full": "9999px"
+    },
+    
+    "borderWidth": {
+      "none": "0px",
+      "thin": "1px",
+      "default": "2px",
+      "thick": "3px",
+      "heavy": "4px"
+    },
+    
+    "shadows": {
+      "none": "none",
+      "xs": "0 1px 2px rgba(0, 0, 0, 0.15)",
+      "sm": "0 1px 2px rgba(0, 0, 0, 0.3)",
+      "md": "0 2px 3px rgba(0, 0, 0, 0.5)",
+      "lg": "0 4px 6px rgba(0, 0, 0, 0.5)",
+      "xl": "0 8px 16px rgba(0, 0, 0, 0.6)",
+      "2xl": "0 12px 24px rgba(0, 0, 0, 0.7)",
+      "inner": "inset 0 2px 4px rgba(0, 0, 0, 0.3)",
+      "focus": "0 0 0 3px rgba(201, 166, 54, 0.4)"
+    },
+    
+    "motion": {
+      "duration": {
+        "instant": "100ms",
+        "fast": "200ms",
+        "normal": "300ms",
+        "slow": "500ms",
+        "slower": "700ms"
+      },
+      "easing": {
+        "standard": "cubic-bezier(0.4, 0.0, 0.2, 1)",
+        "decelerate": "cubic-bezier(0.0, 0.0, 0.2, 1)",
+        "accelerate": "cubic-bezier(0.4, 0.0, 1, 1)",
+        "sharp": "cubic-bezier(0.4, 0.0, 0.6, 1)",
+        "bounce": "cubic-bezier(0.68, -0.55, 0.265, 1.55)"
+      }
+    },
+    
+    "breakpoints": {
+      "xs": "320px",
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px",
+      "2xl": "1536px"
+    },
+    
+    "zIndex": {
+      "hide": -1,
+      "base": 0,
+      "dropdown": 1000,
+      "sticky": 1020,
+      "fixed": 1030,
+      "modalBackdrop": 1040,
+      "modal": 1050,
+      "popover": 1060,
+      "tooltip": 1070,
+      "toast": 1080,
+      "max": 9999
+    },
+    
+    "iconSizes": {
+      "xs": "12px",
+      "sm": "16px",
+      "md": "20px",
+      "lg": "24px",
+      "xl": "32px",
+      "2xl": "48px"
+    },
+    
+    "components": {
+      "button": {
+        "height": {
+          "sm": "32px",
+          "md": "40px",
+          "lg": "48px"
+        },
+        "padding": {
+          "sm": "0 12px",
+          "md": "0 20px",
+          "lg": "0 24px"
+        },
+        "borderRadius": "8px"
+      },
+      "input": {
+        "height": {
+          "sm": "36px",
+          "md": "44px",
+          "lg": "52px"
+        },
+        "borderRadius": "8px"
+      },
+      "card": {
+        "padding": {
+          "compact": "12px",
+          "default": "16px",
+          "comfortable": "24px"
+        },
+        "borderRadius": "12px"
+      },
+      "tile": {
+        "minHeight": {
+          "small": "72px",
+          "medium": "96px",
+          "large": "108px",
+          "hero": "140px"
+        },
+        "padding": {
+          "compact": "12px",
+          "default": "16px",
+          "comfortable": "20px"
+        },
+        "borderRadius": "12px",
+        "gap": "6px"
+      }
+    }
+  },
+  
+  "semantics": {
+    "description": "Semantic tokens для конкретных use-cases",
+    "ui": {
+      "primaryButton": {
+        "bg": "#d89668",
+        "text": "#7d4a2d",
+        "hover": "brightness(0.9)",
+        "active": "brightness(0.95)"
+      },
+      "secondaryButton": {
+        "bg": "#2a2f38",
+        "text": "#eaecf0",
+        "hover": "brightness(1.1)",
+        "active": "brightness(0.95)"
+      },
+      "tile": {
+        "hero": {
+          "minHeight": "140px",
+          "padding": "16px",
+          "titleSize": "20px",
+          "countSize": "32px"
+        },
+        "secondary": {
+          "minHeight": "96px",
+          "padding": "16px",
+          "titleSize": "15px",
+          "countSize": "24px"
+        },
+        "tertiary": {
+          "minHeight": "72px",
+          "padding": "12px",
+          "titleSize": "14px",
+          "countSize": "18px"
+        }
+      },
+      "accentColors": [
+        "#4dd0e1",
+        "#7ed321",
+        "#e0b536",
+        "#d89668",
+        "#f0a58a"
+      ]
+    }
+  },
+  
+  "metadata": {
+    "author": "Cleverence Development Team",
+    "license": "Proprietary",
+    "repository": "https://github.com/cleverence/warehouse-mobile",
+    "lastUpdated": "2025-11-23",
+    "figmaSource": "Android Compact - 22 (node-id: 11547:229)",
+    "changelog": {
+      "3.0.0": "Полная ревизия дизайн-системы на основе Figma макета. Добавлены accent colors, semantic tokens, обновлены все цвета модулей."
+    }
+  }
+}

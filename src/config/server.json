@@ -1,0 +1,10 @@
+{
+  "apiBaseUrl": "http://localhost:9000/MobileSMARTS/api/v1",
+  "syncIntervalSec": 60,
+  "authMode": "token",
+  "offlineMode": true,
+  "printer": {
+    "type": "bluetooth",
+    "defaultPrinter": "Zebra-Mobile"
+  }
+}
