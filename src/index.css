@@ -49,7 +49,7 @@
   --color-content-disabled: #525760;
 
   /* Border colors */
-  --color-border-default: #4c4c4c;
+  --color-border-default: #3a3a3c; /* Dark mode: slightly lighter than bg, darker than content */
   --color-border-light: #5c5c5c;
   --color-border-strong: #707070;
   --color-border-focus: #d89668;
@@ -124,9 +124,9 @@
   --color-content-inverse: #ffffff;
   --color-content-disabled: #d4d5d9;
 
-  --color-border-default: #d4d5d9;
-  --color-border-light: #eaecf0;
-  --color-border-strong: #80858e;
+  --color-border-default: #eaecf0; /* Light mode: very subtle border */
+  --color-border-light: #f2f4f7;
+  --color-border-strong: #d0d5dd;
   --color-border-focus: #d89668;
 }
 

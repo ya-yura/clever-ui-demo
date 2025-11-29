@@ -279,7 +279,9 @@ const DocumentsByType: React.FC = () => {
             // But index.css uses [data-theme='light'].
             // So I should use `bg-surface-secondary` etc.
             
-            const activeStyleFinal = "bg-[#1f3324] text-[#74ff9c] border-transparent shadow-sm"; // Keeping original for now as it might contrast OK? No, on white it's dark blob.
+            // UPDATED: Using theme-specific colors for tags to avoid eye strain in light mode
+            const activeStyleFinal = "bg-[#1f3324] text-[#74ff9c] border-transparent shadow-sm dark:bg-[#1f3324] dark:text-[#74ff9c] bg-green-100 text-green-800 border-green-200"; 
+            
             // Let's use the logic:
             // Inactive: bg-surface-secondary text-content-secondary border-border-default hover:bg-surface-tertiary
             
@@ -293,7 +295,7 @@ const DocumentsByType: React.FC = () => {
               <button
                 key={t.uni}
                 onClick={() => navigate(`/docs/${t.uni}`)}
-                className={`${baseStyle} ${isActive ? 'bg-[#1f3324] text-[#74ff9c] border-transparent' : inactiveStyle}`}
+                className={`${baseStyle} ${isActive ? activeStyleFinal : inactiveStyle}`}
               >
                 {short}
               </button>
@@ -315,7 +317,8 @@ const DocumentsByType: React.FC = () => {
            // Added min-h-0 and min-w-0 to override global touch target styles
            const baseStyle = "inline-flex items-center justify-center h-[18px] min-h-0 min-w-0 px-1.5 rounded text-[9px] leading-none font-bold uppercase tracking-wider border transition-colors";
            
-           const activeStyle = "bg-[#1d2f3c] text-[#7ad4ff] border-transparent"; // Blueish
+           // UPDATED: Theme-aware colors for active state (Dark: Blue-ish, Light: Light Blue)
+           const activeStyle = "bg-[#1d2f3c] text-[#7ad4ff] border-transparent dark:bg-[#1d2f3c] dark:text-[#7ad4ff] bg-blue-100 text-blue-700 border-blue-200"; 
            const inactiveStyle = "bg-surface-secondary text-content-secondary border-border-default hover:bg-surface-tertiary";
 
           return (
@@ -399,15 +402,15 @@ const DocumentsByType: React.FC = () => {
             const secondaryLine = appointment || doc.description || '';
 
             return (
-            <button
-              key={doc.id}
-              onClick={() => {
-                console.log(`📄 [DOCS] Navigating to document details: /docs/${docTypeUni}/${doc.id}`);
-                navigate(`/docs/${docTypeUni}/${doc.id}`);
-              }}
-              className="w-full bg-surface-secondary hover:bg-surface-tertiary rounded border-b border-border-default last:border-0 px-3 py-2 text-left transition-colors"
-            >
-              <div className="flex gap-3">
+              <button
+                key={doc.id}
+                onClick={() => {
+                  console.log(`📄 [DOCS] Navigating to document details: /docs/${docTypeUni}/${doc.id}`);
+                  navigate(`/docs/${docTypeUni}/${doc.id}`);
+                }}
+                className="w-full bg-surface-secondary hover:bg-surface-tertiary rounded border-b border-border-light last:border-0 px-3 py-2 text-left transition-colors"
+              >
+                <div className="flex gap-3">
                 {/* Left Content Area: Title and Info */}
                 <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                   {/* Title Row */}
