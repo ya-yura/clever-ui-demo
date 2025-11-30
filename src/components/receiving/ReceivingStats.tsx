@@ -45,44 +45,44 @@ export const ReceivingStats: React.FC<Props> = ({ lines }) => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-2">
-        {/* Completed Exact */}
+        {/* Not Started - GREEN (needs attention) */}
         <div className="bg-success/10 border border-success/30 rounded-lg p-2.5">
           <div className="flex items-center gap-2 mb-1">
-            <CheckCircle className="w-4 h-4 text-success" />
-            <span className="text-[10px] text-success uppercase tracking-wide font-semibold">Принято точно</span>
+            <Clock className="w-4 h-4 text-success" />
+            <span className="text-[10px] text-success uppercase tracking-wide font-semibold">Не начато</span>
           </div>
-          <div className="text-2xl font-bold text-success">{completedExact}</div>
-          <div className="text-[10px] text-success/70">из {totalLines} строк</div>
+          <div className="text-2xl font-bold text-success">{notStarted}</div>
+          <div className="text-[10px] text-success/70">строк</div>
         </div>
 
-        {/* Shortage */}
-        <div className="bg-error/10 border border-error/30 rounded-lg p-2.5">
+        {/* Completed Exact - GRAY (done, not relevant) */}
+        <div className="bg-surface-tertiary/50 border border-borders-light rounded-lg p-2.5">
           <div className="flex items-center gap-2 mb-1">
-            <AlertTriangle className="w-4 h-4 text-error" />
-            <span className="text-[10px] text-error uppercase tracking-wide font-semibold">Недостача</span>
+            <CheckCircle className="w-4 h-4 text-content-tertiary" />
+            <span className="text-[10px] text-content-secondary uppercase tracking-wide font-semibold">Готово</span>
           </div>
-          <div className="text-2xl font-bold text-error">{withShortage}</div>
-          <div className="text-[10px] text-error/70">строк</div>
+          <div className="text-2xl font-bold text-content-primary">{completedExact}</div>
+          <div className="text-[10px] text-content-tertiary">из {totalLines} строк</div>
         </div>
 
-        {/* Overplan */}
+        {/* Shortage - BLUE (in progress) */}
+        <div className="bg-info/10 border border-info/30 rounded-lg p-2.5">
+          <div className="flex items-center gap-2 mb-1">
+            <AlertTriangle className="w-4 h-4 text-info" />
+            <span className="text-[10px] text-info uppercase tracking-wide font-semibold">В работе</span>
+          </div>
+          <div className="text-2xl font-bold text-info">{withShortage}</div>
+          <div className="text-[10px] text-info/70">строк</div>
+        </div>
+
+        {/* Overplan - YELLOW (keep as is) */}
         <div className="bg-warning/10 border border-warning/30 rounded-lg p-2.5">
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp className="w-4 h-4 text-warning" />
-            <span className="text-[10px] text-warning uppercase tracking-wide font-semibold">Излишки</span>
+            <span className="text-[10px] text-warning uppercase tracking-wide font-semibold">Перебор</span>
           </div>
           <div className="text-2xl font-bold text-warning">{withOverplan}</div>
           <div className="text-[10px] text-warning/70">{totalDiff > 0 ? `+${totalDiff} шт.` : 'строк'}</div>
-        </div>
-
-        {/* Not Started */}
-        <div className="bg-surface-tertiary/50 border border-borders-default rounded-lg p-2.5">
-          <div className="flex items-center gap-2 mb-1">
-            <Clock className="w-4 h-4 text-content-tertiary" />
-            <span className="text-[10px] text-content-tertiary uppercase tracking-wide font-semibold">Не начато</span>
-          </div>
-          <div className="text-2xl font-bold text-content-secondary">{notStarted}</div>
-          <div className="text-[10px] text-content-tertiary">строк</div>
         </div>
       </div>
 
