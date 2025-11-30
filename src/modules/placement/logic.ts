@@ -44,21 +44,26 @@ export function canPlaceInCell(
 
 /**
  * Get line priority for sorting
+ * Lower number = higher priority
+ * Order: In Progress (1) -> Over-capacity/Error (2) -> Not Started (3) -> Completed (4)
  */
 export function getLinePriority(line: PlacementLine): number {
   const fact = line.quantityFact;
   const plan = line.quantityPlan;
 
-  // In progress: started but not finished
+  // In progress: started but not finished - HIGHEST PRIORITY (выполняется сейчас)
   if (fact > 0 && fact < plan) return 1;
 
-  // Not started: nothing placed yet
-  if (fact === 0) return 2;
+  // Over-plan: placed more than planned - ERRORS (с ошибками) 
+  if (fact > plan) return 2;
 
-  // Completed: placed as planned
-  if (fact === plan && fact > 0) return 3;
+  // Not started: nothing placed yet (предстоит сделать)
+  if (fact === 0) return 3;
 
-  return 4; // Fallback
+  // Completed: placed as planned - LOWEST PRIORITY (уже сделано)
+  if (fact === plan && fact > 0) return 4;
+
+  return 5; // Fallback
 }
 
 /**

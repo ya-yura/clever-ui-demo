@@ -41,18 +41,26 @@ export function getDiscrepancyType(line: InventoryLine): 'shortage' | 'surplus' 
 
 /**
  * Get line priority for sorting
+ * Lower number = higher priority
+ * Order: In Progress (with discrepancy) (1) -> Errors (discrepancy) (2) -> Not Counted (3) -> Completed (exact) (4)
  */
 export function getLinePriority(line: InventoryLine): number {
-  // Discrepancies have highest priority
-  if (hasDiscrepancy(line) && line.quantityFact > 0) return 1;
+  const counted = line.quantityFact > 0;
+  const hasDisc = hasDiscrepancy(line);
+
+  // In progress with discrepancy - being counted but has issues - HIGHEST PRIORITY (выполняется сейчас с ошибками)
+  if (counted && hasDisc) return 1;
+
+  // Discrepancies - ERRORS (с ошибками)
+  if (hasDisc && counted) return 2;
   
-  // Not counted yet
-  if (line.quantityFact === 0) return 2;
+  // Not counted yet (предстоит сделать)
+  if (!counted) return 3;
   
-  // Exact matches (completed)
-  if (!hasDiscrepancy(line)) return 3;
+  // Exact matches - completed - LOWEST PRIORITY (уже сделано)
+  if (counted && !hasDisc) return 4;
   
-  return 4;
+  return 5;
 }
 
 /**

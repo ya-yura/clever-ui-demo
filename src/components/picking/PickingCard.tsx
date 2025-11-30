@@ -22,15 +22,16 @@ const PickingCard: React.FC<Props> = ({ line, isActive, isHighlighted, routeOrde
   const isOverPlan = line.quantityFact > line.quantityPlan;
 
   const statusColor =
-    isExact ? 'border-green-500 bg-green-50 dark:bg-green-900' :
-    isOverPlan ? 'border-red-500 bg-red-50 dark:bg-red-900' :
-    line.quantityFact > 0 ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900' :
-    'border-gray-300 bg-white dark:bg-gray-800';
+    isExact ? 'border-[#4f4f4f] bg-[#363636]' :
+    isOverPlan ? 'border-amber-500/50 bg-amber-500/10' :
+    line.quantityFact > 0 ? 'border-blue-500/50 bg-blue-500/10' :
+    'border-emerald-500/40 bg-emerald-500/10';
 
   const statusIcon =
-    isExact ? <CheckCircle2 className="w-5 h-5 text-green-600" /> :
-    isOverPlan ? <AlertCircle className="w-5 h-5 text-red-600" /> :
-    line.quantityFact > 0 ? '🟡' : '⚪';
+    isExact ? <CheckCircle2 className="w-5 h-5 text-[#6a6a6a]" /> :
+    isOverPlan ? <AlertCircle className="w-5 h-5 text-amber-400" /> :
+    line.quantityFact > 0 ? <AlertCircle className="w-5 h-5 text-blue-400" /> :
+    <AlertCircle className="w-5 h-5 text-emerald-400" />;
 
   const progress = line.quantityPlan > 0 ? Math.min((line.quantityFact / line.quantityPlan) * 100, 100) : 0;
 
@@ -194,7 +195,7 @@ const PickingCard: React.FC<Props> = ({ line, isActive, isHighlighted, routeOrde
       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
         <div
           className={`h-2 rounded-full transition-all ${
-            isExact ? 'bg-green-600' : isOverPlan ? 'bg-red-600' : 'bg-green-600'
+            isExact ? 'bg-[#4f4f4f]' : isOverPlan ? 'bg-amber-500' : 'bg-blue-500'
           }`}
           style={{ width: `${progress}%` }}
         />
@@ -202,7 +203,7 @@ const PickingCard: React.FC<Props> = ({ line, isActive, isHighlighted, routeOrde
 
       {/* Status Messages */}
       {isOverPlan && (
-        <div className="mt-2 p-2 bg-red-100 dark:bg-red-900 rounded text-sm text-red-800 dark:text-red-200 font-semibold text-center">
+        <div className="mt-2 p-2 bg-amber-500/10 border border-amber-500/30 rounded text-sm text-amber-300 font-semibold text-center">
           ⚠️ Превышение плана на {line.quantityFact - line.quantityPlan}
         </div>
       )}
