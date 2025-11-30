@@ -296,11 +296,23 @@ const DocumentDetails: React.FC = () => {
     { pending: 0, progress: 0, done: 0, over: 0 },
   );
 
-  const [statusFilter, setStatusFilter] = useState<'all' | ItemStatus>('all');
+  const [statusFilters, setStatusFilters] = useState<Set<ItemStatus>>(new Set());
 
-  const filteredItems = statusFilter === 'all'
+  const filteredItems = statusFilters.size === 0
     ? normalizedItems
-    : normalizedItems.filter((entry) => entry.status === statusFilter);
+    : normalizedItems.filter((entry) => statusFilters.has(entry.status));
+
+  const toggleStatusFilter = (status: ItemStatus) => {
+    setStatusFilters(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(status)) {
+        newSet.delete(status);
+      } else {
+        newSet.add(status);
+      }
+      return newSet;
+    });
+  };
 
   const STATUS_SUMMARY: Array<{
     key: 'progress' | 'pending' | 'done' | 'over';
@@ -370,13 +382,13 @@ const DocumentDetails: React.FC = () => {
       {items.length > 0 && (
         <div className="grid grid-cols-4 gap-1">
           {STATUS_SUMMARY.map((stat) => {
-            const isActive = statusFilter === stat.key;
+            const isActive = statusFilters.has(stat.key);
             return (
               <button
                 key={stat.key}
-                onClick={() => setStatusFilter(isActive ? 'all' : stat.key)}
+                onClick={() => toggleStatusFilter(stat.key)}
                 className={`w-full px-2 py-2 rounded-md text-left transition-all text-[11px] ${
-                  isActive ? 'ring-2 ring-offset-2 ring-brand-primary' : ''
+                  isActive ? 'ring-2 ring-offset-2 ring-brand-primary ring-offset-[#1a1a1a]' : ''
                 } ${stat.className}`}
               >
                 <div className="text-[9px] uppercase tracking-wide opacity-70">{stat.label}</div>
