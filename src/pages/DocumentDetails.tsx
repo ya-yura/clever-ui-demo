@@ -240,7 +240,7 @@ const DocumentDetails: React.FC = () => {
   };
 
   const normalizedItems = useMemo(() => {
-    return items.map((item, index) => {
+    const mapped = items.map((item, index) => {
       const planned = typeof item.declaredQuantity === 'number'
         ? item.declaredQuantity
         : Number(item.quantityPlan ?? item.plan ?? 0);
@@ -270,6 +270,21 @@ const DocumentDetails: React.FC = () => {
         diffColor,
         completion,
       };
+    });
+
+    // Sort by priority: progress (1) -> over (2) -> pending (3) -> done (4)
+    return mapped.sort((a, b) => {
+      const priorityA = a.status === 'progress' ? 1 : a.status === 'over' ? 2 : a.status === 'pending' ? 3 : 4;
+      const priorityB = b.status === 'progress' ? 1 : b.status === 'over' ? 2 : b.status === 'pending' ? 3 : 4;
+      
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+      
+      // If same priority, sort alphabetically by product name
+      const nameA = a.raw.product?.name || a.raw.productName || '';
+      const nameB = b.raw.product?.name || b.raw.productName || '';
+      return nameA.localeCompare(nameB);
     });
   }, [items]);
 
