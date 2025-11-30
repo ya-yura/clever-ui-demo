@@ -22,15 +22,15 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust, onSetQuantity, isHighl
   const isUnderPlan = difference < 0;
   const isExact = difference === 0 && line.quantityFact > 0;
   
-  // Status colors - INVERTED LOGIC:
-  // - "pending" (not started) = GREEN (needs attention, active work)
-  // - "completed" = GRAY (done, not relevant anymore)
-  // - "partial" (in progress) = BLUE (keep as is)
-  // - "over plan" = WARNING (keep as is)
+  // Status colors:
+  // - "pending" (not started) = GREEN (needs attention)
+  // - "completed" = GRAY (done, low priority)
+  // - "partial" (in progress) = BLUE (active work)
+  // - "over plan" = WARNING
   const statusColor = 
-    line.status === 'pending' ? 'bg-success/10 border-success/30' :
+    line.status === 'pending' ? 'bg-emerald-500/10 border-emerald-500/30' :
     line.status === 'completed' && isOverPlan ? 'bg-warning/10 border-warning/30' :
-    line.status === 'completed' ? 'bg-surface-secondary/50 border-borders-light' :
+    line.status === 'completed' ? 'bg-[#363636] border-[#4f4f4f]' :
     line.status === 'partial' ? 'bg-info/10 border-info/30' :
     line.status === 'error' ? 'bg-error/10 border-error/30' :
     'bg-surface-secondary border-borders-default';
@@ -74,10 +74,10 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust, onSetQuantity, isHighl
           
           {/* Status Icon */}
           {line.status === 'pending' && (
-            <AlertTriangle className="w-5 h-5 text-success shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-emerald-400 shrink-0" />
           )}
           {isExact && line.status === 'completed' && (
-            <CheckCircle className="w-5 h-5 text-content-tertiary shrink-0" />
+            <CheckCircle className="w-5 h-5 text-[#6a6a6a] shrink-0" />
           )}
           {isOverPlan && (
             <AlertTriangle className="w-5 h-5 text-warning shrink-0" />
@@ -189,9 +189,9 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust, onSetQuantity, isHighl
 
         {/* Status Messages */}
         {line.status === 'pending' && (
-          <div className="bg-success/10 border border-success/30 rounded-lg p-2 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-success shrink-0" />
-            <div className="text-xs text-success">
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="text-xs text-emerald-300">
               <span className="font-semibold">Не начато:</span> нужно принять {line.quantityPlan} шт.
             </div>
           </div>
@@ -216,9 +216,9 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust, onSetQuantity, isHighl
         )}
         
         {isExact && line.status === 'completed' && (
-          <div className="bg-surface-secondary/50 border border-borders-light rounded-lg p-2 flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-content-tertiary shrink-0" />
-            <div className="text-xs text-content-secondary">
+          <div className="bg-[#363636] border border-[#4f4f4f] rounded-lg p-2 flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-[#6a6a6a] shrink-0" />
+            <div className="text-xs text-[#8a8a8a]">
               <span className="font-semibold">Готово:</span> принято {line.quantityPlan} шт.
             </div>
           </div>
