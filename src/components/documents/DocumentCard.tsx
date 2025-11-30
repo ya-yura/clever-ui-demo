@@ -43,133 +43,57 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document }) => {
   };
 
   return (
-    <Card
-      variant="interactive"
+    <div
       onClick={handleClick}
-      className="p-4"
+      className="bg-surface-secondary hover:bg-surface-tertiary border border-borders-default rounded-lg px-3 py-2.5 cursor-pointer transition-colors"
     >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl filter grayscale-[0.2]">{DOCUMENT_TYPE_ICONS[document.type]}</span>
-          <div>
-            <div className="font-semibold text-content-primary">
-              {document.number || document.id.slice(0, 8)}
-            </div>
-            <div className="text-xs text-content-tertiary">
-              {DOCUMENT_TYPE_LABELS[document.type]}
-            </div>
-          </div>
+      {/* Top Row: Title and Status */}
+      <div className="flex items-start justify-between gap-3 mb-1.5">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-semibold text-content-primary truncate">
+            {document.number || document.id}
+          </h3>
         </div>
-
-        <Badge 
-          label={STATUS_LABELS[document.status]} 
-          variant={getStatusVariant(document.status)} 
-        />
-      </div>
-
-      {/* Partner Info */}
-      {document.partnerName && (
-        <div className="mb-2 text-sm text-content-secondary">
-          <span className="text-content-tertiary">Контрагент:</span>{' '}
-          <span className="font-medium">{document.partnerName}</span>
-        </div>
-      )}
-
-      {/* Progress Bar */}
-      {document.totalQuantity && document.totalQuantity > 0 && (
-        <div className="mb-3">
-          <div className="flex items-center justify-between text-xs text-content-tertiary mb-1">
-            <span>Прогресс</span>
-            <span className="font-medium text-content-primary">{completionPercentage}%</span>
-          </div>
-          <ProgressBar 
-            value={completionPercentage} 
-            variant={completionPercentage === 100 ? 'success' : 'primary'} 
-            size="sm"
+        
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[10px] text-content-tertiary">
+            {formatDate(document.createdAt).split(' ')[0]} {formatDate(document.createdAt).split(' ')[1]}
+          </span>
+          <Badge 
+            label={STATUS_LABELS[document.status]} 
+            variant={getStatusVariant(document.status)} 
           />
         </div>
-      )}
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
-        {document.totalLines !== undefined && (
-          <div className="bg-surface-tertiary/50 rounded px-2 py-1">
-            <div className="text-xs text-content-tertiary">Строк</div>
-            <div className="font-medium text-content-primary">
-              {document.completedLines || 0} / {document.totalLines}
-            </div>
-          </div>
-        )}
-        
-        {document.totalQuantity !== undefined && (
-          <div className="bg-surface-tertiary/50 rounded px-2 py-1">
-            <div className="text-xs text-content-tertiary">Количество</div>
-            <div className="font-medium text-content-primary">
-              {document.completedQuantity || 0} / {document.totalQuantity}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Additional Info */}
-      <div className="space-y-1 text-xs text-content-tertiary">
-        {document.route && (
-          <div>
-            <span className="inline-block w-16">Маршрут:</span>
-            <span className="text-content-secondary">{document.route}</span>
-          </div>
-        )}
-        
-        {document.vehicle && (
-          <div>
-            <span className="inline-block w-16">ТС:</span>
-            <span className="text-content-secondary">{document.vehicle}</span>
-          </div>
-        )}
-        
-        {document.returnReason && (
-          <div>
-            <span className="inline-block w-16">Причина:</span>
-            <span className="text-content-secondary">{document.returnReason}</span>
-          </div>
-        )}
-        
-        {document.userName && (
-          <div>
-            <span className="inline-block w-16">Исполнитель:</span>
-            <span className="text-content-secondary">{document.userName}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="mt-3 pt-3 border-t border-surface-tertiary flex items-center justify-between text-xs text-content-tertiary">
-        <div className="flex items-center gap-3">
-          <div title={formatDate(document.createdAt)}>
-            📅 {formatRelativeTime(document.createdAt)}
-          </div>
+      {/* Bottom Row: User/Partner + Progress indicator */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-xs text-content-secondary">
+          {document.userName && (
+            <span>{document.userName}</span>
+          )}
+          {document.partnerName && !document.userName && (
+            <span>{document.partnerName}</span>
+          )}
           
-          {document.updatedAt !== document.createdAt && (
-            <div title={formatDate(document.updatedAt)}>
-              🔄 {formatRelativeTime(document.updatedAt)}
+          {/* Progress indicator - only for in-progress documents */}
+          {document.status === 'in_progress' && document.totalLines && (
+            <div className="flex items-center gap-1">
+              <span className="text-brand-primary">●</span>
+              <span className="text-content-tertiary">
+                {document.completedLines || 0}
+              </span>
             </div>
           )}
         </div>
 
-        {isOverdue && (
-          <div className="text-error font-medium">
-            ⚠️ Просрочен
+        {/* Compact stats for completed/total */}
+        {document.totalLines !== undefined && document.totalLines > 0 && (
+          <div className="text-[10px] text-content-tertiary">
+            {document.completedLines || 0}/{document.totalLines}
           </div>
         )}
       </div>
-
-      {/* Notes Preview */}
-      {document.notes && (
-        <div className="mt-2 text-xs text-content-secondary italic truncate">
-          💬 {document.notes}
-        </div>
-      )}
-    </Card>
+    </div>
   );
 };
