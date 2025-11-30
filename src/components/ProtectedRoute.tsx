@@ -11,9 +11,12 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, isDemo } = useAuth();
   const isConfigured = configService.isConfigured();
   const location = useLocation();
+  
+  // Check if demo mode is enabled
+  const demoModeEnabled = localStorage.getItem('demo_mode') === 'true';
 
   // Show loading state while checking auth
   if (isLoading) {
@@ -25,6 +28,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         </div>
       </div>
     );
+  }
+
+  // Allow access in demo mode without configuration
+  if (demoModeEnabled || isDemo) {
+    console.log('✅ Demo mode enabled, bypassing configuration check');
+    return <>{children}</>;
   }
 
   // Redirect to setup if not configured
