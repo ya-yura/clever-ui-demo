@@ -425,24 +425,39 @@ const Receiving: React.FC = () => {
     ? (document.completedLines / document.totalLines) * 100 
     : 0;
 
-  // Sort lines by status priority:
-  // 1. partial (in progress) - highest priority
-  // 2. pending (not started) - needs to be done
-  // 3. over-plan (errors) - needs attention
-  // 4. completed (exact) - lowest priority, done
+  // Sort lines by status priority based on actual quantities:
+  // 1. partial (in progress: 0 < fact < plan) - highest priority
+  // 2. pending (not started: fact === 0) - needs to be done
+  // 3. over-plan (fact > plan) - needs attention
+  // 4. completed (fact === plan) - lowest priority, done
   const sortedLines = [...lines].sort((a, b) => {
     const getStatusPriority = (line: ReceivingLine) => {
-      const isOverPlan = line.quantityFact > line.quantityPlan;
-      const isExact = line.quantityFact === line.quantityPlan && line.quantityFact > 0;
+      const fact = line.quantityFact;
+      const plan = line.quantityPlan;
       
-      if (line.status === 'partial') return 1; // In progress - first
-      if (line.status === 'pending') return 2; // Not started - second
-      if (isOverPlan) return 3; // Over-plan - third
-      if (isExact && line.status === 'completed') return 4; // Completed exact - last
-      return 5; // Other statuses
+      // In progress: started but not finished
+      if (fact > 0 && fact < plan) return 1;
+      
+      // Not started: nothing received yet
+      if (fact === 0) return 2;
+      
+      // Over-plan: received more than planned
+      if (fact > plan) return 3;
+      
+      // Completed: received exactly as planned
+      if (fact === plan && fact > 0) return 4;
+      
+      return 5; // Fallback
     };
 
-    return getStatusPriority(a) - getStatusPriority(b);
+    const priorityDiff = getStatusPriority(a) - getStatusPriority(b);
+    
+    // If same priority, sort alphabetically by product name
+    if (priorityDiff === 0) {
+      return a.productName.localeCompare(b.productName);
+    }
+    
+    return priorityDiff;
   });
 
   return (
