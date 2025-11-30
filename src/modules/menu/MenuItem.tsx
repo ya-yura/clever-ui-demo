@@ -43,6 +43,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
   };
 
   const paddingLeft = level === 0 ? 'pl-4' : 'pl-12';
+  const isLogoutButton = item.id === 'logout';
 
   return (
     <>
@@ -50,11 +51,12 @@ const MenuItem: React.FC<MenuItemProps> = ({
         className={`
           w-full flex items-center justify-between
           ${paddingLeft} pr-4 py-4
-          text-left text-gray-100
+          text-left
           transition-all duration-150
           ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-700/50 active:bg-gray-700'}
           ${isPressed ? 'bg-gray-700' : ''}
           ${level > 0 ? 'border-l-2 border-gray-600' : ''}
+          ${isLogoutButton ? 'border-t border-gray-700/50 mt-2' : ''}
           touch-manipulation
         `}
         onClick={handleClick}
@@ -68,9 +70,17 @@ const MenuItem: React.FC<MenuItemProps> = ({
       >
         <div className="flex items-center gap-4 min-h-[40px]">
           <Icon 
-            className={`w-6 h-6 flex-shrink-0 ${isDisabled ? 'text-gray-500' : 'text-blue-400'}`} 
+            className={`w-6 h-6 flex-shrink-0 ${
+              isDisabled ? 'text-gray-500' : 
+              isLogoutButton ? 'text-red-400' : 
+              'text-blue-400'
+            }`} 
           />
-          <span className={`text-base font-medium ${isDisabled ? 'text-gray-500' : ''}`}>
+          <span className={`text-base font-medium ${
+            isDisabled ? 'text-gray-500' : 
+            isLogoutButton ? 'text-red-300' : 
+            'text-gray-100'
+          }`}>
             {item.label}
           </span>
         </div>
