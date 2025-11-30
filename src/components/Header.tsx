@@ -1,13 +1,14 @@
 // === 📁 src/components/Header.tsx ===
 // Header component with navigation and sync status
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import { Menu, Settings } from 'lucide-react';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 import { useMenu } from '@/modules/menu';
 import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { odataCache } from '@/services/odataCache';
 
 // Route to title mapping
 const getPageTitle = (pathname: string): { title: string; subtitle?: string } => {
@@ -41,8 +42,23 @@ const Header: React.FC = () => {
   const { openMenu } = useMenu();
   const { documentInfo, listInfo } = useDocumentHeader();
   const { theme, toggleTheme } = useTheme();
+  
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   const isHome = location.pathname === '/';
+  
+  // Check if demo mode is active
+  useEffect(() => {
+    const checkDemoMode = async () => {
+      try {
+        await odataCache.getDocTypes();
+        setIsDemoMode(false);
+      } catch (error) {
+        setIsDemoMode(true);
+      }
+    };
+    checkDemoMode();
+  }, [location.pathname]);
   
   // Get dynamic page title
   const pageInfo = useMemo(() => getPageTitle(location.pathname), [location.pathname]);
@@ -101,6 +117,22 @@ const Header: React.FC = () => {
                 <h1 className="text-lg font-medium tracking-wide text-content-primary">
                   {listInfo ? listInfo.title : pageInfo.title}
                 </h1>
+                
+                {/* Demo Mode Badge */}
+                {isDemoMode && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate('/setup');
+                    }}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-500/20 border border-yellow-500/40 hover:bg-yellow-500/30 transition-colors group"
+                    title="Настроить подключение к серверу"
+                  >
+                    <span className="text-xs font-medium text-yellow-300">Демо</span>
+                    <Settings className="w-3 h-3 text-yellow-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                )}
+                
                 {documentInfo && (
                   <span className="text-sm text-content-tertiary">
                     {documentInfo.documentId}

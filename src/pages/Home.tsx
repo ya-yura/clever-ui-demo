@@ -352,28 +352,6 @@ const Home: React.FC = () => {
 
   return (
     <div className="space-y-3 max-w-7xl mx-auto">
-      {/* Warning banner if using mock data */}
-      {usingMockData && (
-        <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">⚠️</span>
-            <div className="flex-1">
-              <h3 className="text-yellow-400 font-semibold mb-1">
-                Демо-режим
-              </h3>
-              <p className="text-sm text-yellow-200/90 mb-2">
-                API сервер недоступен. Показаны демонстрационные типы документов.
-              </p>
-              <p className="text-xs text-yellow-200/70">
-                Для работы с реальными данными запустите API сервер: <br />
-                <code className="bg-black/30 px-2 py-1 rounded mt-1 inline-block">
-                  http://localhost:9000/MobileSMARTS/api/v1/
-                </code>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Hero layout: 4-column grid (matching Figma mockup) */}
       <div className="grid grid-cols-4 gap-1.5 md:gap-2">
