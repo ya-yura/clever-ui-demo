@@ -67,7 +67,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document }) => {
   return (
     <div
       onClick={handleClick}
-      className="bg-surface-secondary hover:bg-surface-tertiary border border-borders-default rounded-lg px-3 py-2.5 cursor-pointer transition-colors"
+      className="bg-surface-secondary hover:bg-surface-tertiary border border-border-default rounded-lg px-3 py-2.5 cursor-pointer transition-colors"
     >
       {/* Top Row: Title with date and Status */}
       <div className="flex items-start justify-between gap-3 mb-1">

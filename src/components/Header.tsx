@@ -125,11 +125,11 @@ const Header: React.FC = () => {
                       e.stopPropagation();
                       navigate('/setup');
                     }}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-500/20 border border-yellow-500/40 hover:bg-yellow-500/30 transition-colors group"
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-warning/20 border border-warning/40 hover:bg-warning/30 transition-colors group"
                     title="Настроить подключение к серверу"
                   >
-                    <span className="text-xs font-medium text-yellow-300">Демо</span>
-                    <Settings className="w-3 h-3 text-yellow-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span className="text-xs font-medium text-warning">Демо</span>
+                    <Settings className="w-3 h-3 text-warning opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
                 )}
                 
