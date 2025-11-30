@@ -42,22 +42,49 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document }) => {
     navigate(url);
   };
 
+  // Format date like "16.06 14:16"
+  const formatCompactDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}.${month} ${hours}:${minutes}`;
+  };
+
+  // Format full date for title like "16.06.25 14:16:26"
+  const formatFullDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+  };
+
   return (
     <div
       onClick={handleClick}
       className="bg-surface-secondary hover:bg-surface-tertiary border border-borders-default rounded-lg px-3 py-2.5 cursor-pointer transition-colors"
     >
-      {/* Top Row: Title and Status */}
-      <div className="flex items-start justify-between gap-3 mb-1.5">
+      {/* Top Row: Title with date and Status */}
+      <div className="flex items-start justify-between gap-3 mb-1">
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-content-primary truncate">
-            {document.number || document.id}
+          <h3 className="text-sm font-medium text-content-primary truncate">
+            {DOCUMENT_TYPE_LABELS[document.type]} {formatFullDate(document.createdAt)}
           </h3>
+          {document.number && (
+            <div className="text-[11px] text-content-tertiary mt-0.5">
+              {document.number}
+            </div>
+          )}
         </div>
         
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[10px] text-content-tertiary">
-            {formatDate(document.createdAt).split(' ')[0]} {formatDate(document.createdAt).split(' ')[1]}
+          <span className="text-[10px] text-content-tertiary whitespace-nowrap">
+            {formatCompactDate(document.createdAt)}
           </span>
           <Badge 
             label={STATUS_LABELS[document.status]} 
@@ -66,32 +93,22 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document }) => {
         </div>
       </div>
 
-      {/* Bottom Row: User/Partner + Progress indicator */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-xs text-content-secondary">
-          {document.userName && (
-            <span>{document.userName}</span>
-          )}
-          {document.partnerName && !document.userName && (
-            <span>{document.partnerName}</span>
-          )}
-          
-          {/* Progress indicator - only for in-progress documents */}
-          {document.status === 'in_progress' && document.totalLines && (
-            <div className="flex items-center gap-1">
-              <span className="text-brand-primary">●</span>
-              <span className="text-content-tertiary">
-                {document.completedLines || 0}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Compact stats for completed/total */}
+      {/* Bottom Row: User info with stats */}
+      <div className="flex items-center gap-2 text-xs text-content-secondary">
+        {document.userName && (
+          <span>Кладовщик</span>
+        )}
+        {document.partnerName && !document.userName && (
+          <span>{document.partnerName}</span>
+        )}
+        
+        <span className="text-content-tertiary">•</span>
+        
+        {/* Always show item count if available */}
         {document.totalLines !== undefined && document.totalLines > 0 && (
-          <div className="text-[10px] text-content-tertiary">
-            {document.completedLines || 0}/{document.totalLines}
-          </div>
+          <span className="text-content-tertiary">
+            {document.completedLines || 0}
+          </span>
         )}
       </div>
     </div>
