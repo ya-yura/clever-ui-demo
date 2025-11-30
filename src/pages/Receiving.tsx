@@ -11,10 +11,11 @@ import { useSync } from '@/hooks/useSync';
 import { ReceivingDocument, ReceivingLine } from '@/types/receiving';
 import { scanFeedback, feedback } from '@/utils/feedback';
 import { STATUS_LABELS } from '@/types/document';
-import ReceivingCard from '@/components/receiving/ReceivingCard';
+import { ReceivingCard, ReceivingStats } from '@/components/receiving';
 import ScannerInput from '@/components/ScannerInput';
 import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
 import { useAnalytics, EventType } from '@/lib/analytics';
+import { CheckCircle } from 'lucide-react';
 
 const Receiving: React.FC = () => {
   const { id } = useParams();
@@ -25,6 +26,7 @@ const Receiving: React.FC = () => {
   const [documents, setDocuments] = useState<ReceivingDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentCell, setCurrentCell] = useState<string>('');
+  const [highlightedLineId, setHighlightedLineId] = useState<string | null>(null);
   const { setDocumentInfo, setListInfo } = useDocumentHeader();
   
   // Ref to track if we are in the process of completing the document
@@ -125,11 +127,14 @@ const Receiving: React.FC = () => {
     const line = lines.find(l => l.barcode === code || l.productSku === code);
     
     if (line) {
-      // Increment fact
+      // Highlight the scanned product
+      setHighlightedLineId(line.id);
+      setTimeout(() => setHighlightedLineId(null), 2000);
+
       // Check for over-plan
       if (line.quantityFact >= line.quantityPlan) {
         scanFeedback(false, 'Превышение плана');
-        if (!window.confirm(`Внимание! План по товару ${line.productName} выполнен (${line.quantityPlan}). Добавить сверх плана?`)) {
+        if (!window.confirm(`⚠️ Внимание!\n\nТовар: ${line.productName}\nПлан выполнен: ${line.quantityPlan} шт.\n\nДобавить сверх плана?`)) {
           return;
         }
       }
@@ -146,7 +151,7 @@ const Receiving: React.FC = () => {
       // Refresh lines
       setLines(prev => prev.map(l => l.id === line.id ? updatedLine : l));
       
-      scanFeedback(true, `Добавлено: ${line.productName}`);
+      scanFeedback(true, `✓ ${line.productName}: +1`);
 
       analytics.track(EventType.SCAN_SUCCESS, {
         barcode: code,
@@ -158,7 +163,14 @@ const Receiving: React.FC = () => {
       // Update document progress
       updateDocumentProgress();
     } else {
+      // Product not found in document
       scanFeedback(false, 'Товар не найден в документе');
+      
+      // Show detailed error
+      if (window.confirm(`❌ Товар не найден\n\nШтрихкод: ${code}\n\nЭтого товара нет в документе приёмки.\nДобавить как лишний товар?`)) {
+        // TODO: Implement adding extra products
+        feedback.info('Функция добавления лишних товаров в разработке');
+      }
       
       analytics.track(EventType.SCAN_ERROR, {
         barcode: code,
@@ -228,13 +240,37 @@ const Receiving: React.FC = () => {
     
     const uncompletedLines = lines.filter(l => l.quantityFact < l.quantityPlan);
     const overPlanLines = lines.filter(l => l.quantityFact > l.quantityPlan);
+    const completedLines = lines.filter(l => l.quantityFact === l.quantityPlan);
     
-    let message = 'Завершить документ?';
+    // Build detailed summary
+    let message = '📋 Завершение документа\n\n';
+    message += `Всего строк: ${lines.length}\n`;
+    message += `✓ Принято точно: ${completedLines.length}\n`;
+    
+    if (uncompletedLines.length > 0) {
+      message += `⚠️ Недостача: ${uncompletedLines.length} строк\n`;
+      const totalShortage = uncompletedLines.reduce((sum, l) => sum + (l.quantityPlan - l.quantityFact), 0);
+      message += `   (всего ${totalShortage} шт.)\n`;
+    }
+    
+    if (overPlanLines.length > 0) {
+      message += `⚠️ Излишки: ${overPlanLines.length} строк\n`;
+      const totalOver = overPlanLines.reduce((sum, l) => sum + (l.quantityFact - l.quantityPlan), 0);
+      message += `   (всего +${totalOver} шт.)\n`;
+    }
+    
+    message += '\n';
+    
     if (uncompletedLines.length > 0 || overPlanLines.length > 0) {
-      message = 'Внимание! Есть расхождения:\n';
-      if (uncompletedLines.length > 0) message += `- Не завершено строк: ${uncompletedLines.length}\n`;
-      if (overPlanLines.length > 0) message += `- Перевыполнение: ${overPlanLines.length}\n`;
-      message += '\nВы уверены, что хотите завершить?';
+      message += '⚠️ Обнаружены расхождения!\n\n';
+      message += 'Вы уверены, что хотите завершить документ с расхождениями?';
+      
+      if (!window.confirm(message)) {
+        return;
+      }
+    } else {
+      message += '✅ Все товары приняты согласно плану.\n\n';
+      message += 'Завершить документ?';
       
       if (!window.confirm(message)) {
         return;
@@ -256,22 +292,42 @@ const Receiving: React.FC = () => {
     await addSyncAction('complete', updatedDoc);
     sync();
     
-    feedback.success('Приёмка завершена вручную!');
+    feedback.success('✅ Приёмка завершена!');
 
     analytics.track(EventType.DOC_COMPLETE, {
       documentId: document.id,
       docType: 'receiving',
       status: 'completed_manual',
-      totalLines: lines.length
+      totalLines: lines.length,
+      completedExact: completedLines.length,
+      shortage: uncompletedLines.length,
+      overplan: overPlanLines.length,
     });
     
     setTimeout(() => {
-      if (window.confirm('Документ завершён. Перейти к размещению?')) {
+      if (window.confirm('📦 Документ завершён\n\nПерейти к размещению товара?')) {
         navigate(`/placement?source=${document.id}`);
       } else {
         navigate('/receiving');
       }
     }, 500);
+  };
+
+  const setLineQuantity = async (lineId: string, quantity: number) => {
+    const line = lines.find(l => l.id === lineId);
+    if (!line) return;
+
+    const updatedLine: ReceivingLine = {
+      ...line,
+      quantityFact: quantity,
+      status: quantity >= line.quantityPlan ? 'completed' : quantity > 0 ? 'partial' : 'pending' as const,
+    };
+
+    await db.receivingLines.update(lineId, updatedLine);
+    await addSyncAction('update_line', updatedLine);
+    
+    setLines(prev => prev.map(l => l.id === lineId ? updatedLine : l));
+    updateDocumentProgress();
   };
 
   const adjustQuantity = async (lineId: string, delta: number) => {
@@ -377,6 +433,11 @@ const Receiving: React.FC = () => {
         placeholder="Отсканируйте товар или документ..."
       />
 
+      {/* Statistics Panel */}
+      {lines.length > 0 && (
+        <ReceivingStats lines={lines} />
+      )}
+
       {/* Lines */}
       <div className="space-y-2">
         {lines.map(line => (
@@ -384,14 +445,20 @@ const Receiving: React.FC = () => {
             key={line.id}
             line={line}
             onAdjust={(delta) => adjustQuantity(line.id, delta)}
+            onSetQuantity={(qty) => setLineQuantity(line.id, qty)}
+            isHighlighted={highlightedLineId === line.id}
           />
         ))}
       </div>
 
       {lines.length === 0 && (
-        <div className="card text-center py-8">
-          <p className="text-gray-600 dark:text-gray-400">
-            Нет товаров в документе. Отсканируйте документ для загрузки.
+        <div className="bg-surface-secondary border border-borders-default rounded-lg text-center py-12">
+          <div className="text-6xl mb-4">📦</div>
+          <p className="text-content-secondary text-lg">
+            Нет товаров в документе
+          </p>
+          <p className="text-content-tertiary text-sm mt-2">
+            Отсканируйте документ для загрузки
           </p>
         </div>
       )}
@@ -399,8 +466,9 @@ const Receiving: React.FC = () => {
       {document && document.status !== 'completed' && lines.length > 0 && (
         <button
           onClick={handleManualComplete}
-          className="w-full bg-brand-primary text-white py-4 rounded-lg font-bold text-lg shadow-lg hover:brightness-110 transition-all mt-4 mb-8"
+          className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white py-4 rounded-lg font-bold text-lg shadow-lg transition-all mt-4 mb-8 flex items-center justify-center gap-2"
         >
+          <CheckCircle className="w-6 h-6" />
           Завершить документ
         </button>
       )}

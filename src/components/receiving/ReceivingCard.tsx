@@ -1,106 +1,212 @@
 // === 📁 src/components/receiving/ReceivingCard.tsx ===
 // Product card for receiving module
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ReceivingLine } from '@/types/receiving';
+import { Package, AlertTriangle, CheckCircle, Edit3 } from 'lucide-react';
 
 interface Props {
   line: ReceivingLine;
   onAdjust: (delta: number) => void;
+  onSetQuantity: (quantity: number) => void;
+  isHighlighted?: boolean;
 }
 
-const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
-  const statusColor = 
-    line.status === 'completed' ? 'bg-green-900/30 border-green-500/50 dark:bg-green-900/30 dark:border-green-500/50 bg-green-50 border-green-200' :
-    line.status === 'partial' ? 'bg-orange-900/30 border-orange-500/50 dark:bg-orange-900/30 dark:border-orange-500/50 bg-orange-50 border-orange-200' :
-    line.status === 'error' ? 'bg-red-900/30 border-red-500/50 dark:bg-red-900/30 dark:border-red-500/50 bg-red-50 border-red-200' :
-    'bg-surface-secondary border-border-default';
-
-  const statusIcon =
-    line.status === 'completed' ? '🟢' :
-    line.status === 'partial' ? '🟡' :
-    line.status === 'error' ? '🔴' :
-    '⚪';
+const ReceivingCard: React.FC<Props> = ({ line, onAdjust, onSetQuantity, isHighlighted = false }) => {
+  const [isEditingQty, setIsEditingQty] = useState(false);
+  const [editValue, setEditValue] = useState(line.quantityFact.toString());
+  const [showDetails, setShowDetails] = useState(false);
 
   const difference = line.quantityFact - line.quantityPlan;
-  const showDifference = difference !== 0;
+  const isOverPlan = difference > 0;
+  const isUnderPlan = difference < 0;
+  const isExact = difference === 0 && line.quantityFact > 0;
+  
+  // Status colors
+  const statusColor = 
+    line.status === 'completed' && isExact ? 'bg-success/10 border-success/30' :
+    line.status === 'completed' && isOverPlan ? 'bg-warning/10 border-warning/30' :
+    line.status === 'partial' ? 'bg-info/10 border-info/30' :
+    line.status === 'error' ? 'bg-error/10 border-error/30' :
+    'bg-surface-secondary border-borders-default';
+
+  const handleSaveQuantity = () => {
+    const newQty = parseInt(editValue, 10);
+    if (!isNaN(newQty) && newQty >= 0) {
+      onSetQuantity(newQty);
+      setIsEditingQty(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditValue(line.quantityFact.toString());
+    setIsEditingQty(false);
+  };
 
   return (
-    <div className={`card border-2 ${statusColor} transition-colors`}>
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center space-x-2 mb-2">
-            <span className="text-2xl">{statusIcon}</span>
-            <div>
-              <h3 className="font-semibold text-content-primary">
+    <div className={`rounded-lg border-2 ${statusColor} ${isHighlighted ? 'ring-2 ring-brand-primary shadow-lg' : ''} transition-all duration-300 overflow-hidden`}>
+      {/* Header */}
+      <div className="bg-surface-tertiary/30 px-3 py-2 border-b border-borders-default">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Package className="w-5 h-5 text-content-tertiary shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-content-primary truncate text-sm">
                 {line.productName}
               </h3>
-              <p className="text-sm text-content-secondary">
-                Артикул: {line.productSku}
-              </p>
-              {line.barcode && (
-                <p className="text-xs text-content-tertiary">
-                  ШК: {line.barcode}
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-xs text-content-secondary">
+                  {line.productSku}
                 </p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 text-center mt-4">
-            <div className="bg-surface-tertiary border border-border-default rounded p-2">
-              <div className="text-xs text-content-secondary">План</div>
-              <div className="text-lg font-bold text-content-primary">
-                {line.quantityPlan}
+                {line.barcode && (
+                  <p className="text-[10px] text-content-tertiary font-mono bg-surface-tertiary px-1.5 py-0.5 rounded">
+                    {line.barcode}
+                  </p>
+                )}
               </div>
             </div>
-            <div className="bg-surface-tertiary border border-border-default rounded p-2">
-              <div className="text-xs text-content-secondary">Факт</div>
+          </div>
+          
+          {/* Status Icon */}
+          {isExact && line.status === 'completed' && (
+            <CheckCircle className="w-5 h-5 text-success shrink-0" />
+          )}
+          {isOverPlan && (
+            <AlertTriangle className="w-5 h-5 text-warning shrink-0" />
+          )}
+          {isUnderPlan && line.quantityFact > 0 && (
+            <AlertTriangle className="w-5 h-5 text-info shrink-0" />
+          )}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-3 space-y-3">
+        {/* Quantity Display */}
+        <div className="grid grid-cols-3 gap-2">
+          {/* Plan */}
+          <div className="bg-surface-tertiary/50 rounded-lg p-2 text-center border border-borders-default">
+            <div className="text-[10px] text-content-tertiary uppercase tracking-wide mb-0.5">План</div>
+            <div className="text-lg font-bold text-content-primary">
+              {line.quantityPlan}
+            </div>
+          </div>
+          
+          {/* Fact */}
+          <div className="bg-surface-tertiary/50 rounded-lg p-2 text-center border border-borders-default">
+            <div className="text-[10px] text-content-tertiary uppercase tracking-wide mb-0.5">Факт</div>
+            {isEditingQty ? (
+              <input
+                type="number"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={handleSaveQuantity}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSaveQuantity();
+                  if (e.key === 'Escape') handleCancelEdit();
+                }}
+                className="w-full text-lg font-bold text-center bg-transparent border-none focus:outline-none text-brand-primary"
+                autoFocus
+              />
+            ) : (
               <div className="text-lg font-bold text-brand-primary">
                 {line.quantityFact}
               </div>
+            )}
+          </div>
+          
+          {/* Difference */}
+          <div className="bg-surface-tertiary/50 rounded-lg p-2 text-center border border-borders-default">
+            <div className="text-[10px] text-content-tertiary uppercase tracking-wide mb-0.5">
+              {Math.abs(difference) === 0 ? 'OK' : isOverPlan ? 'Лишнее' : 'Недостача'}
             </div>
-            <div className="bg-surface-tertiary border border-border-default rounded p-2">
-              <div className="text-xs text-content-secondary">Остаток</div>
-              <div className={`text-lg font-bold ${
-                showDifference 
-                  ? difference > 0 
-                    ? 'text-warning' 
-                    : 'text-error'
-                  : 'text-success'
-              }`}>
-                {Math.abs(line.quantityPlan - line.quantityFact)}
-              </div>
+            <div className={`text-lg font-bold ${
+              difference === 0 ? 'text-success' :
+              isOverPlan ? 'text-warning' :
+              'text-error'
+            }`}>
+              {difference === 0 ? '✓' : Math.abs(difference)}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Quick actions */}
-      <div className="flex gap-2 mt-4">
-        <button
-          onClick={() => onAdjust(-1)}
-          className="btn-secondary flex-1 border border-border-default"
-          disabled={line.quantityFact === 0}
-        >
-          −1
-        </button>
-        <button
-          onClick={() => onAdjust(1)}
-          className="btn-primary flex-1"
-        >
-          +1
-        </button>
-      </div>
-
-      {showDifference && (
-        <div className={`mt-2 p-2 rounded text-sm text-center ${
-          difference > 0 
-            ? 'bg-warning/20 text-warning-dark'
-            : 'bg-error/20 text-error-dark'
-        }`}>
-          {difference > 0 ? '⚠️ Излишки' : '⚠️ Недостача'}: {Math.abs(difference)} шт.
+        {/* Quick Actions Row 1: -1, +1, Edit */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => onAdjust(-1)}
+            className="flex-1 bg-surface-secondary hover:bg-surface-tertiary text-content-primary border border-borders-default rounded-lg py-2 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={line.quantityFact === 0}
+          >
+            −1
+          </button>
+          <button
+            onClick={() => onAdjust(1)}
+            className="flex-1 bg-brand-primary hover:bg-brand-primary/90 text-white rounded-lg py-2 font-semibold transition-colors"
+          >
+            +1
+          </button>
+          <button
+            onClick={() => {
+              setEditValue(line.quantityFact.toString());
+              setIsEditingQty(true);
+            }}
+            className="px-3 bg-surface-secondary hover:bg-surface-tertiary text-content-secondary border border-borders-default rounded-lg transition-colors"
+            title="Ввести вручную"
+          >
+            <Edit3 className="w-4 h-4" />
+          </button>
         </div>
-      )}
+
+        {/* Quick Actions Row 2: +5, +10 */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => onAdjust(5)}
+            className="flex-1 bg-surface-secondary hover:bg-surface-tertiary text-content-primary border border-borders-default rounded-lg py-2 font-semibold transition-colors"
+          >
+            +5
+          </button>
+          <button
+            onClick={() => onAdjust(10)}
+            className="flex-1 bg-surface-secondary hover:bg-surface-tertiary text-content-primary border border-borders-default rounded-lg py-2 font-semibold transition-colors"
+          >
+            +10
+          </button>
+          <button
+            onClick={() => onSetQuantity(line.quantityPlan)}
+            className="flex-1 bg-info/20 hover:bg-info/30 text-info border border-info/30 rounded-lg py-2 text-sm font-semibold transition-colors"
+          >
+            По плану
+          </button>
+        </div>
+
+        {/* Status Messages */}
+        {isOverPlan && (
+          <div className="bg-warning/10 border border-warning/30 rounded-lg p-2 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-warning shrink-0" />
+            <div className="text-xs text-warning">
+              <span className="font-semibold">Излишки:</span> {difference} шт. сверх плана
+            </div>
+          </div>
+        )}
+        
+        {isUnderPlan && line.quantityFact > 0 && (
+          <div className="bg-info/10 border border-info/30 rounded-lg p-2 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-info shrink-0" />
+            <div className="text-xs text-info">
+              <span className="font-semibold">Недостача:</span> осталось принять {Math.abs(difference)} шт.
+            </div>
+          </div>
+        )}
+        
+        {isExact && line.status === 'completed' && (
+          <div className="bg-success/10 border border-success/30 rounded-lg p-2 flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-success shrink-0" />
+            <div className="text-xs text-success">
+              <span className="font-semibold">Принято полностью</span>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
