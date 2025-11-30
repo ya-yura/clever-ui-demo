@@ -31,22 +31,29 @@ const DOC_TYPE_ALIASES: Record<string, DocumentType> = {
 
   razmeshhenievyachejki: 'placement',
   razmeshhenie: 'placement',
+  razmeschenie: 'placement',
   'размещениевячейки': 'placement',
   'размещение': 'placement',
   placement: 'placement',
 
+  komplektaciya: 'picking',
   podborzakaza: 'picking',
   picking: 'picking',
+  'комплектация': 'picking',
   'подборзаказа': 'picking',
   'подбор': 'picking',
 
   otgruzka: 'shipment',
+  otgruzkasoklada: 'shipment',
   shipping: 'shipment',
   'отгрузка': 'shipment',
+  'отгрузкасосклада': 'shipment',
 
   vozvrat: 'return',
+  vozvratenasklad: 'return',
   return: 'return',
   'возврат': 'return',
+  'возвратнасклад': 'return',
 
   inventarizaciya: 'inventory',
   inventory: 'inventory',
@@ -85,12 +92,15 @@ export class DocumentService {
    */
   private async loadRemoteDocuments(): Promise<UniversalDocument[]> {
     try {
+      console.log('📄 [DOCS] Starting loadRemoteDocuments...');
       let docs = await odataCache.getAllDocuments();
+      console.log(`📄 [DOCS] odataCache.getAllDocuments() returned ${docs?.length || 0} documents`);
 
       if (!docs || docs.length === 0) {
         console.warn('⚠️ [DOCS] /Docs returned empty list, fallback to per-type fetching');
         try {
           const docTypes = await odataCache.getDocTypes();
+          console.log(`📄 [DOCS] Found ${docTypes.length} document types`);
           const aggregated: ODataDocument[] = [];
 
           for (const type of docTypes) {
@@ -100,10 +110,12 @@ export class DocumentService {
               names,
               forceRefresh: true,
             });
+            console.log(`📄 [DOCS] Type ${type.uni}: ${typeDocs.length} documents`);
             aggregated.push(...typeDocs);
           }
 
           docs = aggregated;
+          console.log(`📄 [DOCS] Total aggregated: ${docs.length} documents`);
         } catch (err) {
           console.error('❌ [DOCS] Failed to load documents per type:', err);
           docs = [];
@@ -111,13 +123,22 @@ export class DocumentService {
       }
 
       if (!docs || docs.length === 0) {
+        console.warn('⚠️ [DOCS] No documents found, returning empty array');
         return [];
       }
 
+      console.log(`📄 [DOCS] Mapping ${docs.length} OData documents...`);
       const mapped = docs
-        .map((doc) => this.mapODataDocument(doc))
+        .map((doc) => {
+          const result = this.mapODataDocument(doc);
+          if (!result) {
+            console.warn('⚠️ [DOCS] Failed to map document:', doc);
+          }
+          return result;
+        })
         .filter((doc): doc is UniversalDocument => Boolean(doc));
 
+      console.log(`📄 [DOCS] Successfully mapped ${mapped.length} documents`);
       return mapped;
     } catch (error) {
       console.error('Error fetching documents from OData API:', error);
@@ -226,6 +247,7 @@ export class DocumentService {
 
   private resolveDocumentType(doc: ODataDocument): { type: DocumentType; docTypeUni?: string } | null {
     const candidates = [
+      doc.docTypeUni,
       doc.documentTypeName,
       (doc as any).documentTypeUni,
       (doc as any).documentType?.uni,
@@ -245,6 +267,11 @@ export class DocumentService {
       }
     }
 
+    console.warn('⚠️ [DOCS] Could not resolve document type for:', {
+      docTypeUni: doc.docTypeUni,
+      documentTypeName: doc.documentTypeName,
+      candidates
+    });
     return null;
   }
 
