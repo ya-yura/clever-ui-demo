@@ -1,19 +1,17 @@
-// === 📁 src/components/picking/PickingCard.tsx ===
-// Product card for picking module
+// === 📁 src/components/shipment/ShipmentCard.tsx ===
+// Shipment line card component
 
 import React, { useState } from 'react';
 import { Minus, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
-import { PickingLine } from '@/types/picking';
+import { ShipmentLine } from '@/types/shipment';
 
 interface Props {
-  line: PickingLine;
-  isActive?: boolean;
+  line: ShipmentLine;
   isHighlighted?: boolean;
-  routeOrder?: number;
   onSetQuantity?: (lineId: string, quantity: number) => void;
 }
 
-const PickingCard: React.FC<Props> = ({ line, isActive, isHighlighted, routeOrder, onSetQuantity }) => {
+const ShipmentCard: React.FC<Props> = ({ line, isHighlighted, onSetQuantity }) => {
   const [isEditingQty, setIsEditingQty] = useState(false);
   const [manualQty, setManualQty] = useState(line.quantityFact.toString());
 
@@ -57,16 +55,9 @@ const PickingCard: React.FC<Props> = ({ line, isActive, isHighlighted, routeOrde
   return (
     <div
       className={`relative border-2 rounded-lg p-4 transition-all ${statusColor} ${
-        isActive || isHighlighted ? 'ring-2 ring-green-500 shadow-lg scale-[1.02]' : ''
+        isHighlighted ? 'ring-2 ring-orange-500 shadow-lg scale-[1.02]' : ''
       }`}
     >
-      {/* Route Badge */}
-      {routeOrder !== undefined && (
-        <div className="absolute top-2 right-2 bg-green-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-          {routeOrder}
-        </div>
-      )}
-
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
@@ -79,9 +70,9 @@ const PickingCard: React.FC<Props> = ({ line, isActive, isHighlighted, routeOrde
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Артикул: {line.productSku}
           </p>
-          {line.cellName && (
-            <p className="text-sm font-semibold text-green-600 dark:text-green-400">
-              📍 {line.cellName}
+          {line.packageId && (
+            <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+              📦 Упаковка: {line.packageId}
             </p>
           )}
         </div>
@@ -96,9 +87,9 @@ const PickingCard: React.FC<Props> = ({ line, isActive, isHighlighted, routeOrde
           </div>
         </div>
         <div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">Подобрано</div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">Проверено</div>
           <div className={`text-lg font-bold ${
-            isExact ? 'text-green-600' : isOverPlan ? 'text-red-600' : 'text-green-600'
+            isExact ? 'text-green-600' : isOverPlan ? 'text-red-600' : 'text-orange-600'
           }`}>
             {line.quantityFact}
           </div>
@@ -152,13 +143,13 @@ const PickingCard: React.FC<Props> = ({ line, isActive, isHighlighted, routeOrde
                 </button>
                 <button
                   onClick={() => setIsEditingQty(true)}
-                  className="flex-1 px-4 py-2 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg font-semibold text-gray-900 dark:text-white hover:border-green-500 transition-colors"
+                  className="flex-1 px-4 py-2 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg font-semibold text-gray-900 dark:text-white hover:border-orange-500 transition-colors"
                 >
                   {line.quantityFact}
                 </button>
                 <button
                   onClick={() => handleIncrement(1)}
-                  className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  className="p-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                 </button>
@@ -175,13 +166,13 @@ const PickingCard: React.FC<Props> = ({ line, isActive, isHighlighted, routeOrde
               </button>
               <button
                 onClick={() => handleIncrement(5)}
-                className="px-4 py-1.5 bg-green-500 text-white text-sm rounded-lg font-semibold hover:bg-green-600 transition-colors"
+                className="px-4 py-1.5 bg-orange-500 text-white text-sm rounded-lg font-semibold hover:bg-orange-600 transition-colors"
               >
                 +5
               </button>
               <button
                 onClick={() => handleIncrement(10)}
-                className="px-4 py-1.5 bg-green-500 text-white text-sm rounded-lg font-semibold hover:bg-green-600 transition-colors"
+                className="px-4 py-1.5 bg-orange-500 text-white text-sm rounded-lg font-semibold hover:bg-orange-600 transition-colors"
               >
                 +10
               </button>
@@ -194,7 +185,7 @@ const PickingCard: React.FC<Props> = ({ line, isActive, isHighlighted, routeOrde
       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
         <div
           className={`h-2 rounded-full transition-all ${
-            isExact ? 'bg-green-600' : isOverPlan ? 'bg-red-600' : 'bg-green-600'
+            isExact ? 'bg-green-600' : isOverPlan ? 'bg-red-600' : 'bg-orange-600'
           }`}
           style={{ width: `${progress}%` }}
         />
@@ -203,13 +194,13 @@ const PickingCard: React.FC<Props> = ({ line, isActive, isHighlighted, routeOrde
       {/* Status Messages */}
       {isOverPlan && (
         <div className="mt-2 p-2 bg-red-100 dark:bg-red-900 rounded text-sm text-red-800 dark:text-red-200 font-semibold text-center">
-          ⚠️ Превышение плана на {line.quantityFact - line.quantityPlan}
+          ⚠️ Лишний товар: {line.quantityFact - line.quantityPlan}
         </div>
       )}
-      {isActive && (
-        <div className="mt-3 pt-3 border-t border-green-200 dark:border-green-700">
-          <p className="text-sm text-green-700 dark:text-green-300 font-semibold text-center animate-pulse">
-            📦 Отсканируйте этот товар
+      {isHighlighted && (
+        <div className="mt-3 pt-3 border-t border-orange-200 dark:border-orange-700">
+          <p className="text-sm text-orange-700 dark:text-orange-300 font-semibold text-center animate-pulse">
+            ✓ Проверено
           </p>
         </div>
       )}
@@ -217,4 +208,4 @@ const PickingCard: React.FC<Props> = ({ line, isActive, isHighlighted, routeOrde
   );
 };
 
-export default PickingCard;
+export default ShipmentCard;
