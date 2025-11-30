@@ -67,12 +67,12 @@ class DemoDataService {
       // Загрузить справочники
       this.loadReferences();
 
-      // Загрузить документы из модулей
+      // Загрузить документы из модулей (используем uni из server-doctypes.json)
       this.loadModuleDocuments('PrihodNaSklad', receivingData as ModuleData);
       this.loadModuleDocuments('Komplektaciya', pickingData as ModuleData);
-      this.loadModuleDocuments('Razmeschenie', placementData as ModuleData);
-      this.loadModuleDocuments('OtgruzkaSoSklada', shipmentData as ModuleData);
-      this.loadModuleDocuments('VozvratNaSklad', returnData as ModuleData);
+      this.loadModuleDocuments('RazmeshhenieVYachejki', placementData as ModuleData);
+      this.loadModuleDocuments('Otgruzka', shipmentData as ModuleData);
+      this.loadModuleDocuments('Vozvrat', returnData as ModuleData);
       this.loadModuleDocuments('Inventarizaciya', inventoryData as ModuleData);
 
       // Подсчитать общее количество документов
