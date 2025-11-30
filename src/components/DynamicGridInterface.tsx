@@ -178,7 +178,7 @@ export const DynamicGridInterface: React.FC<DynamicGridInterfaceProps> = ({
           // Dark style (secondary tiles) - gray background with accent title
           bgClass = 'bg-surface-secondary';
           textClass = 'text-content-primary';
-          borderClass = 'border-border-default';
+          borderClass = 'border-border-light';
         } else {
           // Fallback for light tiles without module mapping
           styleOverrides.backgroundColor = 'var(--color-brand-primary)';
