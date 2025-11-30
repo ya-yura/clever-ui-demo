@@ -208,18 +208,6 @@ export class Analytics {
       this.track(EventType.ERROR_NETWORK, { ...errorData, ...context });
   }
 
-  public trackCustomInterfaceLoaded(properties?: Record<string, any>): void {
-    this.track('custom_interface.loaded', properties);
-  }
-
-  public trackCustomButtonClick(properties?: Record<string, any>): void {
-    this.track('custom_interface.button_click', properties);
-  }
-
-  public trackCustomInterfaceQRScan(success?: boolean): void {
-    this.track('custom_interface.qr_scan', { success });
-  }
-
   public trackCustomInterfaceLoaded(schemaInfo: {
     id: string;
     version: string;
@@ -250,9 +238,9 @@ export class Analytics {
     });
   }
 
-  public trackCustomInterfaceQRScan(success: boolean, error?: string): void {
+  public trackCustomInterfaceQRScan(success?: boolean, error?: string): void {
     this.track('custom_interface.qr_scan', {
-      success,
+      success: success ?? false,
       error,
     });
   }
