@@ -200,8 +200,9 @@ class DemoDataService {
 
   /**
    * Получить документ по ID с расширенными данными
+   * Возвращает в OData формате для совместимости с API
    */
-  getDocumentById(docId: string, expand?: string[]): { value: ODataDocument[] } | ODataDocument | null {
+  getDocumentById(docId: string, expand?: string[]): { success: boolean; data: ODataDocument } | null {
     // Найти документ во всех типах
     let foundDoc: ODataDocument | null = null;
     
@@ -215,12 +216,16 @@ class DemoDataService {
     }
     
     if (!foundDoc) {
+      console.warn(`⚠️ [DEMO] Document not found: ${docId}`);
       return null;
     }
+    
+    console.log(`📄 [DEMO] Found document ${docId}, expanding fields:`, expand);
     
     // Если запрошен expand, добавить реальные строки документа
     if (expand && expand.length > 0) {
       const lines = this.documentLines[docId] || [];
+      console.log(`📋 [DEMO] Found ${lines.length} lines for document ${docId}`);
       
       // Обогатить строки данными о товарах
       const enrichedLines = lines.map((line: any, index: number) => {
@@ -236,6 +241,9 @@ class DemoDataService {
           productBarcode: product?.barcode || line.productBarcode || '',
           quantityPlan: line.quantityPlan || line.quantity || 0,
           quantityFact: line.quantityFact || line.quantity || 0,
+          declaredQuantity: line.quantityPlan || line.quantity || 0,
+          currentQuantity: line.quantityFact || line.quantity || 0,
+          currentQuantityWithBinding: line.quantityFact || line.quantity || 0,
           firstCellId: line.cellId || cell?.id || '',
           firstStorageBarcode: cell?.barcode || '',
           product: product ? {
@@ -250,29 +258,21 @@ class DemoDataService {
 
       // Добавить expand поля
       if (expand.some(e => e.includes('declaredItems'))) {
-        (foundDoc as any).declaredItems = enrichedLines.map(item => ({
-          ...item,
-          declaredQuantity: item.quantityPlan,
-        }));
+        (foundDoc as any).declaredItems = enrichedLines;
       }
       if (expand.some(e => e.includes('currentItems'))) {
-        (foundDoc as any).currentItems = enrichedLines.map(item => ({
-          ...item,
-          currentQuantity: item.quantityFact,
-          currentQuantityWithBinding: item.quantityFact,
-        }));
+        (foundDoc as any).currentItems = enrichedLines;
       }
       if (expand.some(e => e.includes('combinedItems'))) {
-        (foundDoc as any).combinedItems = enrichedLines.map(item => ({
-          ...item,
-          declaredQuantity: item.quantityPlan,
-          currentQuantity: item.quantityFact,
-          currentQuantityWithBinding: item.quantityFact,
-        }));
+        (foundDoc as any).combinedItems = enrichedLines;
       }
     }
     
-    return foundDoc;
+    // Возвращаем в формате ApiResponse для совместимости
+    return {
+      success: true,
+      data: foundDoc
+    };
   }
 
   /**

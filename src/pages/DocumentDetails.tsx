@@ -106,20 +106,14 @@ const DocumentDetails: React.FC = () => {
       if (isDemo) {
         console.log('📦 [DEMO] Loading document from demo service');
         const expand = ['declaredItems($expand=product)', 'currentItems($expand=product)', 'combinedItems($expand=product)'];
-        const demoDoc = demoDataService.getDocumentById(docId, expand);
+        const demoResponse = demoDataService.getDocumentById(docId, expand);
         
-        if (!demoDoc) {
+        if (!demoResponse || !demoResponse.success) {
           throw new Error('Документ не найден в демо-данных');
         }
         
-        // Handle both formats (wrapped in value array or direct object)
-        const doc = extractDocument(demoDoc);
-        if (!doc) {
-          throw new Error('Документ не найден в демо-данных');
-        }
-        
-        console.log('✅ [DEMO] Document loaded from demo service', doc);
-        setDocument(doc);
+        console.log('✅ [DEMO] Document loaded from demo service', demoResponse.data);
+        setDocument(demoResponse.data);
       } else {
         // Load from API
         try {
