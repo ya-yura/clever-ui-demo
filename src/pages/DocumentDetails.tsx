@@ -6,6 +6,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/services/api';
 import { ODataDocumentItem } from '@/types/odata';
 import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { demoDataService } from '@/services/demoDataService';
 
 // Short titles for document types
 const SHORT_TITLES: Record<string, string> = {
@@ -33,6 +35,7 @@ const DocumentDetails: React.FC = () => {
   const { docTypeUni, docId } = useParams<{ docTypeUni: string; docId: string }>();
   const navigate = useNavigate();
   const { setListInfo } = useDocumentHeader();
+  const { isDemo } = useAuth();
 
   const [document, setDocument] = useState<DocumentData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,7 +45,7 @@ const DocumentDetails: React.FC = () => {
     if (docId) {
       loadDocument();
     }
-  }, [docId]);
+  }, [docId, isDemo]);
 
   // Update header
   useEffect(() => {
@@ -93,24 +96,49 @@ const DocumentDetails: React.FC = () => {
   const loadDocument = async () => {
     if (!docId) return;
 
-    console.log(`📄 [DOC] Loading document: ${docId}`);
+    console.log(`📄 [DOC] Loading document: ${docId} (demo mode: ${isDemo})`);
 
     try {
       setLoading(true);
       setError(null);
-      try {
-        const doc = await fetchDocument(true);
-        console.log(`📄 [DOC] Loaded document with products`, doc);
+      
+      // Use demo data if in demo mode
+      if (isDemo) {
+        console.log('📦 [DEMO] Loading document from demo service');
+        const expand = ['declaredItems($expand=product)', 'currentItems($expand=product)', 'combinedItems($expand=product)'];
+        const demoDoc = demoDataService.getDocumentById(docId, expand);
+        
+        if (!demoDoc) {
+          throw new Error('Документ не найден в демо-данных');
+        }
+        
+        // Handle both formats (wrapped in value array or direct object)
+        const doc = extractDocument(demoDoc);
+        if (!doc) {
+          throw new Error('Документ не найден в демо-данных');
+        }
+        
+        console.log('✅ [DEMO] Document loaded from demo service', doc);
         setDocument(doc);
-      } catch (primaryError) {
-        console.warn('⚠️ [DOC] Failed to load with product expand, retrying without product details', primaryError);
-        const doc = await fetchDocument(false);
-        console.log(`📄 [DOC] Loaded document without product expand`, doc);
-        setDocument(doc);
+      } else {
+        // Load from API
+        try {
+          const doc = await fetchDocument(true);
+          console.log(`📄 [DOC] Loaded document with products`, doc);
+          setDocument(doc);
+        } catch (primaryError) {
+          console.warn('⚠️ [DOC] Failed to load with product expand, retrying without product details', primaryError);
+          const doc = await fetchDocument(false);
+          console.log(`📄 [DOC] Loaded document without product expand`, doc);
+          setDocument(doc);
+        }
       }
     } catch (error: any) {
       console.error('❌ [DOC] Error loading document:', error);
-      setError('Ошибка загрузки документа. Проверьте подключение к серверу.');
+      setError(isDemo 
+        ? 'Ошибка загрузки документа из демо-данных.' 
+        : 'Ошибка загрузки документа. Проверьте подключение к серверу.'
+      );
     } finally {
       setLoading(false);
     }
