@@ -174,7 +174,20 @@ const Home: React.FC = () => {
         types.map(async (type, index) => {
           let docsCount = 0;
           
-          if (!isMockData) {
+          // Load docs count from demo service or API
+          if (isMockData) {
+            // Demo mode - use demoDataService
+            try {
+              const demoData = await import('@/services/demoDataService');
+              const docs = demoData.demoDataService.getDocuments(type.uni);
+              docsCount = docs.value.length;
+              console.log(`✅ [DEMO] Type "${type.uni}": ${docsCount} documents`);
+            } catch (err: any) {
+              console.warn(`⚠️ [DEMO] Failed to load docs for "${type.uni}":`, err?.message || err);
+              docsCount = 0;
+            }
+          } else {
+            // API mode - use odataCache
             try {
               const docs = await odataCache.getDocsByType(type.uni, {
                 names: [type.uni, (type as any).name, (type as any).displayName],
