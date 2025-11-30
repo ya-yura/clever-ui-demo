@@ -82,7 +82,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   }
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2.5">
       {/* Document Cards */}
       {visibleDocuments.map(doc => (
         <DocumentCard key={doc.id} document={doc} />

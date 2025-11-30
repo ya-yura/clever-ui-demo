@@ -18,7 +18,7 @@ export const DocumentListSkeleton: React.FC<DocumentListSkeletonProps> = ({
   count = 6,
 }) => {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2.5">
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
@@ -26,17 +26,19 @@ export const DocumentListSkeleton: React.FC<DocumentListSkeletonProps> = ({
         >
           {/* Top Row: Title and Status */}
           <div className="flex items-start justify-between gap-3">
-            <Skeleton variant="text" width="60%" height={16} />
+            <div className="flex-1 space-y-1">
+              <Skeleton variant="text" width="70%" height={16} />
+              <Skeleton variant="text" width="40%" height={12} />
+            </div>
             <div className="flex items-center gap-2">
               <Skeleton variant="text" width={60} height={12} />
               <Skeleton variant="rectangular" width={70} height={18} className="rounded" />
             </div>
           </div>
 
-          {/* Bottom Row: User/Partner + Stats */}
-          <div className="flex items-center justify-between gap-2">
-            <Skeleton variant="text" width="40%" height={14} />
-            <Skeleton variant="text" width={40} height={12} />
+          {/* Bottom Row: User info */}
+          <div className="flex items-center gap-2">
+            <Skeleton variant="text" width="30%" height={14} />
           </div>
         </div>
       ))}
