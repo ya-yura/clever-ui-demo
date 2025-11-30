@@ -9,9 +9,11 @@ import { HamburgerMenu } from '@/modules/menu';
 import { InterfaceInstaller } from './InterfaceInstaller';
 import { useSync } from '@/hooks/useSync';
 import { useReferences } from '@/hooks/useReferences';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Layout: React.FC = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [showInterfaceInstaller, setShowInterfaceInstaller] = useState(false);
   
   // Sync hook for documents
@@ -51,9 +53,11 @@ const Layout: React.FC = () => {
 
   // Logout handler
   const handleLogout = () => {
-    console.log('Logout triggered');
-    // Clear session data here
-    navigate('/');
+    if (window.confirm('Вы уверены, что хотите выйти?')) {
+      console.log('🚪 Выход из системы');
+      logout();
+      navigate('/login');
+    }
   };
 
   return (
