@@ -94,6 +94,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const loadAuthState = () => {
     try {
+      // Check for demo mode flag
+      const demoModeFlag = localStorage.getItem('demo_mode');
+      if (demoModeFlag === 'true') {
+        setIsDemo(true);
+        console.log('✅ Demo mode detected in localStorage');
+      }
+
       const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
       const storedToken = authService.getToken();
 
