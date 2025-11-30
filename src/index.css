@@ -107,6 +107,32 @@
   --color-module-transfer-text: #154038;
   --color-module-marking-bg: #7ed321;
   --color-module-marking-text: #154038;
+  
+  /* Status colors for document item states (dark theme) */
+  --status-pending-bg: #1f3d34;
+  --status-pending-text: #86efac;
+  --status-pending-border: #34d399;
+  --status-pending-progress: #34d399;
+  
+  --status-progress-bg: #253456;
+  --status-progress-text: #93c5fd;
+  --status-progress-border: #3b82f6;
+  --status-progress-progress: #3b82f6;
+  
+  --status-done-bg: #3f3f3f;
+  --status-done-text: #8a8a8a;
+  --status-done-border: #4f4f4f;
+  --status-done-progress: #4f4f4f;
+  
+  --status-over-bg: #4a3a1f;
+  --status-over-text: #fde68a;
+  --status-over-border: #f59e0b;
+  --status-over-progress: #f59e0b;
+  
+  /* Diff/Delta colors (dark theme) */
+  --diff-neutral: #cfcfcf;
+  --diff-positive: #fbbf24;
+  --diff-negative: #f87171;
 }
 
 /* Light theme override */
@@ -129,9 +155,31 @@
   --color-border-strong: #d0d5dd;
   --color-border-focus: #d89668;
   
-  /* In light mode, we might want to adjust some module colors if they are too light/dark, 
-     but for now we keep branding consistent. 
-     If needed, we can override them here using the 'light' variant from design system. */
+  /* Status colors for document item states (light theme) */
+  --status-pending-bg: #d1fae5;
+  --status-pending-text: #065f46;
+  --status-pending-border: #34d399;
+  --status-pending-progress: #10b981;
+  
+  --status-progress-bg: #dbeafe;
+  --status-progress-text: #1e40af;
+  --status-progress-border: #3b82f6;
+  --status-progress-progress: #2563eb;
+  
+  --status-done-bg: #f3f4f6;
+  --status-done-text: #6b7280;
+  --status-done-border: #d1d5db;
+  --status-done-progress: #9ca3af;
+  
+  --status-over-bg: #fef3c7;
+  --status-over-text: #92400e;
+  --status-over-border: #f59e0b;
+  --status-over-progress: #d97706;
+  
+  /* Diff/Delta colors (light theme) */
+  --diff-neutral: #6b7280;
+  --diff-positive: #d97706;
+  --diff-negative: #dc2626;
 }
 
 html {
