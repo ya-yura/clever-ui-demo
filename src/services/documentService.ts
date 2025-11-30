@@ -247,7 +247,7 @@ export class DocumentService {
 
   private resolveDocumentType(doc: ODataDocument): { type: DocumentType; docTypeUni?: string } | null {
     const candidates = [
-      doc.docTypeUni,
+      (doc as any).docTypeUni,
       doc.documentTypeName,
       (doc as any).documentTypeUni,
       (doc as any).documentType?.uni,
@@ -268,7 +268,7 @@ export class DocumentService {
     }
 
     console.warn('⚠️ [DOCS] Could not resolve document type for:', {
-      docTypeUni: doc.docTypeUni,
+      docTypeUni: (doc as any).docTypeUni,
       documentTypeName: doc.documentTypeName,
       candidates
     });

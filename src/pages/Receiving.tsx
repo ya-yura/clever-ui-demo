@@ -169,7 +169,7 @@ const Receiving: React.FC = () => {
       // Show detailed error
       if (window.confirm(`❌ Товар не найден\n\nШтрихкод: ${code}\n\nЭтого товара нет в документе приёмки.\nДобавить как лишний товар?`)) {
         // TODO: Implement adding extra products
-        feedback.info('Функция добавления лишних товаров в разработке');
+        feedback.notification('Функция добавления лишних товаров в разработке');
       }
       
       analytics.track(EventType.SCAN_ERROR, {

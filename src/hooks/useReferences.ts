@@ -28,28 +28,27 @@ export const useReferences = () => {
         // Загрузить данные из демо-сервиса
         console.log('📦 [DEMO] Обновление справочников из демо-данных');
         
+        const references = demoDataService.getReferences();
+        
         // Update products
-        const products = demoDataService.getProducts();
-        if (products && products.length > 0) {
+        if (references.products && references.products.length > 0) {
           await db.products.clear();
-          await db.products.bulkAdd(products);
-          console.log(`✅ [DEMO] Загружено товаров: ${products.length}`);
+          await db.products.bulkAdd(references.products);
+          console.log(`✅ [DEMO] Загружено товаров: ${references.products.length}`);
         }
 
         // Update cells
-        const cells = demoDataService.getCells();
-        if (cells && cells.length > 0) {
+        if (references.cells && references.cells.length > 0) {
           await db.cells.clear();
-          await db.cells.bulkAdd(cells);
-          console.log(`✅ [DEMO] Загружено ячеек: ${cells.length}`);
+          await db.cells.bulkAdd(references.cells);
+          console.log(`✅ [DEMO] Загружено ячеек: ${references.cells.length}`);
         }
 
         // Update employees
-        const employees = demoDataService.getEmployees();
-        if (employees && employees.length > 0) {
+        if (references.employees && references.employees.length > 0) {
           await db.employees.clear();
-          await db.employees.bulkAdd(employees);
-          console.log(`✅ [DEMO] Загружено сотрудников: ${employees.length}`);
+          await db.employees.bulkAdd(references.employees as any);
+          console.log(`✅ [DEMO] Загружено сотрудников: ${references.employees.length}`);
         }
 
         setLastUpdateTime(Date.now());
