@@ -215,9 +215,9 @@ const DocumentDetails: React.FC = () => {
   > = {
     pending: {
       label: 'Не начато',
-      badge: 'bg-[#363636] text-[#c5c5c5]',
-      border: 'border-[#4f4f4f]',
-      progress: 'bg-[#4f4f4f]',
+      badge: 'bg-emerald-500/20 text-emerald-200 ring-1 ring-inset ring-emerald-400/40',
+      border: 'border-emerald-500/40',
+      progress: 'bg-emerald-400/90',
     },
     progress: {
       label: 'В работе',
@@ -227,9 +227,9 @@ const DocumentDetails: React.FC = () => {
     },
     done: {
       label: 'Готово',
-      badge: 'bg-emerald-500/20 text-emerald-200 ring-1 ring-inset ring-emerald-400/40',
-      border: 'border-emerald-500/40',
-      progress: 'bg-emerald-400/90',
+      badge: 'bg-[#363636] text-[#8a8a8a]',
+      border: 'border-[#4f4f4f]',
+      progress: 'bg-[#4f4f4f]',
     },
     over: {
       label: 'Переполнено',
@@ -293,8 +293,8 @@ const DocumentDetails: React.FC = () => {
     className: string;
   }> = [
     { key: 'progress', label: 'В работе', className: 'bg-[#253456] text-blue-200' },
-    { key: 'pending', label: 'Не начато', className: 'bg-[#3f3f3f] text-[#f3f3f3]' },
-    { key: 'done', label: 'Готово', className: 'bg-[#1f3d34] text-emerald-200' },
+    { key: 'pending', label: 'Не начато', className: 'bg-[#1f3d34] text-emerald-200' },
+    { key: 'done', label: 'Готово', className: 'bg-[#3f3f3f] text-[#8a8a8a]' },
     { key: 'over', label: 'Переп.', className: 'bg-[#4a3a1f] text-amber-100' },
   ];
 

@@ -31,22 +31,23 @@ export function getDiscrepancyType(line: ReceivingLine): 'shortage' | 'surplus' 
 /**
  * Calculate line priority for sorting
  * Lower number = higher priority
+ * Order: In Progress (1) -> Completed (2) -> Not Started (3) -> Over-plan (4)
  */
 export function getLinePriority(line: ReceivingLine): number {
   const fact = line.quantityFact;
   const plan = line.quantityPlan;
 
-  // In progress: started but not finished
+  // In progress: started but not finished - HIGHEST PRIORITY
   if (fact > 0 && fact < plan) return 1;
 
+  // Completed: received exactly as planned
+  if (fact === plan && fact > 0) return 2;
+
   // Not started: nothing received yet
-  if (fact === 0) return 2;
+  if (fact === 0) return 3;
 
   // Over-plan: received more than planned
-  if (fact > plan) return 3;
-
-  // Completed: received exactly as planned
-  if (fact === plan && fact > 0) return 4;
+  if (fact > plan) return 4;
 
   return 5; // Fallback
 }
