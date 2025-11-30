@@ -9,7 +9,7 @@ import { useAnalytics } from '@/lib/analytics';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>;
-  loginDemo: () => void;
+  loginDemo: () => Promise<void>;
   logout: () => void;
   updateUser: (user: User) => void;
   isLoading: boolean;
@@ -64,6 +64,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
     setIsDemo(false);
     localStorage.removeItem('demo_mode');
+    localStorage.removeItem('demo_data_loaded');
     console.log('✅ Logout successful');
   }, [saveAuthState]);
 
@@ -92,13 +93,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return !result.requiresAuth;
   };
 
-  const loadAuthState = () => {
+  const loadAuthState = async () => {
     try {
       // Check for demo mode flag
       const demoModeFlag = localStorage.getItem('demo_mode');
       if (demoModeFlag === 'true') {
         setIsDemo(true);
         console.log('✅ Demo mode detected in localStorage');
+        
+        // Load demo data if not already loaded
+        const { loadDemoData } = await import('@/utils/loadInitialData');
+        await loadDemoData();
       }
 
       const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
@@ -230,7 +235,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Demo mode login
-  const loginDemo = () => {
+  const loginDemo = async () => {
     const demoUser: User = {
       id: 'demo-user',
       name: 'Демо Пользователь',
@@ -249,6 +254,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsDemo(true);
     localStorage.setItem('demo_mode', 'true');
     console.log('✅ Demo mode activated');
+
+    // Load demo data into IndexedDB
+    const { loadDemoData } = await import('@/utils/loadInitialData');
+    await loadDemoData();
   };
 
   return (
