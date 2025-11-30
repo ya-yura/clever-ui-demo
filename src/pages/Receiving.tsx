@@ -425,6 +425,26 @@ const Receiving: React.FC = () => {
     ? (document.completedLines / document.totalLines) * 100 
     : 0;
 
+  // Sort lines by status priority:
+  // 1. partial (in progress) - highest priority
+  // 2. pending (not started) - needs to be done
+  // 3. over-plan (errors) - needs attention
+  // 4. completed (exact) - lowest priority, done
+  const sortedLines = [...lines].sort((a, b) => {
+    const getStatusPriority = (line: ReceivingLine) => {
+      const isOverPlan = line.quantityFact > line.quantityPlan;
+      const isExact = line.quantityFact === line.quantityPlan && line.quantityFact > 0;
+      
+      if (line.status === 'partial') return 1; // In progress - first
+      if (line.status === 'pending') return 2; // Not started - second
+      if (isOverPlan) return 3; // Over-plan - third
+      if (isExact && line.status === 'completed') return 4; // Completed exact - last
+      return 5; // Other statuses
+    };
+
+    return getStatusPriority(a) - getStatusPriority(b);
+  });
+
   return (
     <div className="space-y-3">
       {/* Scanner Input */}
@@ -440,7 +460,7 @@ const Receiving: React.FC = () => {
 
       {/* Lines */}
       <div className="space-y-2">
-        {lines.map(line => (
+        {sortedLines.map(line => (
           <ReceivingCard
             key={line.id}
             line={line}
