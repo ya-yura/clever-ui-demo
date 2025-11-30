@@ -90,12 +90,12 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleDemoLogin = () => {
+  const handleDemoLogin = async () => {
     setError('');
     setIsDemoLogging(true);
 
     try {
-      loginDemo();
+      await loginDemo();
       setTimeout(() => {
         navigate('/');
       }, 300);
