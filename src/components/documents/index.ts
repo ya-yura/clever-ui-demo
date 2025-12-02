@@ -4,4 +4,6 @@
 export { DocumentFilters } from './DocumentFilters';
 export { DocumentCard } from './DocumentCard';
 export { DocumentList } from './DocumentList';
+export { DocumentListSkeleton } from './DocumentListSkeleton';
+export { DocumentsByTypeSkeleton } from './DocumentsByTypeSkeleton';
 

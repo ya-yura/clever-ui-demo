@@ -7,3 +7,12 @@ export { QRScanner } from './QRScanner';
 export { DynamicGridInterface } from './DynamicGridInterface';
 export { HomeSkeleton } from './HomeSkeleton';
 
+// Document components
+export {
+  DocumentFilters,
+  DocumentCard,
+  DocumentList,
+  DocumentListSkeleton,
+  DocumentsByTypeSkeleton,
+} from './documents';
+
