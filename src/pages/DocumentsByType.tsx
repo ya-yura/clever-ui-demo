@@ -8,6 +8,9 @@ import { ODataDocument, ODataDocumentType } from '@/types/odata';
 import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
 import { DocumentsByTypeSkeleton } from '@/components/documents/DocumentsByTypeSkeleton';
 import { Badge } from '@/design/components';
+import { DocumentList } from '@/components/documents/DocumentList';
+import { UniversalDocument } from '@/types/document';
+import { documentService } from '@/services/documentService';
 
 // Short, human-friendly titles per document type
 const SHORT_TITLES: Record<string, string> = {
@@ -43,7 +46,7 @@ const DocumentsByType: React.FC = () => {
   const navigate = useNavigate();
   const { setListInfo } = useDocumentHeader();
   
-  const [documents, setDocuments] = useState<ODataDocument[]>([]);
+  const [documents, setDocuments] = useState<UniversalDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [docTypeName, setDocTypeName] = useState<string>('');
@@ -96,9 +99,9 @@ const DocumentsByType: React.FC = () => {
 
     // 1. Filter by Status
     if (statusFilter !== 'all') {
-      if (statusFilter === 'finished') filtered = filtered.filter((d: any) => d.finished === true);
-      else if (statusFilter === 'in_process') filtered = filtered.filter((d: any) => d.inProcess === true);
-      else filtered = filtered.filter((d: any) => !d.finished && !d.inProcess); // 'new'
+      if (statusFilter === 'finished') filtered = filtered.filter(d => d.status === 'completed');
+      else if (statusFilter === 'in_process') filtered = filtered.filter(d => d.status === 'in_progress');
+      else filtered = filtered.filter(d => d.status === 'pending' || d.status === 'draft'); // 'new'
     }
 
     // 2. Filter by Search Query
@@ -106,11 +109,11 @@ const DocumentsByType: React.FC = () => {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(d => 
         (d.id && d.id.toLowerCase().includes(q)) ||
-        (d.name && d.name.toLowerCase().includes(q)) ||
-        (d.barcode && d.barcode.toLowerCase().includes(q)) ||
-        (d.description && d.description.toLowerCase().includes(q)) ||
-        (d.warehouseId && d.warehouseId.toLowerCase().includes(q)) ||
-        (d.userName && d.userName.toLowerCase().includes(q))
+        (d.number && d.number.toLowerCase().includes(q)) ||
+        (d.partnerName && d.partnerName.toLowerCase().includes(q)) ||
+        (d.warehouseName && d.warehouseName.toLowerCase().includes(q)) ||
+        (d.userName && d.userName.toLowerCase().includes(q)) ||
+        (d.notes && d.notes.toLowerCase().includes(q))
       );
     }
 
@@ -121,16 +124,17 @@ const DocumentsByType: React.FC = () => {
 
       switch (sortField) {
         case 'date':
-          valA = new Date(a.createDate || 0).getTime();
-          valB = new Date(b.createDate || 0).getTime();
+          valA = a.createdAt || 0;
+          valB = b.createdAt || 0;
           break;
         case 'number':
-          valA = a.id || '';
-          valB = b.id || '';
+          valA = a.number || a.id || '';
+          valB = b.number || b.id || '';
           break;
         case 'status':
-          valA = a.finished ? 2 : a.inProcess ? 1 : 0;
-          valB = b.finished ? 2 : b.inProcess ? 1 : 0;
+          const statusOrder = { 'completed': 2, 'in_progress': 1, 'pending': 0, 'draft': 0 };
+          valA = statusOrder[a.status as keyof typeof statusOrder] || 0;
+          valB = statusOrder[b.status as keyof typeof statusOrder] || 0;
           break;
       }
 
@@ -188,9 +192,16 @@ const DocumentsByType: React.FC = () => {
         const t = types.find(dt => dt.uni === docTypeUni);
         if (t) names = [t.uni as any, (t as any).name, (t as any).displayName].filter(Boolean) as string[];
       } catch {}
-      const docs = await odataCache.getDocsByType(docTypeUni, { names });
-      console.log(`📄 [DOCS] Loaded ${docs.length} documents`);
-      setDocuments(docs);
+      const odataDocs = await odataCache.getDocsByType(docTypeUni, { names });
+      console.log(`📄 [DOCS] Loaded ${odataDocs.length} OData documents`);
+      
+      // Convert ODataDocument to UniversalDocument
+      const convertedDocs = odataDocs
+        .map(doc => documentService['mapODataDocument'](doc))
+        .filter((doc): doc is UniversalDocument => doc !== null);
+      
+      console.log(`📄 [DOCS] Converted to ${convertedDocs.length} UniversalDocuments`);
+      setDocuments(convertedDocs);
       
       // Empty list is not an error - it's a valid state
       
@@ -208,31 +219,6 @@ const DocumentsByType: React.FC = () => {
     }
   };
 
-    const getStatusBadge = (doc: ODataDocument) => {
-    // Compact badges: reduced height, smaller font, tighter padding
-    const base = 'inline-flex items-center h-[18px] px-1.5 rounded text-[9px] font-bold uppercase tracking-wider border';
-    if (doc.finished) {
-      return <span className={`${base} bg-success-dark text-success-light border-transparent dark:bg-success-dark dark:text-success-light bg-success-light text-success-dark border-success-light`}>Завершён</span>;
-    }
-    if (doc.inProcess) {
-      return <span className={`${base} bg-info-dark text-info-light border-transparent dark:bg-info-dark dark:text-info-light bg-info-light text-info-dark border-info-light`}>В работе</span>;
-    }
-    return <span className={`${base} bg-surface-tertiary text-content-secondary border-borders-default`}>Новый</span>;
-  };
-
-  const formatDateShort = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString('ru-RU', {
-        day: '2-digit',
-        month: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).replace(',', ''); // "DD.MM HH:MM"
-    } catch {
-      return '';
-    }
-  };
 
   // Loading state
   if (loading) {
@@ -410,82 +396,10 @@ const DocumentsByType: React.FC = () => {
       </div>
 
       {/* Documents list */}
-      {filteredDocuments.length === 0 ? (
-        <div className="text-center py-12 bg-surface-secondary rounded-lg border border-borders-default">
-          <div className="text-6xl mb-4">📋</div>
-          <h3 className="text-xl text-content-secondary mb-2">Нет документов</h3>
-          <p className="text-sm text-content-tertiary opacity-80">
-            Документы данного типа отсутствуют
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {filteredDocuments.map((doc) => {
-            const appointment = (doc.appointment || '').trim();
-            const owner = (doc.userName || '').trim();
-            const secondaryLine = appointment || doc.description || '';
-
-            return (
-              <button
-                key={doc.id}
-                onClick={() => {
-                  const interactiveRoute = docTypeUni ? INTERACTIVE_ROUTES[docTypeUni] : undefined;
-                  if (import.meta.env.DEV) {
-                    console.log('🎯 [DOCS] docTypeUni:', docTypeUni, 'interactiveRoute:', interactiveRoute);
-                  }
-                  const targetPath = interactiveRoute
-                    ? `${interactiveRoute}/${doc.id}`
-                    : `/docs/${docTypeUni}/${doc.id}`;
-                  console.log(`📄 [DOCS] Navigating to document details: ${targetPath}`);
-                  try {
-                    sessionStorage.setItem(`doc_cache_${doc.id}`, JSON.stringify(doc));
-                  } catch (storageError) {
-                    console.warn('⚠️ [DOCS] Failed to cache document for fallback', storageError);
-                  }
-                  navigate(targetPath, { state: { doc } });
-                }}
-                className="w-full bg-surface-secondary hover:bg-surface-tertiary rounded border-b border-borders-light last:border-0 px-3 py-2 text-left transition-colors"
-              >
-                <div className="flex gap-3">
-                {/* Left Content Area: Title and Info */}
-                <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-                  {/* Title Row */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-content-primary truncate leading-tight">
-                      {doc.name || doc.id}
-                    </span>
-                  </div>
-                  
-                  {/* Secondary Info Row (Description & Barcode) */}
-                  {(secondaryLine || doc.barcode) && (
-                    <div className="text-xs text-content-secondary truncate leading-tight flex items-center">
-                      {secondaryLine && <span className="truncate">{secondaryLine}</span>}
-                      {secondaryLine && doc.barcode && <span className="mx-1.5 opacity-40 text-[10px] text-content-tertiary">|</span>}
-                      {doc.barcode && <span className="font-mono text-[10px] text-content-tertiary opacity-90 shrink-0">{doc.barcode}</span>}
-                    </div>
-                  )}
-
-                  {/* Tertiary Meta Row (Owner & Warehouse) */}
-                  <div className="flex items-center gap-2 text-[10px] mt-1 leading-tight">
-                    {owner && <span className="text-brand-primary font-medium">{owner}</span>}
-                    {owner && doc.warehouseId && <span className="text-content-tertiary">•</span>}
-                    {doc.warehouseId && <span className="text-content-tertiary">📦 {doc.warehouseId}</span>}
-                  </div>
-                </div>
-
-                {/* Right Meta Area: Status and Date */}
-                <div className="flex flex-col items-end gap-1.5 shrink-0 pt-0.5">
-                  {getStatusBadge(doc)}
-                  <span className="text-[10px] text-content-tertiary font-mono whitespace-nowrap">
-                    {formatDateShort(doc.createDate)}
-                  </span>
-                </div>
-              </div>
-            </button>
-            );
-          })}
-        </div>
-      )}
+      <DocumentList
+        documents={filteredDocuments}
+        loading={false}
+      />
     </div>
   );
 };

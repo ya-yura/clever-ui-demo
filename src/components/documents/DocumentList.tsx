@@ -82,7 +82,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
   if (loading) {
     return (
-      <div className="p-4">
+      <div>
         <DocumentListSkeleton count={6} />
       </div>
     );
@@ -90,13 +90,13 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
   if (documents.length === 0) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex items-center justify-center py-16">
         <div className="text-center">
-          <div className="text-6xl mb-4">📋</div>
-          <div className="text-xl font-semibold text-gray-700 mb-2">
+          <div className="text-5xl mb-3">📋</div>
+          <div className="text-base font-semibold text-content-primary mb-1">
             Документы не найдены
           </div>
-          <div className="text-gray-500">
+          <div className="text-sm text-content-tertiary">
             Попробуйте изменить параметры фильтрации
           </div>
         </div>
@@ -136,41 +136,31 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
   // Regular render
   return (
-    <>
-      <div className="p-4 space-y-3">
-        {/* Document Cards */}
-        {visibleDocuments.map(doc => (
-          <DocumentCard key={doc.id} document={doc} onQuickView={handleQuickView} />
-        ))}
+    <div className="space-y-2.5">
+      {/* Document Cards */}
+      {visibleDocuments.map(doc => (
+        <DocumentCard key={doc.id} document={doc} />
+      ))}
 
-        {/* Load More Trigger */}
-        {hasMore && (
-          <div ref={loadMoreRef} className="py-4 text-center">
-            <div className="text-sm text-gray-500">
-              Загружено {displayCount} из {documents.length}
-            </div>
-            <div className="mt-2 animate-pulse">
-              <div className="inline-block w-2 h-2 bg-blue-500 rounded-full mx-1"></div>
-              <div className="inline-block w-2 h-2 bg-blue-500 rounded-full mx-1"></div>
-              <div className="inline-block w-2 h-2 bg-blue-500 rounded-full mx-1"></div>
-            </div>
+      {/* Load More Trigger */}
+      {hasMore && (
+        <div ref={loadMoreRef} className="py-3 text-center">
+          <div className="text-xs text-content-tertiary">
+            Загружено {displayCount} из {documents.length}
           </div>
-        )}
-
-        {/* End of List */}
-        {!hasMore && documents.length > INITIAL_LOAD && (
-          <div className="py-4 text-center text-sm text-gray-500">
-            ✓ Все документы загружены ({documents.length})
+          <div className="mt-1.5 animate-pulse">
+            <div className="inline-block w-1.5 h-1.5 bg-brand-primary rounded-full mx-0.5"></div>
+            <div className="inline-block w-1.5 h-1.5 bg-brand-primary rounded-full mx-0.5"></div>
+            <div className="inline-block w-1.5 h-1.5 bg-brand-primary rounded-full mx-0.5"></div>
           </div>
         )}
       </div>
 
-      {/* Quick View Modal */}
-      {quickViewDoc && (
-        <QuickViewModal
-          document={quickViewDoc}
-          onClose={() => setQuickViewDoc(null)}
-        />
+      {/* End of List */}
+      {!hasMore && documents.length > INITIAL_LOAD && (
+        <div className="py-3 text-center text-xs text-content-tertiary">
+          ✓ Все документы загружены ({documents.length})
+        </div>
       )}
     </>
   );

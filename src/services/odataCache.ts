@@ -142,7 +142,7 @@ class ODataCacheService {
     if (this.isDemoMode()) {
       console.log('🎭 [DEMO] Loading all documents from demo data');
       const allDocs = demoDataService.getAllDocuments();
-      return allDocs as any[];
+      return allDocs;
     }
 
     const forceRefresh = options?.forceRefresh === true;

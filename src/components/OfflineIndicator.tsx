@@ -33,7 +33,7 @@ const OfflineIndicator: React.FC = () => {
   return (
     <div
       className={`fixed bottom-4 left-4 right-4 p-4 rounded-lg shadow-lg text-white text-center z-50 ${
-        isOnline ? 'bg-green-600' : 'bg-red-600'
+        isOnline ? 'bg-success' : 'bg-error'
       }`}
     >
       {isOnline ? '🟢 Соединение восстановлено' : '🔴 Нет соединения - работа в оффлайн режиме'}

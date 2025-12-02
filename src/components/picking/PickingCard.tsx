@@ -1,108 +1,216 @@
 // === 📁 src/components/picking/PickingCard.tsx ===
 // Product card for picking module
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Minus, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
 import { PickingLine } from '@/types/picking';
 
 interface Props {
   line: PickingLine;
   isActive?: boolean;
+  isHighlighted?: boolean;
   routeOrder?: number;
+  onSetQuantity?: (lineId: string, quantity: number) => void;
 }
 
-const PickingCard: React.FC<Props> = ({ line, isActive, routeOrder }) => {
-  const statusClass =
-    line.status === 'completed'
-      ? 'border-success bg-success-light'
-      : line.status === 'partial'
-      ? 'border-warning bg-warning-light'
-      : isActive
-      ? 'border-info bg-info-light'
-      : 'border-borders-default bg-surface-secondary';
-
-  const statusIcon =
-    line.status === 'completed' ? '✅' :
-    line.status === 'partial' ? '🟡' :
-    isActive ? '🔵' :
-    '⚪';
+const PickingCard: React.FC<Props> = ({ line, isActive, isHighlighted, routeOrder, onSetQuantity }) => {
+  const [isEditingQty, setIsEditingQty] = useState(false);
+  const [manualQty, setManualQty] = useState(line.quantityFact.toString());
 
   const remaining = line.quantityPlan - line.quantityFact;
+  const isExact = line.quantityFact === line.quantityPlan;
+  const isOverPlan = line.quantityFact > line.quantityPlan;
+
+  const statusColor =
+    isExact ? 'border-[#4f4f4f] bg-[#363636]' :
+    isOverPlan ? 'border-amber-500/50 bg-amber-500/10' :
+    line.quantityFact > 0 ? 'border-blue-500/50 bg-blue-500/10' :
+    'border-emerald-500/40 bg-emerald-500/10';
+
+  const statusIcon =
+    isExact ? <CheckCircle2 className="w-5 h-5 text-[#6a6a6a]" /> :
+    isOverPlan ? <AlertCircle className="w-5 h-5 text-amber-400" /> :
+    line.quantityFact > 0 ? <AlertCircle className="w-5 h-5 text-blue-400" /> :
+    <AlertCircle className="w-5 h-5 text-emerald-400" />;
+
+  const progress = line.quantityPlan > 0 ? Math.min((line.quantityFact / line.quantityPlan) * 100, 100) : 0;
+
+  const handleManualQtySubmit = () => {
+    const qty = parseInt(manualQty);
+    if (!isNaN(qty) && qty >= 0 && onSetQuantity) {
+      onSetQuantity(line.id, qty);
+    }
+    setIsEditingQty(false);
+  };
+
+  const handleSetToPlan = () => {
+    if (onSetQuantity) {
+      onSetQuantity(line.id, line.quantityPlan);
+    }
+  };
+
+  const handleIncrement = (amount: number) => {
+    if (onSetQuantity) {
+      onSetQuantity(line.id, Math.max(0, line.quantityFact + amount));
+    }
+  };
 
   return (
-    <div 
-      className={`card border-2 ${statusClass} transition-all ${
-        isActive ? 'ring-2 ring-brand-primary scale-105' : ''
+    <div
+      className={`relative border-2 rounded-lg p-4 transition-all ${statusColor} ${
+        isActive || isHighlighted ? 'ring-2 ring-green-500 shadow-lg scale-[1.02]' : ''
       }`}
     >
-      <div className="flex items-start justify-between">
+      {/* Route Badge */}
+      {routeOrder !== undefined && (
+        <div className="absolute top-2 right-2 bg-green-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+          {routeOrder}
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <div className="flex items-center space-x-3 mb-2">
-            {routeOrder !== undefined && (
-              <div className="flex-shrink-0 w-10 h-10 bg-info text-white rounded-full flex items-center justify-center font-bold">
-                {routeOrder}
-              </div>
-            )}
+          <div className="flex items-center space-x-2 mb-1">
             <span className="text-2xl">{statusIcon}</span>
-            <div className="flex-1">
-              <h3 className="font-semibold text-content-primary">
-                {line.productName}
-              </h3>
-              <p className="text-sm text-content-secondary">
-                Артикул: {line.productSku}
-              </p>
-            </div>
+            <h3 className="font-semibold text-gray-900 dark:text-white text-lg">
+              {line.productName}
+            </h3>
           </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Артикул: {line.productSku}
+          </p>
+          {line.cellName && (
+            <p className="text-sm font-semibold text-green-600 dark:text-green-400">
+              📍 {line.cellName}
+            </p>
+          )}
+        </div>
+      </div>
 
-          {/* Cell info */}
-          <div className="mt-3">
-            <div className="flex items-center space-x-2 text-sm">
-              <span className="text-content-secondary">Ячейка:</span>
-              <span className="font-bold text-lg text-info-dark bg-info-light px-3 py-1 rounded">
-                📍 {line.cellName}
-              </span>
-            </div>
+      {/* Quantities */}
+      <div className="grid grid-cols-3 gap-2 text-center mb-3">
+        <div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">План</div>
+          <div className="text-lg font-bold text-gray-900 dark:text-white">
+            {line.quantityPlan}
           </div>
-
-          {/* Quantity */}
-          <div className="grid grid-cols-3 gap-2 text-center mt-4">
-            <div className="bg-surface-tertiary border border-borders-default rounded p-2">
-              <div className="text-xs text-content-secondary">План</div>
-              <div className="text-lg font-bold text-content-primary">
-                {line.quantityPlan}
-              </div>
-            </div>
-            <div className="bg-surface-tertiary border border-borders-default rounded p-2">
-              <div className="text-xs text-content-secondary">Подобрано</div>
-              <div className="text-lg font-bold text-success">
-                {line.quantityFact}
-              </div>
-            </div>
-            <div className="bg-surface-tertiary border border-borders-default rounded p-2">
-              <div className="text-xs text-content-secondary">Осталось</div>
-              <div className="text-lg font-bold text-info">
-                {remaining}
-              </div>
-            </div>
+        </div>
+        <div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">Подобрано</div>
+          <div className={`text-lg font-bold ${
+            isExact ? 'text-green-600' : isOverPlan ? 'text-red-600' : 'text-green-600'
+          }`}>
+            {line.quantityFact}
+          </div>
+        </div>
+        <div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">Остаток</div>
+          <div className="text-lg font-bold text-gray-900 dark:text-white">
+            {remaining > 0 ? remaining : 0}
           </div>
         </div>
       </div>
 
-      {/* Progress bar */}
-      {line.quantityPlan > 0 && (
-        <div className="mt-4">
-          <div className="w-full bg-surface-tertiary rounded-full h-2">
-            <div
-              className="bg-success h-2 rounded-full transition-all"
-              style={{ width: `${(line.quantityFact / line.quantityPlan) * 100}%` }}
-            />
+      {/* Quantity Controls */}
+      {onSetQuantity && line.status !== 'completed' && (
+        <div className="mb-3 space-y-2">
+          <div className="flex gap-2">
+            {isEditingQty ? (
+              <>
+                <input
+                  type="number"
+                  value={manualQty}
+                  onChange={(e) => setManualQty(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleManualQtySubmit()}
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center font-semibold"
+                  autoFocus
+                />
+                <button
+                  onClick={handleManualQtySubmit}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                >
+                  ✓
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditingQty(false);
+                    setManualQty(line.quantityFact.toString());
+                  }}
+                  className="px-4 py-2 bg-gray-400 text-white rounded-lg font-semibold hover:bg-gray-500 transition-colors"
+                >
+                  ✕
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => handleIncrement(-1)}
+                  disabled={line.quantityFact === 0}
+                  className="p-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                >
+                  <Minus className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                </button>
+                <button
+                  onClick={() => setIsEditingQty(true)}
+                  className="flex-1 px-4 py-2 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg font-semibold text-gray-900 dark:text-white hover:border-green-500 transition-colors"
+                >
+                  {line.quantityFact}
+                </button>
+                <button
+                  onClick={() => handleIncrement(1)}
+                  className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              </>
+            )}
           </div>
+          {!isEditingQty && (
+            <div className="flex gap-2">
+              <button
+                onClick={handleSetToPlan}
+                className="flex-1 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              >
+                По плану ({line.quantityPlan})
+              </button>
+              <button
+                onClick={() => handleIncrement(5)}
+                className="px-4 py-1.5 bg-green-500 text-white text-sm rounded-lg font-semibold hover:bg-green-600 transition-colors"
+              >
+                +5
+              </button>
+              <button
+                onClick={() => handleIncrement(10)}
+                className="px-4 py-1.5 bg-green-500 text-white text-sm rounded-lg font-semibold hover:bg-green-600 transition-colors"
+              >
+                +10
+              </button>
+            </div>
+          )}
         </div>
       )}
 
+      {/* Progress Bar */}
+      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
+        <div
+          className={`h-2 rounded-full transition-all ${
+            isExact ? 'bg-[#4f4f4f]' : isOverPlan ? 'bg-amber-500' : 'bg-blue-500'
+          }`}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      {/* Status Messages */}
+      {isOverPlan && (
+        <div className="mt-2 p-2 bg-amber-500/10 border border-amber-500/30 rounded text-sm text-amber-300 font-semibold text-center">
+          ⚠️ Превышение плана на {line.quantityFact - line.quantityPlan}
+        </div>
+      )}
       {isActive && (
-        <div className="mt-3 p-2 bg-info-light border border-info rounded text-center">
-          <p className="text-sm font-semibold text-info-dark">
-            👆 Отсканируйте товар из этой ячейки
+        <div className="mt-3 pt-3 border-t border-green-200 dark:border-green-700">
+          <p className="text-sm text-green-700 dark:text-green-300 font-semibold text-center animate-pulse">
+            📦 Отсканируйте этот товар
           </p>
         </div>
       )}
@@ -111,4 +219,3 @@ const PickingCard: React.FC<Props> = ({ line, isActive, routeOrder }) => {
 };
 
 export default PickingCard;
-

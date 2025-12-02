@@ -44,43 +44,50 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onQuickVie
     navigate(url);
   };
 
-  const handleQuickView = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onQuickView?.(document);
+  // Format date like "16.06 14:16"
+  const formatCompactDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}.${month} ${hours}:${minutes}`;
+  };
+
+  // Format full date for title like "16.06.25 14:16:26"
+  const formatFullDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
   };
 
   return (
-    <Card
-      variant="interactive"
+    <div
       onClick={handleClick}
-      className="p-4"
+      className="bg-surface-secondary hover:bg-surface-tertiary border border-border-default rounded-lg px-3 py-2.5 cursor-pointer transition-colors"
     >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl filter grayscale-[0.2]">{DOCUMENT_TYPE_ICONS[document.type]}</span>
-          <div>
-            <div className="font-semibold text-content-primary">
-              {document.number || document.id.slice(0, 8)}
+      {/* Top Row: Title with date and Status */}
+      <div className="flex items-start justify-between gap-3 mb-1">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-medium text-content-primary truncate">
+            {DOCUMENT_TYPE_LABELS[document.type]} {formatFullDate(document.createdAt)}
+          </h3>
+          {document.number && (
+            <div className="text-[11px] text-content-tertiary mt-0.5">
+              {document.number}
             </div>
-            <div className="text-xs text-content-tertiary">
-              {DOCUMENT_TYPE_LABELS[document.type]}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Quick View Button */}
-          {onQuickView && (
-            <button
-              onClick={handleQuickView}
-              className="p-2 hover:bg-surface-tertiary rounded-lg transition-colors"
-              title="Быстрый просмотр"
-            >
-              <Eye size={18} className="text-brand-primary" />
-            </button>
           )}
-          
+        </div>
+        
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[10px] text-content-tertiary whitespace-nowrap">
+            {formatCompactDate(document.createdAt)}
+          </span>
           <Badge 
             label={STATUS_LABELS[document.status]} 
             variant={getStatusVariant(document.status)} 
@@ -88,108 +95,24 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onQuickVie
         </div>
       </div>
 
-      {/* Partner Info */}
-      {document.partnerName && (
-        <div className="mb-2 text-sm text-content-secondary">
-          <span className="text-content-tertiary">Контрагент:</span>{' '}
-          <span className="font-medium">{document.partnerName}</span>
-        </div>
-      )}
-
-      {/* Progress Bar */}
-      {document.totalQuantity && document.totalQuantity > 0 && (
-        <div className="mb-3">
-          <div className="flex items-center justify-between text-xs text-content-tertiary mb-1">
-            <span>Прогресс</span>
-            <span className="font-medium text-content-primary">{completionPercentage}%</span>
-          </div>
-          <ProgressBar 
-            value={completionPercentage} 
-            variant={completionPercentage === 100 ? 'success' : 'primary'} 
-            size="sm"
-          />
-        </div>
-      )}
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
-        {document.totalLines !== undefined && (
-          <div className="bg-surface-tertiary/50 rounded px-2 py-1">
-            <div className="text-xs text-content-tertiary">Строк</div>
-            <div className="font-medium text-content-primary">
-              {document.completedLines || 0} / {document.totalLines}
-            </div>
-          </div>
-        )}
-        
-        {document.totalQuantity !== undefined && (
-          <div className="bg-surface-tertiary/50 rounded px-2 py-1">
-            <div className="text-xs text-content-tertiary">Количество</div>
-            <div className="font-medium text-content-primary">
-              {document.completedQuantity || 0} / {document.totalQuantity}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Additional Info */}
-      <div className="space-y-1 text-xs text-content-tertiary">
-        {document.route && (
-          <div>
-            <span className="inline-block w-16">Маршрут:</span>
-            <span className="text-content-secondary">{document.route}</span>
-          </div>
-        )}
-        
-        {document.vehicle && (
-          <div>
-            <span className="inline-block w-16">ТС:</span>
-            <span className="text-content-secondary">{document.vehicle}</span>
-          </div>
-        )}
-        
-        {document.returnReason && (
-          <div>
-            <span className="inline-block w-16">Причина:</span>
-            <span className="text-content-secondary">{document.returnReason}</span>
-          </div>
-        )}
-        
+      {/* Bottom Row: User info with stats */}
+      <div className="flex items-center gap-2 text-xs text-content-secondary">
         {document.userName && (
-          <div>
-            <span className="inline-block w-16">Исполнитель:</span>
-            <span className="text-content-secondary">{document.userName}</span>
-          </div>
+          <span>Кладовщик</span>
+        )}
+        {document.partnerName && !document.userName && (
+          <span>{document.partnerName}</span>
+        )}
+        
+        <span className="text-content-tertiary">•</span>
+        
+        {/* Always show item count if available */}
+        {document.totalLines !== undefined && document.totalLines > 0 && (
+          <span className="text-content-tertiary">
+            {document.completedLines || 0}
+          </span>
         )}
       </div>
-
-      {/* Footer */}
-      <div className="mt-3 pt-3 border-t border-surface-tertiary flex items-center justify-between text-xs text-content-tertiary">
-        <div className="flex items-center gap-3">
-          <div title={formatDate(document.createdAt)}>
-            📅 {formatRelativeTime(document.createdAt)}
-          </div>
-          
-          {document.updatedAt !== document.createdAt && (
-            <div title={formatDate(document.updatedAt)}>
-              🔄 {formatRelativeTime(document.updatedAt)}
-            </div>
-          )}
-        </div>
-
-        {isOverdue && (
-          <div className="text-error font-medium">
-            ⚠️ Просрочен
-          </div>
-        )}
-      </div>
-
-      {/* Notes Preview */}
-      {document.notes && (
-        <div className="mt-2 text-xs text-content-secondary italic truncate">
-          💬 {document.notes}
-        </div>
-      )}
-    </Card>
+    </div>
   );
 };

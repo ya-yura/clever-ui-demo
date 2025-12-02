@@ -2,24 +2,28 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '@/services/db';
 import { useScanner } from '@/hooks/useScanner';
-import { useDocumentLogic } from '@/hooks/useDocumentLogic';
-import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
+import { useOfflineStorage } from '@/hooks/useOfflineStorage';
+import { useSync } from '@/hooks/useSync';
+import { ReceivingDocument, ReceivingLine } from '@/types/receiving';
+import { scanFeedback, feedback } from '@/utils/feedback';
+import { STATUS_LABELS } from '@/types/document';
+import { ReceivingCard, ReceivingStats } from '@/components/receiving';
 import ScannerInput from '@/components/ScannerInput';
-import { QuantityControl } from '@/components/QuantityControl';
-import { DocumentListFilter } from '@/components/DocumentListFilter';
-import { DiscrepancyAlert } from '@/components/DiscrepancyAlert';
-import { LineCard } from '@/components/LineCard';
-import { AutoCompletePrompt } from '@/components/AutoCompletePrompt';
-import ReceivingCard from '@/components/receiving/ReceivingCard';
-import { ReceivingDocument } from '@/types/receiving';
-import { ArrowLeft, CheckCircle, XCircle, Package, Info, AlertTriangle } from 'lucide-react';
-import { Button } from '@/design/components';
-import { feedback } from '@/utils/feedback';
+import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
+import { useAnalytics, EventType } from '@/lib/analytics';
+import { CheckCircle } from 'lucide-react';
 
 const Receiving: React.FC = () => {
   const { id, docId } = useParams(); // Support both legacy /receiving/:id and new /docs/PrihodNaSklad/:docId
   const documentId = docId || id; // Prefer new format, fallback to legacy
   const navigate = useNavigate();
+  const analytics = useAnalytics();
+  const [document, setDocument] = useState<ReceivingDocument | null>(null);
+  const [lines, setLines] = useState<ReceivingLine[]>([]);
+  const [documents, setDocuments] = useState<ReceivingDocument[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentCell, setCurrentCell] = useState<string>('');
+  const [highlightedLineId, setHighlightedLineId] = useState<string | null>(null);
   const { setDocumentInfo, setListInfo } = useDocumentHeader();
 
   // US I.1: Список документов
@@ -153,14 +157,60 @@ const Receiving: React.FC = () => {
       filtered = filtered.filter((doc) => doc.status === filters.status);
     }
 
-    // Фильтр по дате
-    if (filters.dateFrom) {
-      const from = new Date(filters.dateFrom).getTime();
-      filtered = filtered.filter((doc) => doc.createdAt >= from);
-    }
-    if (filters.dateTo) {
-      const to = new Date(filters.dateTo).getTime() + 86400000; // +1 день
-      filtered = filtered.filter((doc) => doc.createdAt < to);
+    // Find product by barcode
+    const line = lines.find(l => l.barcode === code || l.productSku === code);
+    
+    if (line) {
+      // Highlight the scanned product
+      setHighlightedLineId(line.id);
+      setTimeout(() => setHighlightedLineId(null), 2000);
+
+      // Check for over-plan
+      if (line.quantityFact >= line.quantityPlan) {
+        scanFeedback(false, 'Превышение плана');
+        if (!window.confirm(`⚠️ Внимание!\n\nТовар: ${line.productName}\nПлан выполнен: ${line.quantityPlan} шт.\n\nДобавить сверх плана?`)) {
+          return;
+        }
+      }
+
+      const updatedLine: ReceivingLine = {
+        ...line,
+        quantityFact: line.quantityFact + 1,
+        status: line.quantityFact + 1 >= line.quantityPlan ? 'completed' : 'partial' as const,
+      };
+
+      await db.receivingLines.update(line.id, updatedLine);
+      await addSyncAction('update_line', updatedLine);
+      
+      // Refresh lines
+      setLines(prev => prev.map(l => l.id === line.id ? updatedLine : l));
+      
+      scanFeedback(true, `✓ ${line.productName}: +1`);
+
+      analytics.track(EventType.SCAN_SUCCESS, {
+        barcode: code,
+        documentId: id,
+        productId: line.productId,
+        productName: line.productName,
+      });
+      
+      // Update document progress
+      updateDocumentProgress();
+    } else {
+      // Product not found in document
+      scanFeedback(false, 'Товар не найден в документе');
+      
+      // Show detailed error
+      if (window.confirm(`❌ Товар не найден\n\nШтрихкод: ${code}\n\nЭтого товара нет в документе приёмки.\nДобавить как лишний товар?`)) {
+        // TODO: Implement adding extra products
+        feedback.notification('Функция добавления лишних товаров в разработке');
+      }
+      
+      analytics.track(EventType.SCAN_ERROR, {
+        barcode: code,
+        documentId: id,
+        error: 'Product not found in document',
+      });
     }
 
     // Фильтр по поставщику
@@ -186,9 +236,46 @@ const Receiving: React.FC = () => {
           navigate(`/docs/PrihodNaSklad/${code}`);
           return;
         }
+      }, 500);
+    }
+  };
+
+  const handleManualComplete = async () => {
+    if (!document) return;
+    
+    const uncompletedLines = lines.filter(l => l.quantityFact < l.quantityPlan);
+    const overPlanLines = lines.filter(l => l.quantityFact > l.quantityPlan);
+    const completedLines = lines.filter(l => l.quantityFact === l.quantityPlan);
+    
+    // Build detailed summary
+    let message = '📋 Завершение документа\n\n';
+    message += `Всего строк: ${lines.length}\n`;
+    message += `✓ Принято точно: ${completedLines.length}\n`;
+    
+    if (uncompletedLines.length > 0) {
+      message += `⚠️ Недостача: ${uncompletedLines.length} строк\n`;
+      const totalShortage = uncompletedLines.reduce((sum, l) => sum + (l.quantityPlan - l.quantityFact), 0);
+      message += `   (всего ${totalShortage} шт.)\n`;
+    }
+    
+    if (overPlanLines.length > 0) {
+      message += `⚠️ Излишки: ${overPlanLines.length} строк\n`;
+      const totalOver = overPlanLines.reduce((sum, l) => sum + (l.quantityFact - l.quantityPlan), 0);
+      message += `   (всего +${totalOver} шт.)\n`;
+    }
+    
+    message += '\n';
+    
+    if (uncompletedLines.length > 0 || overPlanLines.length > 0) {
+      message += '⚠️ Обнаружены расхождения!\n\n';
+      message += 'Вы уверены, что хотите завершить документ с расхождениями?';
+      
+      if (!window.confirm(message)) {
+        return;
       }
-      // US I.2: Скан товара с авто +1
-      const result = await handleScan(code);
+    } else {
+      message += '✅ Все товары приняты согласно плану.\n\n';
+      message += 'Завершить документ?';
       
       if (result.success && result.line) {
         // US I.2.1: Успешное сканирование
@@ -209,25 +296,50 @@ const Receiving: React.FC = () => {
     },
   });
 
-  // US I.4: Завершение с проверкой расхождений
-  const handleFinish = async () => {
-    const discrepancies = getDiscrepancies();
+    await addSyncAction('complete', updatedDoc);
+    sync();
     
-    if (discrepancies.length > 0) {
-      // US I.3.3: Показать диалог расхождений
-      setShowDiscrepancyAlert(true);
-    } else {
-      // Нет расхождений - завершаем сразу
-      await finishDocument(true);
-      feedback.success('✅ Документ завершён');
-    }
+    feedback.success('✅ Приёмка завершена!');
+
+    analytics.track(EventType.DOC_COMPLETE, {
+      documentId: document.id,
+      docType: 'receiving',
+      status: 'completed_manual',
+      totalLines: lines.length,
+      completedExact: completedLines.length,
+      shortage: uncompletedLines.length,
+      overplan: overPlanLines.length,
+    });
+    
+    setTimeout(() => {
+      if (window.confirm('📦 Документ завершён\n\nПерейти к размещению товара?')) {
+        navigate(`/placement?source=${document.id}`);
+      } else {
+        navigate('/receiving');
+      }
+    }, 500);
   };
 
-  const handleConfirmWithDiscrepancies = async () => {
-    setShowDiscrepancyAlert(false);
-    await finishDocument(true);
-    feedback.success('✅ Документ завершён с расхождениями');
+  const setLineQuantity = async (lineId: string, quantity: number) => {
+    const line = lines.find(l => l.id === lineId);
+    if (!line) return;
+
+    const updatedLine: ReceivingLine = {
+      ...line,
+      quantityFact: quantity,
+      status: quantity >= line.quantityPlan ? 'completed' : quantity > 0 ? 'partial' : 'pending' as const,
+    };
+
+    await db.receivingLines.update(lineId, updatedLine);
+    await addSyncAction('update_line', updatedLine);
+    
+    setLines(prev => prev.map(l => l.id === lineId ? updatedLine : l));
+    updateDocumentProgress();
   };
+
+  const adjustQuantity = async (lineId: string, delta: number) => {
+    const line = lines.find(l => l.id === lineId);
+    if (!line) return;
 
   // US I.2.5: Открытие карточки строки
   const handleLineClick = (line: any) => {
@@ -328,168 +440,74 @@ const Receiving: React.FC = () => {
     return <div className="p-10 text-center text-error">Документ не найден</div>;
   }
 
+  // Sort lines by status priority based on actual quantities:
+  // 1. partial (in progress: 0 < fact < plan) - highest priority
+  // 2. pending (not started: fact === 0) - needs to be done
+  // 3. over-plan (fact > plan) - needs attention
+  // 4. completed (fact === plan) - lowest priority, done
+  const sortedLines = [...lines].sort((a, b) => {
+    const getStatusPriority = (line: ReceivingLine) => {
+      const fact = line.quantityFact;
+      const plan = line.quantityPlan;
+      
+      // In progress: started but not finished
+      if (fact > 0 && fact < plan) return 1;
+      
+      // Not started: nothing received yet
+      if (fact === 0) return 2;
+      
+      // Over-plan: received more than planned
+      if (fact > plan) return 3;
+      
+      // Completed: received exactly as planned
+      if (fact === plan && fact > 0) return 4;
+      
+      return 5; // Fallback
+    };
+
+    const priorityDiff = getStatusPriority(a) - getStatusPriority(b);
+    
+    // If same priority, sort alphabetically by product name
+    if (priorityDiff === 0) {
+      return a.productName.localeCompare(b.productName);
+    }
+    
+    return priorityDiff;
+  });
+
   return (
-    <>
-      <div className="flex flex-col h-[calc(100vh-var(--header-height))]">
-        {/* US I.2: Панель активного товара (детальный просмотр) */}
-        {activeLine && (
-          <div className="fixed inset-0 z-50 bg-surface-primary flex flex-col p-4 animate-in slide-in-from-bottom duration-200">
-            <div className="flex justify-between items-start mb-6">
-              <div className="flex-1">
-                <h2 className="text-xl font-bold">{activeLine.productName}</h2>
-                <p className="text-content-secondary font-mono mt-1 text-sm">
-                  {activeLine.barcode}
-                </p>
-                <p className="text-content-tertiary text-xs mt-1">Арт: {activeLine.productSku}</p>
-              </div>
-              <button
-                onClick={() => setActiveLine(null)}
-                className="p-2 bg-surface-secondary rounded-full hover:bg-surface-tertiary transition-colors"
-              >
-                <XCircle size={24} />
-              </button>
-            </div>
+    <div className="space-y-3">
+      {/* Scanner Input */}
+      <ScannerInput 
+        onScan={onScanWithFeedback}
+        placeholder="Отсканируйте товар или документ..."
+      />
 
-            {/* US I.3: Индикация расхождений */}
-            <div className="flex-1 flex flex-col items-center justify-center gap-8">
-              <div
-                className={`text-6xl font-bold ${
-                  activeLine.quantityFact > activeLine.quantityPlan
-                    ? 'text-warning'
-                    : activeLine.quantityFact === activeLine.quantityPlan
-                    ? 'text-success'
-                    : 'text-brand-primary'
-                }`}
-              >
-                {activeLine.quantityFact}{' '}
-                <span className="text-2xl text-content-tertiary">/ {activeLine.quantityPlan}</span>
-              </div>
+      {/* Statistics Panel */}
+      {lines.length > 0 && (
+        <ReceivingStats lines={lines} />
+      )}
 
-              {/* US I.3: Предупреждение о расхождениях */}
-              {activeLine.quantityFact !== activeLine.quantityPlan && (
-                <div
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                    activeLine.quantityFact > activeLine.quantityPlan
-                      ? 'bg-warning/20 text-warning-dark'
-                      : 'bg-error/20 text-error-dark'
-                  }`}
-                >
-                  {activeLine.quantityFact > activeLine.quantityPlan
-                    ? `⚠️ Излишек: +${activeLine.quantityFact - activeLine.quantityPlan} шт.`
-                    : `⚠️ Недостача: ${activeLine.quantityPlan - activeLine.quantityFact} шт.`}
-                </div>
-              )}
-
-              {/* US I.2: Управление количеством */}
-              <QuantityControl
-                current={activeLine.quantityFact}
-                plan={activeLine.quantityPlan}
-                onChange={(val) => updateQuantity(activeLine.id, val, true)}
-              />
-
-              <div className="w-full grid grid-cols-2 gap-4 mt-8">
-                <div className="p-3 bg-surface-secondary rounded flex flex-col items-center">
-                  <span className="text-sm text-content-tertiary">Статус</span>
-                  <span className="font-bold uppercase text-xs mt-1">
-                    {activeLine.status === 'completed' && '✅ ВЫПОЛНЕНО'}
-                    {activeLine.status === 'partial' && '🟡 ЧАСТИЧНО'}
-                    {activeLine.status === 'pending' && '⚪ ОЖИДАЕТ'}
-                    {activeLine.status === 'over' && '⚠️ ИЗЛИШЕК'}
-                  </span>
-                </div>
-                <div className="p-3 bg-surface-secondary rounded flex flex-col items-center">
-                  <span className="text-sm text-content-tertiary">Осталось</span>
-                  <span className="font-bold text-lg">
-                    {Math.max(0, activeLine.quantityPlan - activeLine.quantityFact)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <Button size="lg" onClick={() => setActiveLine(null)} className="mt-4 w-full">
-              Готово
-            </Button>
-          </div>
-        )}
-
-        {/* 2. Основной экран документа */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
-          {/* US I.2: Поле сканирования */}
-          <ScannerInput
-            onScan={onScanWithFeedback}
-            placeholder="Скан товара или документа..."
-            className="sticky top-0 z-10 shadow-md"
+      {/* Lines */}
+      <div className="space-y-2">
+        {sortedLines.map(line => (
+          <ReceivingCard
+            key={line.id}
+            line={line}
+            onAdjust={(delta) => adjustQuantity(line.id, delta)}
+            onSetQuantity={(qty) => setLineQuantity(line.id, qty)}
+            isHighlighted={highlightedLineId === line.id}
           />
 
-          {/* US I.2.3: Статус и прогресс документа */}
-          <div className="bg-surface-secondary rounded-lg p-4 space-y-3">
-            <div className="flex justify-between items-center">
-              <h3 className="font-bold">Прогресс приёмки</h3>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                document.status === 'completed'
-                  ? 'bg-success-light text-success-dark'
-                  : document.status === 'in_progress'
-                  ? 'bg-warning-light text-warning-dark'
-                  : 'bg-surface-tertiary text-content-secondary'
-              }`}>
-                {document.status === 'completed' ? 'ЗАВЕРШЁН' : document.status === 'in_progress' ? 'В РАБОТЕ' : 'НОВЫЙ'}
-              </span>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Выполнено строк</span>
-                <span className="font-mono">{document.completedLines} / {document.totalLines}</span>
-              </div>
-              <div className="h-2 bg-surface-tertiary rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-brand-primary transition-all duration-300"
-                  style={{ width: `${document.totalLines > 0 ? (document.completedLines / document.totalLines) * 100 : 0}%` }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* US I.2: Список строк документа */}
-          <div className="space-y-2">
-            {lines.map((line) => (
-              <div 
-                key={line.id} 
-                onClick={() => handleLineClick(line)}
-                className="cursor-pointer"
-              >
-                <ReceivingCard
-                  line={{
-                    id: line.id,
-                    documentId: documentId || '',
-                    productId: line.productId,
-                    productName: line.productName,
-                    productSku: line.productSku,
-                    barcode: line.barcode,
-                    quantity: line.quantityFact,
-                    quantityPlan: line.quantityPlan,
-                    quantityFact: line.quantityFact,
-                    status: line.status === 'over' ? 'completed' : line.status,
-                    notes: ''
-                  }}
-                  onAdjust={(delta) => {
-                    updateQuantity(line.id, delta);
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* US I.4: Кнопка завершения документа */}
-        <div className="p-4 border-t border-borders-default bg-surface-primary fixed bottom-0 w-full max-w-3xl">
-          <Button
-            variant={document.status === 'completed' ? 'secondary' : 'primary'}
-            className="w-full"
-            onClick={handleFinish}
-            disabled={document.status === 'completed'}
-          >
-            {document.status === 'completed' ? '✅ Документ завершен' : 'Завершить приёмку'}
-          </Button>
+      {lines.length === 0 && (
+        <div className="bg-surface-secondary border border-borders-default rounded-lg text-center py-12">
+          <div className="text-6xl mb-4">📦</div>
+          <p className="text-content-secondary text-lg">
+            Нет товаров в документе
+          </p>
+          <p className="text-content-tertiary text-sm mt-2">
+            Отсканируйте документ для загрузки
+          </p>
         </div>
       </div>
 
@@ -519,14 +537,14 @@ const Receiving: React.FC = () => {
         />
       )}
 
-      {/* US I.3.1: Автозавершение */}
-      {showAutoComplete && document && (
-        <AutoCompletePrompt
-          totalLines={document.totalLines}
-          completedLines={document.completedLines}
-          onComplete={handleAutoComplete}
-          onContinue={() => setShowAutoComplete(false)}
-        />
+      {document && document.status !== 'completed' && lines.length > 0 && (
+        <button
+          onClick={handleManualComplete}
+          className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white py-4 rounded-lg font-bold text-lg shadow-lg transition-all mt-4 mb-8 flex items-center justify-center gap-2"
+        >
+          <CheckCircle className="w-6 h-6" />
+          Завершить документ
+        </button>
       )}
     </>
   );

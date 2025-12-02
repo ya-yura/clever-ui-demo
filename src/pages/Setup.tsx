@@ -97,6 +97,19 @@ const Setup: React.FC = () => {
           </p>
         </div>
 
+        {/* Demo Mode Button */}
+        <div className="text-center">
+          <button
+            onClick={() => {
+              localStorage.setItem('demo_mode', 'true');
+              navigate('/login');
+            }}
+            className="text-brand-primary hover:text-brand-secondary transition-colors text-sm font-medium underline"
+          >
+            Продолжить в демо-режиме без подключения к серверу
+          </button>
+        </div>
+
         {/* Setup Form */}
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="bg-surface-secondary rounded-lg p-6 space-y-4">
