@@ -18,6 +18,11 @@ export const loadInitialData = async () => {
   try {
     console.log('🔄 Loading initial data from JSON files...');
 
+    // Check if IndexedDB is available
+    if (!db.isOpen()) {
+      await db.open();
+    }
+
     // Load Employees data
     const employeesData = await import('@/data/employees.json');
     await db.employees.bulkAdd(employeesData.default);
@@ -81,6 +86,11 @@ export const loadDemoData = async () => {
 
   try {
     console.log('🔄 Loading demo data from JSON files...');
+
+    // Check if IndexedDB is available
+    if (!db.isOpen()) {
+      await db.open();
+    }
 
     // Clear existing data first
     await resetData();
@@ -148,6 +158,11 @@ export const loadDemoData = async () => {
 // Function to reset data (for development)
 export const resetData = async () => {
   try {
+    // Check if IndexedDB is available
+    if (!db.isOpen()) {
+      await db.open();
+    }
+
     await db.products.clear();
     await db.cells.clear();
     await db.employees.clear();
@@ -169,6 +184,7 @@ export const resetData = async () => {
     console.log('✅ All data cleared');
   } catch (error) {
     console.error('Error clearing data:', error);
+    throw error;
   }
 };
 
