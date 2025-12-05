@@ -81,6 +81,22 @@ const Shipment: React.FC = () => {
     }
   }, [document]);
 
+  // Автоматическая проверка комплектности при открытии
+  useEffect(() => {
+    if (document && lines.length > 0 && document.status !== 'completed') {
+      // Проверяем, есть ли недостающие позиции
+      const incomplete = lines.filter(l => l.quantityFact < l.quantityPlan);
+      
+      // Если есть недостающие позиции и документ только открыт, показываем подсказку
+      if (incomplete.length > 0) {
+        const timer = setTimeout(() => {
+          feedback.warning(`⚠️ Не хватает ${incomplete.length} позиций`);
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [document, lines]);
+
   // US IV.1: Проверка комплектности
   const checkCompleteness = () => {
     setShowCompletenessCheck(true);
@@ -115,7 +131,7 @@ const Shipment: React.FC = () => {
     }
 
     setReadyToShip(true);
-    feedback.success(`✓ ТТН ${data.ttnNumber} (${data.carrier})`);
+    feedback.success(`ТТН ${data.ttnNumber} (${data.carrier})`);
   };
 
   // US IV.4: Завершение отгрузки
@@ -144,9 +160,9 @@ const Shipment: React.FC = () => {
 
     if (print) {
       // Симуляция печати
-      feedback.info('📄 Отправка на печать...');
+      feedback.info('Отправка на печать...');
       await new Promise(resolve => setTimeout(resolve, 1000));
-      feedback.success('✓ Документы распечатаны');
+      feedback.success('Документы распечатаны');
     }
 
     // Завершаем документ
@@ -209,8 +225,8 @@ const Shipment: React.FC = () => {
                 ? 'bg-warning-light text-warning-dark'
                 : 'bg-surface-tertiary text-content-secondary'
             }`}>
-              {document.status === 'completed' ? '✓ ОТГРУЖЕНО' : 
-               document.status === 'in_progress' ? '⏳ В РАБОТЕ' : '📋 НОВЫЙ'}
+              {document.status === 'completed' ? 'ОТГРУЖЕНО' : 
+               document.status === 'in_progress' ? 'В РАБОТЕ' : 'НОВЫЙ'}
             </div>
           </div>
 
@@ -244,6 +260,19 @@ const Shipment: React.FC = () => {
                 </>
               )}
             </div>
+
+            {/* Подсказка - список недостающих товаров */}
+            {incompleteLines.length > 0 && incompleteLines.length <= 3 && (
+              <div className="bg-warning/10 border border-warning rounded-lg p-3 space-y-1">
+                <div className="text-xs font-bold text-warning-dark mb-1">Забыли:</div>
+                {incompleteLines.map((line) => (
+                  <div key={line.id} className="text-xs text-warning-dark flex items-center gap-2">
+                    <span className="flex-1 truncate">• {line.productName}</span>
+                    <span className="font-bold">-{line.quantityPlan - line.quantityFact}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <button
               onClick={checkCompleteness}
@@ -350,7 +379,7 @@ const Shipment: React.FC = () => {
             onClick={handleShip}
             disabled={document.status === 'completed'}
           >
-            {document.status === 'completed' ? '✓ Отгружено' : '🚚 Отгрузить'}
+            {document.status === 'completed' ? 'Отгружено' : 'Отгрузить'}
           </Button>
         </div>
       </div>
@@ -368,6 +397,8 @@ const Shipment: React.FC = () => {
         <TTNInput
           onSubmit={handleTTNSubmit}
           onCancel={() => setShowTTNInput(false)}
+          initialCarrier={carrier}
+          initialTTN={ttnNumber}
         />
       )}
 

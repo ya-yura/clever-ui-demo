@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '@/services/db';
 import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
 import { useScanner } from '@/hooks/useScanner';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
+import { useSwipe } from '@/hooks/useSwipe';
 import ScannerInput from '@/components/ScannerInput';
 import { InventoryTypeSelector } from '@/components/inventory/InventoryTypeSelector';
 import { DiscrepancyCard } from '@/components/inventory/DiscrepancyCard';
@@ -19,9 +20,13 @@ import {
   Plus,
   Minus,
   RefreshCcw,
+  Zap,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { feedback } from '@/utils/feedback';
 import analytics, { EventType } from '@/lib/analytics';
+import { playScanSound } from '@/utils/soundEffects';
 
 /**
  * МОДУЛЬ ИНВЕНТАРИЗАЦИИ
@@ -55,6 +60,7 @@ const Inventory: React.FC = () => {
   const navigate = useNavigate();
   const { setDocumentInfo, setListInfo } = useDocumentHeader();
   const { addSyncAction } = useOfflineStorage('inventory');
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Документ
   const [document, setDocument] = useState<any | null>(null);
@@ -71,11 +77,42 @@ const Inventory: React.FC = () => {
   // US VI.5: Расхождения
   const [showDiscrepancyCard, setShowDiscrepancyCard] = useState(false);
 
+  // Режим потокового сканирования
+  const [streamMode, setStreamMode] = useState(false);
+  const [expectedProducts, setExpectedProducts] = useState<any[]>([]);
+
   // Сканер
   const { handleScan: onScan } = useScanner({
     mode: 'keyboard',
     continuous: true,
     onScan: handleScan,
+  });
+
+  // Swipe для смены ячейки
+  useSwipe(containerRef, {
+    onSwipeLeft: () => {
+      if (streamMode && scannedCells.length > 0) {
+        const currentIndex = scannedCells.indexOf(currentCell || '');
+        const nextIndex = (currentIndex + 1) % scannedCells.length;
+        const nextCell = scannedCells[nextIndex];
+        if (nextCell) {
+          setCurrentCell(nextCell);
+          feedback.info(`Ячейка: ${nextCell}`);
+        }
+      }
+    },
+    onSwipeRight: () => {
+      if (streamMode && scannedCells.length > 0) {
+        const currentIndex = scannedCells.indexOf(currentCell || '');
+        const prevIndex = currentIndex <= 0 ? scannedCells.length - 1 : currentIndex - 1;
+        const prevCell = scannedCells[prevIndex];
+        if (prevCell) {
+          setCurrentCell(prevCell);
+          feedback.info(`Ячейка: ${prevCell}`);
+        }
+      }
+    },
+    minSwipeDistance: 80,
   });
 
   // Заголовок
@@ -206,6 +243,7 @@ const Inventory: React.FC = () => {
   const handleProductScan = async (barcode: string) => {
     if (!currentCell) {
       feedback.error('Сначала отсканируйте ячейку');
+      playScanSound('extra');
       return;
     }
 
@@ -215,8 +253,14 @@ const Inventory: React.FC = () => {
     const products = await db.products.where('barcode').equals(barcode).toArray();
     const product = products[0];
 
+    // Проверка: есть ли товар в ожидаемом списке (для звука)
+    const isExpected = expectedProducts.some(p => p.barcode === barcode);
+    const existingLine = lines.find(l => l.barcode === barcode && l.cell === currentCell);
+
     if (!product) {
-      // В инвентаризации можно добавлять неизвестные товары (слепое сканирование)
+      // Неизвестный товар - "не учтён"
+      playScanSound('notListed');
+      
       const unknownProduct = {
         id: `UNKNOWN-${barcode}`,
         name: `Неизвестный товар (${barcode})`,
@@ -224,10 +268,25 @@ const Inventory: React.FC = () => {
         sku: barcode,
       };
       await db.products.add(unknownProduct);
-      feedback.warning(`Товар не найден в справочнике: ${barcode}`);
-      // Продолжаем с новым товаром
+      
+      if (!streamMode) {
+        feedback.warning(`Товар не найден в справочнике: ${barcode}`);
+      }
+      
       await addOrUpdateLine(unknownProduct, currentCell);
       return;
+    }
+
+    // Определяем тип звука
+    if (isExpected || existingLine) {
+      // Товар найден в списке или уже сканировался - "найден"
+      playScanSound('found');
+    } else if (expectedProducts.length > 0) {
+      // Есть список ожидаемых, но товара там нет - "лишний"
+      playScanSound('extra');
+    } else {
+      // Нет списка ожидаемых - обычное сканирование
+      playScanSound('found');
     }
 
     await addOrUpdateLine(product, currentCell);
@@ -262,7 +321,10 @@ const Inventory: React.FC = () => {
         prev.map((l) => (l.id === existingLine.id ? updatedLine : l))
       );
 
-      feedback.info(`${product.name}: ${updatedLine.quantityActual} шт (сканирование #${updatedLine.scans})`);
+      // В режиме потокового сканирования минимальный вывод
+      if (!streamMode) {
+        feedback.info(`${product.name}: ${updatedLine.quantityActual} шт (сканирование #${updatedLine.scans})`);
+      }
     } else {
       // Создаём новую строку
       // В реальной системе quantityExpected загружается из учёта
@@ -286,7 +348,11 @@ const Inventory: React.FC = () => {
       });
 
       setLines((prev) => [...prev, newLine]);
-      feedback.success(`Добавлен: ${product.name}`);
+      
+      // В режиме потокового сканирования минимальный вывод
+      if (!streamMode) {
+        feedback.success(`Добавлен: ${product.name}`);
+      }
     }
 
     // Обновляем документ
@@ -399,9 +465,16 @@ const Inventory: React.FC = () => {
     return grouped;
   }, [lines]);
 
+  // Подсчет оставшихся товаров (если есть ожидаемый список)
+  const remainingProducts = useMemo(() => {
+    if (expectedProducts.length === 0) return 0;
+    const scannedBarcodes = lines.map(l => l.barcode);
+    return expectedProducts.filter(p => !scannedBarcodes.includes(p.barcode)).length;
+  }, [expectedProducts, lines]);
+
   return (
     <>
-      <div className="flex flex-col h-[calc(100vh-var(--header-height))]">
+      <div ref={containerRef} className="flex flex-col h-[calc(100vh-var(--header-height))]">
         <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
           {/* Создание документа */}
           {!document && (
@@ -441,9 +514,56 @@ const Inventory: React.FC = () => {
                       : 'bg-warning-light text-warning-dark'
                   }`}
                 >
-                  {document.status === 'completed' ? '✓ ЗАВЕРШЕНА' : '⏳ В РАБОТЕ'}
+                  {document.status === 'completed' ? 'ЗАВЕРШЕНА' : 'В РАБОТЕ'}
                 </div>
               </div>
+
+              {/* Режим потокового сканирования */}
+              {document.status !== 'completed' && (
+                <div className="bg-surface-secondary rounded-lg p-4 border border-borders-default">
+                  <label className="flex items-center justify-between cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      <Zap size={20} className={streamMode ? 'text-warning' : 'text-content-tertiary'} />
+                      <span className="font-semibold">Потоковое сканирование</span>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={streamMode}
+                        onChange={(e) => setStreamMode(e.target.checked)}
+                        className="sr-only"
+                      />
+                      <div
+                        className={`w-14 h-8 rounded-full transition-colors ${
+                          streamMode ? 'bg-warning' : 'bg-surface-tertiary'
+                        }`}
+                      >
+                        <div
+                          className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform ${
+                            streamMode ? 'translate-x-6' : 'translate-x-0'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </label>
+                  <p className="text-xs text-content-tertiary mt-2">
+                    Быстрое сканирование без промежуточных экранов. Свайп влево/вправо для смены ячейки.
+                  </p>
+                </div>
+              )}
+
+              {/* Плашка с остатком товаров */}
+              {streamMode && remainingProducts > 0 && (
+                <div className="bg-gradient-to-r from-brand-primary to-brand-secondary rounded-lg p-4 text-white shadow-lg animate-pulse">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm opacity-90">Осталось просканировать:</div>
+                      <div className="text-3xl font-bold">{remainingProducts} товаров</div>
+                    </div>
+                    <Package size={40} className="opacity-80" />
+                  </div>
+                </div>
+              )}
 
               {/* Статистика */}
               <div className="grid grid-cols-3 gap-3">
@@ -467,22 +587,39 @@ const Inventory: React.FC = () => {
 
               {/* Текущая ячейка */}
               {currentCell && (
-                <div className="bg-brand-primary/10 rounded-lg p-4">
+                <div className="bg-brand-primary/10 rounded-lg p-4 relative">
+                  {streamMode && scannedCells.length > 1 && (
+                    <>
+                      <div className="absolute left-2 top-1/2 -translate-y-1/2 text-brand-primary/30 animate-pulse">
+                        <ChevronLeft size={24} />
+                      </div>
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 text-brand-primary/30 animate-pulse">
+                        <ChevronRight size={24} />
+                      </div>
+                    </>
+                  )}
                   <div className="flex items-center justify-between">
-                    <div>
+                    <div className="flex-1 text-center">
                       <div className="text-sm text-brand-primary font-medium mb-1">
                         Текущая ячейка:
                       </div>
-                      <div className="text-2xl font-bold text-brand-primary">
+                      <div className="text-3xl font-bold text-brand-primary">
                         {currentCell}
                       </div>
+                      {streamMode && scannedCells.length > 1 && (
+                        <div className="text-xs text-brand-primary/60 mt-1">
+                          Свайп ← → для смены ({scannedCells.indexOf(currentCell) + 1} из {scannedCells.length})
+                        </div>
+                      )}
                     </div>
-                    <button
-                      onClick={() => setCurrentCell(null)}
-                      className="p-2 hover:bg-brand-primary/20 rounded-lg transition-colors"
-                    >
-                      <RefreshCcw size={20} className="text-brand-primary" />
-                    </button>
+                    {!streamMode && (
+                      <button
+                        onClick={() => setCurrentCell(null)}
+                        className="p-2 hover:bg-brand-primary/20 rounded-lg transition-colors"
+                      >
+                        <RefreshCcw size={20} className="text-brand-primary" />
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
@@ -512,7 +649,7 @@ const Inventory: React.FC = () => {
               )}
 
               {/* Список по ячейкам */}
-              {Object.keys(linesByCell).length > 0 && (
+              {Object.keys(linesByCell).length > 0 && !streamMode && (
                 <div className="space-y-3">
                   <h3 className="font-bold text-sm text-content-tertiary uppercase">
                     Отсканировано ({lines.length} позиций в {scannedCells.length} ячейках)
@@ -613,6 +750,40 @@ const Inventory: React.FC = () => {
                       })}
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Режим потокового сканирования - компактный список последних сканирований */}
+              {streamMode && lines.length > 0 && (
+                <div className="bg-surface-secondary rounded-lg p-4">
+                  <h3 className="font-bold text-sm text-content-tertiary uppercase mb-3">
+                    Последние сканирования ({lines.length})
+                  </h3>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {lines
+                      .sort((a, b) => b.lastScanAt - a.lastScanAt)
+                      .slice(0, 10)
+                      .map((line) => (
+                        <div
+                          key={line.id}
+                          className="flex items-center justify-between p-2 bg-surface-primary rounded-lg text-sm"
+                        >
+                          <div className="flex-1 truncate">
+                            <span className="font-medium">{line.productName}</span>
+                            <span className="text-content-tertiary ml-2">• {line.cell}</span>
+                          </div>
+                          <div className="text-brand-primary font-bold">
+                            ×{line.quantityActual}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                  <button
+                    onClick={() => setStreamMode(false)}
+                    className="w-full mt-3 text-sm text-brand-primary hover:underline"
+                  >
+                    Показать полный список →
+                  </button>
                 </div>
               )}
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '@/services/db';
 import { useScanner } from '@/hooks/useScanner';
@@ -12,9 +12,11 @@ import { LineCard } from '@/components/LineCard';
 import { AutoCompletePrompt } from '@/components/AutoCompletePrompt';
 import ReceivingCard from '@/components/receiving/ReceivingCard';
 import { ReceivingDocument } from '@/types/receiving';
-import { ArrowLeft, CheckCircle, XCircle, Package, Info, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Package, Info, AlertTriangle, Volume2, Search, Filter } from 'lucide-react';
 import { Button } from '@/design/components';
 import { feedback } from '@/utils/feedback';
+import { sortByOperationalState } from '@/utils/documentOrdering';
+import { VoiceService, speakSuccess } from '@/utils/voice';
 
 const Receiving: React.FC = () => {
   const { id, docId } = useParams(); // Support both legacy /receiving/:id and new /docs/PrihodNaSklad/:docId
@@ -33,12 +35,22 @@ const Receiving: React.FC = () => {
     supplier: undefined as string | undefined,
   });
 
+  // Новые фильтры и настройки
+  const [showOnlyIncomplete, setShowOnlyIncomplete] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
+  const [groupByPriority, setGroupByPriority] = useState(true);
+  const [lineScanFrequency, setLineScanFrequency] = useState<Map<string, number>>(new Map());
+
   // US I.2.5: Карточка строки
   const [showLineCard, setShowLineCard] = useState(false);
   const [selectedLine, setSelectedLine] = useState<any | null>(null);
 
   // US I.3.1: Автозавершение
   const [showAutoComplete, setShowAutoComplete] = useState(false);
+  
+  // Refs для фиксации позиций
+  const linesContainerRef = useRef<HTMLDivElement>(null);
+  const lineRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Логика документа (через хук)
   const {
@@ -133,19 +145,53 @@ const Receiving: React.FC = () => {
     }
   }, [documentId]);
 
-  // US VII.1, VII.2: Фильтрация и поиск
+  // Загрузка голосовых настроек
+  useEffect(() => {
+    const settings = VoiceService.loadSettings();
+    setVoiceMode(settings.enabled);
+    
+    // Загрузка частоты сканирования строк
+    try {
+      const stored = localStorage.getItem('line_scan_frequency');
+      if (stored) {
+        setLineScanFrequency(new Map(JSON.parse(stored)));
+      }
+    } catch (error) {
+      console.error('Failed to load scan frequency:', error);
+    }
+  }, []);
+
+  // US VII.1, VII.2: Умный поиск Spotlight-стиль
   const filteredDocuments = useMemo(() => {
     let filtered = [...documentsList];
 
-    // Поиск
+    // Фильтр "Только не завершённые"
+    if (showOnlyIncomplete) {
+      filtered = filtered.filter(doc => doc.status !== 'completed');
+    }
+
+    // Spotlight-поиск: ищет по всем полям включая строки
     if (filters.search) {
       const search = filters.search.toLowerCase();
-      filtered = filtered.filter(
-        (doc) =>
+      filtered = filtered.filter((doc) => {
+        // Поиск по основным полям
+        const matchesMain = 
           doc.id.toLowerCase().includes(search) ||
           doc.supplier?.toLowerCase().includes(search) ||
-          doc.deliveryNumber?.toLowerCase().includes(search)
-      );
+          doc.deliveryNumber?.toLowerCase().includes(search) ||
+          doc.notes?.toLowerCase().includes(search);
+        
+        if (matchesMain) return true;
+
+        // Поиск по дате
+        const dateStr = new Date(doc.createdAt).toLocaleDateString('ru-RU');
+        if (dateStr.includes(search)) return true;
+
+        // TODO: Поиск по строкам документа (требует подгрузки строк)
+        // В production можно кешировать или индексировать
+        
+        return false;
+      });
     }
 
     // Фильтр по статусу
@@ -169,12 +215,74 @@ const Receiving: React.FC = () => {
     }
 
     return filtered;
-  }, [documentsList, filters]);
+  }, [documentsList, filters, showOnlyIncomplete]);
+
+  // Группировка и сортировка с приоритетами
+  const orderedDocuments = useMemo(() => {
+    if (!groupByPriority) {
+      return sortByOperationalState(filteredDocuments);
+    }
+
+    const now = Date.now();
+    const oneDayAgo = now - 86400000;
+    const currentUserId = 'current-user-id'; // TODO: из контекста
+
+    // Группируем документы
+    const groups = {
+      urgent: [] as ReceivingDocument[],
+      recent: [] as ReceivingDocument[],
+      myOwn: [] as ReceivingDocument[],
+      other: [] as ReceivingDocument[],
+    };
+
+    filteredDocuments.forEach(doc => {
+      // Срочные (по приоритету или дедлайну)
+      if (doc.priority === 'urgent' || doc.priority === 'high') {
+        groups.urgent.push(doc);
+      }
+      // Недавние (созданы за последние 24 часа)
+      else if (doc.createdAt >= oneDayAgo) {
+        groups.recent.push(doc);
+      }
+      // Мои (текущий пользователь работал)
+      else if (doc.assignedTo === currentUserId || doc.status === 'in_progress') {
+        groups.myOwn.push(doc);
+      }
+      // Остальные
+      else {
+        groups.other.push(doc);
+      }
+    });
+
+    // Сортируем каждую группу
+    const sortGroup = (group: ReceivingDocument[]) => sortByOperationalState(group);
+
+    return [
+      ...sortGroup(groups.urgent),
+      ...sortGroup(groups.recent),
+      ...sortGroup(groups.myOwn),
+      ...sortGroup(groups.other),
+    ];
+  }, [filteredDocuments, groupByPriority]);
 
   // US I.1: Получение списка поставщиков для фильтра
   const supplierOptions = useMemo(() => {
     return Array.from(new Set(documentsList.map((d) => d.supplier).filter(Boolean) as string[]));
   }, [documentsList]);
+
+  // Трекинг частоты сканирования
+  const trackScanFrequency = (lineId: string) => {
+    const newFreq = new Map(lineScanFrequency);
+    newFreq.set(lineId, (newFreq.get(lineId) || 0) + 1);
+    setLineScanFrequency(newFreq);
+    
+    // Сохраняем в localStorage
+    try {
+      localStorage.setItem('line_scan_frequency', JSON.stringify(Array.from(newFreq.entries())));
+    } catch (error) {
+      console.error('Failed to save scan frequency:', error);
+    }
+  };
 
   // --- US I.2: Сканирование товара ---
   const { handleScan: onScanWithFeedback } = useScanner({
@@ -192,6 +300,15 @@ const Receiving: React.FC = () => {
       
       if (result.success && result.line) {
         // US I.2.1: Успешное сканирование
+        
+        // Трекинг частоты для автосортировки
+        trackScanFrequency(result.line.id);
+        
+        // Голосовая помощь
+        if (voiceMode) {
+          speakSuccess(`Товар ${result.line.productName} принят`);
+        }
+        
         setActiveLine(result.line);
         feedback.success(`${result.line.productName} (+1)`);
         
@@ -203,8 +320,21 @@ const Receiving: React.FC = () => {
           }
         }
       } else if (!result.success) {
-        // US I.2.2: Ошибка сканирования
-        feedback.error(result.message || 'Товар не найден');
+        // US I.2.2: Умная ошибка с подсказкой
+        const expectedProducts = lines
+          .filter(l => l.status !== 'completed')
+          .slice(0, 3)
+          .map(l => l.productName);
+        
+        const errorMsg = expectedProducts.length > 0
+          ? `Товар не найден в документе.\n\nОжидаются:\n${expectedProducts.map(p => `• ${p}`).join('\n')}`
+          : result.message || 'Товар не найден';
+        
+        feedback.error(errorMsg);
+        
+        if (voiceMode) {
+          VoiceService.speak('Товар не найден в документе', { pitch: 0.8 });
+        }
       }
     },
   });
@@ -241,76 +371,173 @@ const Receiving: React.FC = () => {
     handleFinish();
   };
 
+  // Группировка документов с заголовками
+  const groupedDocuments = useMemo(() => {
+    if (!groupByPriority) {
+      return [{ title: null, docs: orderedDocuments }];
+    }
+
+    const now = Date.now();
+    const oneDayAgo = now - 86400000;
+    const currentUserId = 'current-user-id';
+
+    const groups: Array<{ title: string | null; docs: ReceivingDocument[] }> = [];
+    
+    const urgent = orderedDocuments.filter(d => 
+      d.priority === 'urgent' || d.priority === 'high'
+    );
+    const recent = orderedDocuments.filter(d => 
+      d.createdAt >= oneDayAgo && 
+      d.priority !== 'urgent' && d.priority !== 'high'
+    );
+    const myOwn = orderedDocuments.filter(d =>
+      d.createdAt < oneDayAgo &&
+      d.priority !== 'urgent' && d.priority !== 'high' &&
+      (d.assignedTo === currentUserId || d.status === 'in_progress')
+    );
+    const other = orderedDocuments.filter(d =>
+      d.createdAt < oneDayAgo &&
+      d.priority !== 'urgent' && d.priority !== 'high' &&
+      d.assignedTo !== currentUserId && d.status !== 'in_progress'
+    );
+
+    if (urgent.length > 0) groups.push({ title: '🔴 Срочные', docs: urgent });
+    if (recent.length > 0) groups.push({ title: '🕐 Недавние', docs: recent });
+    if (myOwn.length > 0) groups.push({ title: '👤 Мои документы', docs: myOwn });
+    if (other.length > 0) groups.push({ title: null, docs: other });
+
+    return groups;
+  }, [orderedDocuments, groupByPriority]);
+
   // --- Рендер списка документов ---
   if (!documentId) {
     if (loadingList) return <div className="p-4 text-center">Загрузка...</div>;
 
     return (
       <div className="space-y-4 p-4">
-        {/* US VII.1, VII.2: Фильтры и поиск */}
+        {/* Умный поиск Spotlight */}
+        <div className="bg-surface-secondary rounded-lg p-4 space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-content-tertiary" size={20} />
+            <input
+              type="text"
+              value={filters.search}
+              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+              placeholder="Поиск по номеру, поставщику, дате, строкам..."
+              className="w-full pl-10 pr-4 py-3 border border-borders-default rounded-lg bg-surface-primary focus:outline-none focus:border-brand-primary text-base"
+              autoFocus
+            />
+            {filters.search && (
+              <button
+                onClick={() => setFilters(prev => ({ ...prev, search: '' }))}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-content-tertiary hover:text-content-primary"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* Быстрые фильтры */}
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => setShowOnlyIncomplete(!showOnlyIncomplete)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                showOnlyIncomplete
+                  ? 'bg-brand-primary text-white'
+                  : 'bg-surface-tertiary text-content-secondary'
+              }`}
+            >
+              <Filter size={14} className="inline mr-1" />
+              Не завершённые
+            </button>
+            
+            <button
+              onClick={() => setGroupByPriority(!groupByPriority)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                groupByPriority
+                  ? 'bg-brand-primary text-white'
+                  : 'bg-surface-tertiary text-content-secondary'
+              }`}
+            >
+              Группировка
+            </button>
+          </div>
+        </div>
+
+        {/* Старые фильтры */}
         <DocumentListFilter
           onFilterChange={setFilters}
           supplierOptions={supplierOptions}
           showSupplier={true}
         />
 
-        {/* US I.1: Список документов */}
-        <div className="space-y-3">
-          {filteredDocuments.length === 0 ? (
-            <div className="text-center py-10">
-              <Package className="mx-auto mb-4 text-content-tertiary" size={48} />
-              <p className="text-content-tertiary">
-                {filters.search || filters.status !== 'all'
-                  ? 'Нет документов по заданным фильтрам'
-                  : 'Нет документов приёмки'}
-              </p>
-            </div>
-          ) : (
-            filteredDocuments.map((doc) => (
-              <div
-                key={doc.id}
-                onClick={() => navigate(`/receiving/${doc.id}`)}
-                className="card p-4 active:scale-[0.98] transition-transform cursor-pointer hover:border-brand-primary"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg">{doc.id}</h3>
-                    {doc.supplier && (
-                      <p className="text-sm text-content-secondary mt-1">
-                        Поставщик: {doc.supplier}
-                      </p>
-                    )}
-                    {doc.deliveryNumber && (
-                      <p className="text-xs text-content-tertiary">№ {doc.deliveryNumber}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <div
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        doc.status === 'completed'
-                          ? 'bg-success-light text-success-dark'
-                          : doc.status === 'in_progress'
-                          ? 'bg-warning-light text-warning-dark'
-                          : 'bg-surface-tertiary text-content-secondary'
-                      }`}
-                    >
-                      {doc.status === 'completed'
-                        ? 'ЗАВЕРШЁН'
-                        : doc.status === 'in_progress'
-                        ? 'В РАБОТЕ'
-                        : 'НОВЫЙ'}
+        {/* US I.1: Список документов с группировкой */}
+        <div className="space-y-4">
+          {groupedDocuments.map((group, groupIdx) => (
+            <div key={groupIdx} className="space-y-3">
+              {group.title && (
+                <h3 className="font-bold text-sm text-content-tertiary uppercase px-2">
+                  {group.title}
+                </h3>
+              )}
+              
+              {group.docs.length === 0 && groupIdx === groupedDocuments.length - 1 ? (
+                <div className="text-center py-10">
+                  <Package className="mx-auto mb-4 text-content-tertiary" size={48} />
+                  <p className="text-content-tertiary">
+                    {filters.search || filters.status !== 'all'
+                      ? 'Нет документов по заданным фильтрам'
+                      : 'Нет документов приёмки'}
+                  </p>
+                </div>
+              ) : (
+                group.docs.map((doc) => (
+                  <div
+                    key={doc.id}
+                    onClick={() => navigate(`/receiving/${doc.id}`)}
+                    className="card p-4 active:scale-[0.98] transition-transform cursor-pointer hover:border-brand-primary"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg">{doc.id}</h3>
+                        {doc.supplier && (
+                          <p className="text-sm text-content-secondary mt-1">
+                            Поставщик: {doc.supplier}
+                          </p>
+                        )}
+                        {doc.deliveryNumber && (
+                          <p className="text-xs text-content-tertiary">№ {doc.deliveryNumber}</p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <div
+                          className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            doc.status === 'completed'
+                              ? 'bg-success-light text-success-dark'
+                              : doc.status === 'in_progress'
+                              ? 'bg-warning-light text-warning-dark'
+                              : 'bg-surface-tertiary text-content-secondary'
+                          }`}
+                        >
+                          {doc.status === 'completed'
+                            ? 'ЗАВЕРШЁН'
+                            : doc.status === 'in_progress'
+                            ? 'В РАБОТЕ'
+                            : 'НОВЫЙ'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex justify-between text-sm text-content-tertiary">
+                      <span>{new Date(doc.createdAt).toLocaleString('ru-RU')}</span>
+                      <span>
+                        {doc.completedLines} / {doc.totalLines} строк
+                      </span>
                     </div>
                   </div>
-                </div>
-                <div className="mt-3 flex justify-between text-sm text-content-tertiary">
-                  <span>{new Date(doc.createdAt).toLocaleString('ru-RU')}</span>
-                  <span>
-                    {doc.completedLines} / {doc.totalLines} строк
-                  </span>
-                </div>
-              </div>
-            ))
-          )}
+                ))
+              )}
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -449,34 +676,91 @@ const Receiving: React.FC = () => {
             </div>
           </div>
 
-          {/* US I.2: Список строк документа */}
-          <div className="space-y-2">
-            {lines.map((line) => (
-              <div 
-                key={line.id} 
-                onClick={() => handleLineClick(line)}
-                className="cursor-pointer"
-              >
-                <ReceivingCard
-                  line={{
-                    id: line.id,
-                    documentId: documentId || '',
-                    productId: line.productId,
-                    productName: line.productName,
-                    productSku: line.productSku,
-                    barcode: line.barcode,
-                    quantity: line.quantityFact,
-                    quantityPlan: line.quantityPlan,
-                    quantityFact: line.quantityFact,
-                    status: line.status === 'over' ? 'completed' : line.status,
-                    notes: ''
-                  }}
-                  onAdjust={(delta) => {
-                    updateQuantity(line.id, delta);
-                  }}
-                />
+          {/* Настройки режимов */}
+          <div className="bg-surface-secondary rounded-lg p-4 space-y-3">
+            <h3 className="font-bold text-sm">Режимы работы</h3>
+            
+            <label className="flex items-center justify-between cursor-pointer p-2 bg-surface-primary rounded-lg">
+              <div className="flex items-center gap-2">
+                <Volume2 size={18} className={voiceMode ? 'text-brand-primary' : 'text-content-tertiary'} />
+                <span className="text-sm font-medium">Голосовая помощь</span>
               </div>
-            ))}
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={voiceMode}
+                  onChange={(e) => {
+                    const newValue = e.target.checked;
+                    setVoiceMode(newValue);
+                    VoiceService.updateSettings({ enabled: newValue, volume: 1.0 });
+                  }}
+                  className="sr-only"
+                />
+                <div className={`w-11 h-6 rounded-full transition-colors ${
+                  voiceMode ? 'bg-brand-primary' : 'bg-surface-tertiary'
+                }`}>
+                  <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                    voiceMode ? 'translate-x-5' : 'translate-x-0'
+                  }`} />
+                </div>
+              </div>
+            </label>
+          </div>
+
+          {/* US I.2: Список строк документа с автосортировкой */}
+          <div ref={linesContainerRef} className="space-y-2">
+            {lines
+              .slice() // Копируем для избежания мутации
+              .sort((a, b) => {
+                // Сортировка по частоте сканирования (самые частые первые)
+                const freqA = lineScanFrequency.get(a.id) || 0;
+                const freqB = lineScanFrequency.get(b.id) || 0;
+                
+                if (freqA !== freqB) {
+                  return freqB - freqA;
+                }
+                
+                // Затем по статусу (незавершённые первые)
+                if (a.status !== b.status) {
+                  const statusOrder = { pending: 0, partial: 1, completed: 2, over: 3 };
+                  return (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0);
+                }
+                
+                return 0;
+              })
+              .map((line, index) => (
+                <div 
+                  key={line.id}
+                  ref={(el) => {
+                    if (el) lineRefs.current.set(line.id, el);
+                  }}
+                  onClick={() => handleLineClick(line)}
+                  className="cursor-pointer"
+                  style={{
+                    // Фиксация позиции для предотвращения прыжков
+                    position: 'relative',
+                  }}
+                >
+                  <ReceivingCard
+                    line={{
+                      id: line.id,
+                      documentId: documentId || '',
+                      productId: line.productId,
+                      productName: line.productName,
+                      productSku: line.productSku,
+                      barcode: line.barcode,
+                      quantity: line.quantityFact,
+                      quantityPlan: line.quantityPlan,
+                      quantityFact: line.quantityFact,
+                      status: line.status === 'over' ? 'completed' : line.status,
+                      notes: ''
+                    }}
+                    onAdjust={(delta) => {
+                      updateQuantity(line.id, delta);
+                    }}
+                  />
+                </div>
+              ))}
           </div>
         </div>
 

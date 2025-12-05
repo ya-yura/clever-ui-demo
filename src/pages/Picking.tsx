@@ -10,9 +10,10 @@ import { LineCard } from '@/components/LineCard';
 import { AutoCompletePrompt } from '@/components/AutoCompletePrompt';
 import { DiscrepancyAlert } from '@/components/DiscrepancyAlert';
 import { RouteVisualization } from '@/components/picking/RouteVisualization';
-import { MapPin, Package, CheckCircle, SkipForward, AlertTriangle } from 'lucide-react';
+import { MapPin, Package, CheckCircle, SkipForward, AlertTriangle, Volume2, XCircle, Zap, Navigation } from 'lucide-react';
 import { Button } from '@/design/components';
 import { feedback } from '@/utils/feedback';
+import { VoiceService, speakCell, speakCellCompleted, speakError } from '@/utils/voice';
 
 /**
  * МОДУЛЬ ПОДБОРА
@@ -48,6 +49,10 @@ const Picking: React.FC = () => {
   // Состояние сканирования
   const [scannedCell, setScannedCell] = useState<string | null>(null);
   const [awaitingProduct, setAwaitingProduct] = useState(false);
+
+  // Настройки
+  const [voiceMode, setVoiceMode] = useState(false);
+  const [autoNextMode, setAutoNextMode] = useState(true); // По умолчанию включен
 
   // UI состояния
   const [showLineCard, setShowLineCard] = useState(false);
@@ -158,18 +163,33 @@ const Picking: React.FC = () => {
     };
   }, [documentId, document, setDocumentInfo, setListInfo]);
 
+  // Загрузка голосовых настроек
+  useEffect(() => {
+    const settings = VoiceService.loadSettings();
+    setVoiceMode(settings.enabled);
+  }, []);
+
+  // Голосовая подсказка при смене ячейки
+  useEffect(() => {
+    if (voiceMode && currentCell && !scannedCell) {
+      speakCell(currentCell.cellName);
+    }
+  }, [currentCellIndex, voiceMode, scannedCell]);
+
   // US III.2: Обработка сканирования ячейки
   const handleCellScan = async (code: string) => {
     const currentCell = route[currentCellIndex];
     
     if (!currentCell) {
       feedback.error('Маршрут не построен');
+      if (voiceMode) speakError('Маршрут не построен');
       return;
     }
 
     // Проверяем, правильная ли ячейка
     if (code !== currentCell.cellId) {
       feedback.error(`⚠️ Неправильная ячейка!\nТребуется: ${currentCell.cellName}\nОтсканирована: ${code}`);
+      if (voiceMode) speakError(`Неправильная ячейка. Требуется ${currentCell.cellName}`);
       return;
     }
 
@@ -221,15 +241,67 @@ const Picking: React.FC = () => {
     // US III.6: Автопереход к следующей ячейке
     if (allPickedInCell) {
       feedback.success(`✅ Ячейка ${currentCell.cellName} завершена`);
+      if (voiceMode) speakCellCompleted(currentCell.cellName);
       
-      setTimeout(() => {
-        if (currentCellIndex < route.length - 1) {
-          handleNextCell();
-        } else {
-          // Последняя ячейка
-          setShowAutoComplete(true);
-        }
-      }, 1000);
+      if (autoNextMode) {
+        setTimeout(() => {
+          if (currentCellIndex < route.length - 1) {
+            handleNextCell();
+          } else {
+            // Последняя ячейка
+            setShowAutoComplete(true);
+          }
+        }, 800);
+      }
+    }
+  };
+
+  // Быстрое логирование "Нет в ячейке"
+  const handleNotInCell = async () => {
+    if (!currentCell || !scannedCell) {
+      feedback.error('Сначала отсканируйте ячейку');
+      return;
+    }
+
+    if (!confirm(`Подтвердить отсутствие товаров в ячейке ${currentCell.cellName}?`)) {
+      return;
+    }
+
+    // Логируем проблему для всех товаров в ячейке
+    const problems: any[] = [];
+    for (const product of currentCell.products) {
+      const line = lines.find(l => l.id === product.id);
+      if (line && line.quantityFact < line.quantityPlan) {
+        problems.push({
+          lineId: line.id,
+          productName: line.productName,
+          cellName: currentCell.cellName,
+          type: 'missing',
+          timestamp: Date.now(),
+        });
+      }
+    }
+
+    // Сохраняем в БД проблемы
+    try {
+      if (problems.length > 0) {
+        await db.pickingProblems?.bulkAdd(problems);
+      }
+      
+      feedback.warning(`Зафиксировано отсутствие ${problems.length} позиций`);
+      if (voiceMode) speakError(`Товары отсутствуют. Ячейка пропущена.`);
+      
+      // Пропускаем ячейку
+      setRoute(prev => prev.map((step, index) => 
+        index === currentCellIndex ? { ...step, status: 'skipped' as const } : step
+      ));
+
+      if (currentCellIndex < route.length - 1) {
+        handleNextCell();
+      }
+    } catch (error) {
+      console.error('Failed to log problem:', error);
+      feedback.error('Ошибка сохранения проблемы');
     }
   };
 
@@ -239,7 +311,22 @@ const Picking: React.FC = () => {
       setCurrentCellIndex(prev => prev + 1);
       setScannedCell(null);
       setAwaitingProduct(false);
-      feedback.info(`Следующая ячейка: ${route[currentCellIndex + 1]?.cellName}`);
+      const nextCell = route[currentCellIndex + 1];
+      feedback.info(`Следующая ячейка: ${nextCell?.cellName}`);
+      if (voiceMode && nextCell) {
+        speakCell(nextCell.cellName);
+      }
+    }
+  };
+
+  // Переключение голосового режима
+  const toggleVoiceMode = () => {
+    const newValue = !voiceMode;
+    setVoiceMode(newValue);
+    VoiceService.updateSettings({ enabled: newValue, volume: 1.0, rate: 1.0 });
+    
+    if (newValue && currentCell && !scannedCell) {
+      speakCell(currentCell.cellName);
     }
   };
 
@@ -333,11 +420,107 @@ const Picking: React.FC = () => {
   const currentCell = route[currentCellIndex];
   const currentCellProducts = currentCell?.products.map(p => lines.find(l => l.id === p.id)).filter(Boolean) || [];
 
+  const nextCell = route[currentCellIndex + 1];
+
   return (
     <>
       <div className="flex flex-col h-[calc(100vh-var(--header-height))]">
+        {/* STICKY ПЛАШКА: Сейчас + Следующая ячейка */}
+        <div className="sticky top-0 z-20 bg-gradient-to-r from-brand-primary to-brand-secondary text-white p-4 shadow-lg">
+          <div className="flex items-center justify-between gap-4">
+            {/* Текущая ячейка */}
+            <div className="flex-1">
+              <div className="text-xs opacity-80 mb-1">СЕЙЧАС</div>
+              <div className="flex items-center gap-2">
+                <MapPin size={20} />
+                <span className="text-2xl font-bold">
+                  {currentCell?.cellName || '—'}
+                </span>
+              </div>
+              {scannedCell && (
+                <div className="text-xs opacity-90 mt-1">Отсканирована</div>
+              )}
+            </div>
+
+            {/* Стрелка */}
+            {nextCell && (
+              <>
+                <Navigation size={24} className="opacity-60" />
+                
+                {/* Следующая ячейка */}
+                <div className="flex-1">
+                  <div className="text-xs opacity-80 mb-1">СЛЕДУЮЩАЯ</div>
+                  <div className="flex items-center gap-2">
+                    <MapPin size={16} className="opacity-80" />
+                    <span className="text-lg font-bold opacity-90">
+                      {nextCell.cellName}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Прогресс */}
+          <div className="mt-3 h-1 bg-white/20 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-white transition-all duration-300"
+              style={{ width: `${route.length > 0 ? ((currentCellIndex + 1) / route.length) * 100 : 0}%` }}
+            />
+          </div>
+        </div>
+
         {/* Главный экран */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
+          {/* Настройки режима */}
+          <div className="bg-surface-secondary rounded-lg p-4 space-y-3">
+            <h3 className="font-bold text-sm">Режимы работы</h3>
+            
+            <label className="flex items-center justify-between cursor-pointer p-2 bg-surface-primary rounded-lg">
+              <div className="flex items-center gap-2">
+                <Zap size={18} className={autoNextMode ? 'text-warning' : 'text-content-tertiary'} />
+                <span className="text-sm font-medium">Автоматический переход</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={autoNextMode}
+                  onChange={(e) => setAutoNextMode(e.target.checked)}
+                  className="sr-only"
+                />
+                <div className={`w-11 h-6 rounded-full transition-colors ${
+                  autoNextMode ? 'bg-warning' : 'bg-surface-tertiary'
+                }`}>
+                  <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                    autoNextMode ? 'translate-x-5' : 'translate-x-0'
+                  }`} />
+                </div>
+              </div>
+            </label>
+
+            <label className="flex items-center justify-between cursor-pointer p-2 bg-surface-primary rounded-lg">
+              <div className="flex items-center gap-2">
+                <Volume2 size={18} className={voiceMode ? 'text-brand-primary' : 'text-content-tertiary'} />
+                <span className="text-sm font-medium">Голосовые подсказки</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={voiceMode}
+                  onChange={toggleVoiceMode}
+                  className="sr-only"
+                />
+                <div className={`w-11 h-6 rounded-full transition-colors ${
+                  voiceMode ? 'bg-brand-primary' : 'bg-surface-tertiary'
+                }`}>
+                  <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                    voiceMode ? 'translate-x-5' : 'translate-x-0'
+                  }`} />
+                </div>
+              </div>
+            </label>
+          </div>
+
           {/* US III.1: Визуализация маршрута */}
           <RouteVisualization
             route={route}
@@ -359,7 +542,7 @@ const Picking: React.FC = () => {
                 ? `Скан ячейки: ${currentCell?.cellName || '—'}`
                 : `Скан товара из ячейки ${currentCell?.cellName}`
             }
-            className="sticky top-0 z-10 shadow-md"
+            autoFocus
           />
 
           {/* Текущая ячейка и инструкции */}
@@ -386,14 +569,40 @@ const Picking: React.FC = () => {
                 )}
               </div>
 
-              {/* Кнопка пропуска */}
-              <button
-                onClick={handleSkipCell}
-                className="w-full py-2 bg-warning-light hover:bg-warning text-warning-dark rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-              >
-                <SkipForward size={16} />
-                Пропустить ячейку
-              </button>
+              {/* Действия с ячейкой */}
+              <div className="grid grid-cols-2 gap-2">
+                {/* СУПЕР-КНОПКА: Нет в ячейке */}
+                {scannedCell && (
+                  <button
+                    onClick={handleNotInCell}
+                    className="col-span-2 py-3 bg-error hover:brightness-110 text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2 text-base shadow-md"
+                  >
+                    <XCircle size={20} />
+                    НЕТ В ЯЧЕЙКЕ
+                  </button>
+                )}
+                
+                {/* Кнопка пропуска */}
+                <button
+                  onClick={handleSkipCell}
+                  className={`py-2 bg-warning-light hover:bg-warning text-warning-dark rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                    scannedCell ? 'col-span-1' : 'col-span-2'
+                  }`}
+                >
+                  <SkipForward size={16} />
+                  Пропустить
+                </button>
+
+                {/* Следующая ячейка */}
+                {scannedCell && nextCell && (
+                  <button
+                    onClick={handleNextCell}
+                    className="col-span-1 py-2 bg-brand-primary hover:brightness-110 text-white rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2"
+                  >
+                    Далее →
+                  </button>
+                )}
+              </div>
             </div>
           )}
 

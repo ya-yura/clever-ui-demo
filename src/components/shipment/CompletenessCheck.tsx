@@ -68,52 +68,81 @@ export const CompletenessCheck: React.FC<CompletenessCheckProps> = ({
             </div>
           </div>
 
-          {/* Список всех позиций */}
-          <div>
-            <h3 className="font-bold text-sm text-content-tertiary uppercase mb-2">
-              Все позиции ({lines.length})
-            </h3>
-            <div className="space-y-2">
-              {lines.map((line) => {
-                const isLineComplete = line.quantityFact >= line.quantityPlan;
-                const difference = line.quantityFact - line.quantityPlan;
+          {/* Список недостающих позиций (приоритетно) */}
+          {incompleteLines.length > 0 && (
+            <div>
+              <h3 className="font-bold text-sm text-warning uppercase mb-2 flex items-center gap-2">
+                <AlertTriangle size={16} />
+                Забыли ({incompleteLines.length})
+              </h3>
+              <div className="space-y-2 mb-4">
+                {incompleteLines.map((line) => {
+                  const missing = line.quantityPlan - line.quantityFact;
 
-                return (
-                  <div
-                    key={line.id}
-                    className={`p-3 rounded-lg border-2 ${
-                      isLineComplete
-                        ? 'border-success bg-success/10'
-                        : 'border-warning bg-warning/10'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">{line.productName}</div>
-                      </div>
-                      {isLineComplete ? (
-                        <CheckCircle size={16} className="text-success flex-shrink-0" />
-                      ) : (
+                  return (
+                    <div
+                      key={line.id}
+                      className="p-3 rounded-lg border-2 border-warning bg-warning/10 animate-pulse"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{line.productName}</div>
+                        </div>
                         <AlertTriangle size={16} className="text-warning flex-shrink-0" />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className={
-                        isLineComplete ? 'text-success-dark' : 'text-warning-dark'
-                      }>
-                        {line.quantityFact} / {line.quantityPlan} шт
-                      </span>
-                      {difference !== 0 && (
-                        <span className={difference > 0 ? 'text-success-dark' : 'text-error-dark'}>
-                          {difference > 0 ? '+' : ''}{difference}
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-warning-dark font-bold">
+                          {line.quantityFact} / {line.quantityPlan} шт
                         </span>
-                      )}
+                        <span className="text-error-dark font-bold">
+                          Не хватает: {missing}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Список укомплектованных позиций */}
+          {completedLines.length > 0 && (
+            <div>
+              <h3 className="font-bold text-sm text-success uppercase mb-2 flex items-center gap-2">
+                <CheckCircle size={16} />
+                Укомплектовано ({completedLines.length})
+              </h3>
+              <div className="space-y-2">
+                {completedLines.map((line) => {
+                  const difference = line.quantityFact - line.quantityPlan;
+
+                  return (
+                    <div
+                      key={line.id}
+                      className="p-3 rounded-lg border-2 border-success bg-success/10"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{line.productName}</div>
+                        </div>
+                        <CheckCircle size={16} className="text-success flex-shrink-0" />
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-success-dark">
+                          {line.quantityFact} / {line.quantityPlan} шт
+                        </span>
+                        {difference > 0 && (
+                          <span className="text-success-dark">
+                            +{difference}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Предупреждение если неполная комплектность */}
           {!isComplete && (
@@ -142,7 +171,7 @@ export const CompletenessCheck: React.FC<CompletenessCheckProps> = ({
                 : 'bg-warning hover:brightness-110 text-white'
             }`}
           >
-            {isComplete ? '✓ Подтвердить комплектность' : '⚠ Отгрузить частично'}
+            {isComplete ? 'Подтвердить комплектность' : 'Отгрузить частично'}
           </button>
           <button
             onClick={onClose}
@@ -155,6 +184,9 @@ export const CompletenessCheck: React.FC<CompletenessCheckProps> = ({
     </div>
   );
 };
+
+
+
 
 
 

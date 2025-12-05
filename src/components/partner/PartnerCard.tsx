@@ -4,6 +4,7 @@
 import React from 'react';
 import { Employee, PartnerStats } from '@/types/partner';
 import { formatRelativeTime } from '@/utils/date';
+import { CheckCircle } from 'lucide-react';
 
 interface PartnerCardProps {
   employee: Employee;
@@ -132,9 +133,7 @@ export const PartnerCard: React.FC<PartnerCardProps> = ({
         {/* Selection Indicator */}
         {selected && (
           <div className="flex-shrink-0">
-            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm">✓</span>
-            </div>
+            <CheckCircle className="text-blue-500" size={24} />
           </div>
         )}
       </div>

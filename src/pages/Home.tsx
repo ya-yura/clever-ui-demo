@@ -1,7 +1,7 @@
 // === 📁 src/pages/Home.tsx ===
 // Home page with module selection
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { odataCache } from '@/services/odataCache';
 import { ODataDocumentType } from '@/types/odata';
@@ -10,6 +10,8 @@ import { SchemaLoader } from '@/services/schemaLoader';
 import { DynamicGridInterface } from '@/components/DynamicGridInterface';
 import { HomeSkeleton } from '@/components/HomeSkeleton';
 import { api } from '@/services/api';
+import { Clock, Mic, MicOff } from 'lucide-react';
+import { useSwipe } from '@/hooks/useSwipe';
 
 interface DocTypeCard {
   uni: string;
@@ -99,12 +101,116 @@ const getColorForIndex = (index: number): string => {
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
   const [docTypes, setDocTypes] = useState<DocTypeCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalDocs, setTotalDocs] = useState(0);
   const [usingMockData, setUsingMockData] = useState(false);
   const [hasCustomInterface, setHasCustomInterface] = useState(false);
+  
+  // Последние использованные модули
+  const [recentModules, setRecentModules] = useState<string[]>([]);
+  
+  // Голосовой поиск
+  const [isListening, setIsListening] = useState(false);
+  const [voiceSearchText, setVoiceSearchText] = useState('');
+  const recognitionRef = useRef<any>(null);
+
+  // Жест свайп справа для возврата назад (опционально)
+  useSwipe(containerRef, {
+    onSwipeRight: () => {
+      // На главной странице свайп не уходит назад
+      // но можно использовать для других действий
+    },
+  });
+
+  // Загрузка последних использованных модулей
+  useEffect(() => {
+    const loadRecent = () => {
+      try {
+        const stored = localStorage.getItem('recent_modules');
+        if (stored) {
+          setRecentModules(JSON.parse(stored));
+        }
+      } catch (error) {
+        console.error('Failed to load recent modules:', error);
+      }
+    };
+    
+    loadRecent();
+  }, []);
+
+  // Сохранение использованного модуля
+  const trackModuleUsage = (uni: string) => {
+    try {
+      const recent = [uni, ...recentModules.filter(m => m !== uni)].slice(0, 5);
+      setRecentModules(recent);
+      localStorage.setItem('recent_modules', JSON.stringify(recent));
+    } catch (error) {
+      console.error('Failed to save recent module:', error);
+    }
+  };
+
+  // Инициализация голосового поиска
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.lang = 'ru-RU';
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        setVoiceSearchText(transcript);
+        
+        // Поиск модуля по голосовой команде
+        const foundModule = docTypes.find(dt => 
+          dt.displayName.toLowerCase().includes(transcript) ||
+          dt.description.toLowerCase().includes(transcript)
+        );
+        
+        if (foundModule) {
+          trackModuleUsage(foundModule.uni);
+          navigate(`/docs/${foundModule.uni}`);
+        } else {
+          alert(`Модуль "${transcript}" не найден`);
+        }
+        
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [docTypes, navigate]);
+
+  const toggleVoiceSearch = () => {
+    if (!recognitionRef.current) {
+      alert('Голосовой поиск не поддерживается в этом браузере');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
 
   useEffect(() => {
     // Check if custom interface is installed
@@ -279,6 +385,18 @@ const Home: React.FC = () => {
 
   console.log('🎯 [RENDER] Home render - loading:', loading, 'error:', error, 'docTypes.length:', docTypes.length);
 
+  // Обёртка navigate с трекингом
+  const navigateToModule = (uni: string) => {
+    trackModuleUsage(uni);
+    navigate(`/docs/${uni}`);
+  };
+
+  // Получение последних использованных модулей из docTypes
+  const recentModuleTiles = recentModules
+    .map(uni => docTypes.find(dt => dt.uni === uni))
+    .filter((x): x is DocTypeCard => Boolean(x))
+    .slice(0, 3);
+
   // Render custom interface if installed
   if (hasCustomInterface) {
     return <DynamicGridInterface schemaName="active" />;
@@ -351,7 +469,59 @@ const Home: React.FC = () => {
   const tertiaryTiles = docTypes.filter((d) => !included.has(d.uni));
 
   return (
-    <div className="space-y-3 max-w-7xl mx-auto">
+    <div ref={containerRef} className="space-y-3 max-w-7xl mx-auto">
+      {/* Голосовой поиск */}
+      <div className="bg-surface-secondary rounded-lg p-4">
+        <button
+          onClick={toggleVoiceSearch}
+          className={`w-full py-4 rounded-xl transition-all flex items-center justify-center gap-3 ${
+            isListening
+              ? 'bg-error text-white animate-pulse'
+              : 'bg-brand-primary text-white hover:brightness-110'
+          }`}
+        >
+          {isListening ? (
+            <>
+              <MicOff size={24} />
+              <span className="font-bold">Говорите название модуля...</span>
+            </>
+          ) : (
+            <>
+              <Mic size={24} />
+              <span className="font-bold">Голосовой поиск модулей</span>
+            </>
+          )}
+        </button>
+        {voiceSearchText && (
+          <p className="text-xs text-content-tertiary mt-2 text-center">
+            Последний запрос: "{voiceSearchText}"
+          </p>
+        )}
+      </div>
+
+      {/* Последние использованные модули */}
+      {recentModuleTiles.length > 0 && (
+        <div className="bg-surface-secondary rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Clock size={18} className="text-brand-primary" />
+            <h3 className="font-bold text-sm">Последние использованные</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {recentModuleTiles.map((tile) => (
+              <button
+                key={tile.uni}
+                onClick={() => navigateToModule(tile.uni)}
+                className="p-3 bg-brand-primary/10 hover:bg-brand-primary/20 border-2 border-brand-primary/30 rounded-lg transition-all text-left"
+              >
+                <div className="text-2xl mb-1">{tile.icon}</div>
+                <div className="font-bold text-sm text-brand-primary">{tile.displayName}</div>
+                <div className="text-xs text-content-tertiary mt-1">{tile.docsCount} док.</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Warning banner if using mock data */}
       {usingMockData && (
         <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4">
@@ -381,7 +551,7 @@ const Home: React.FC = () => {
         {tPrihod && (
           <button
             key={tPrihod.uni}
-            onClick={() => navigate(`/docs/${tPrihod.uni}`)}
+            onClick={() => navigateToModule(tPrihod.uni)}
             className="tile-primary tone-strong col-span-2 row-span-2 bg-module-receiving-bg text-module-receiving-text"
           >
             <div>
@@ -398,7 +568,7 @@ const Home: React.FC = () => {
         {tOtgruzka && (
           <button
             key={tOtgruzka.uni}
-            onClick={() => navigate(`/docs/${tOtgruzka.uni}`)}
+            onClick={() => navigateToModule(tOtgruzka.uni)}
             className="tile-primary tone-strong col-span-2 bg-module-inventory-bg text-module-inventory-text"
           >
             <div>
@@ -415,7 +585,7 @@ const Home: React.FC = () => {
         {tPodbor && (
           <button
             key={tPodbor.uni}
-            onClick={() => navigate(`/docs/${tPodbor.uni}`)}
+            onClick={() => navigateToModule(tPodbor.uni)}
             className="tile-primary tone-strong col-span-2 bg-module-picking-bg text-module-picking-text"
           >
             <div>
@@ -434,7 +604,7 @@ const Home: React.FC = () => {
         {tVozvrat && (
           <button
             key={`${tVozvrat.uni}-small`}
-            onClick={() => navigate(`/docs/${tVozvrat.uni}`)}
+            onClick={() => navigateToModule(tVozvrat.uni)}
             className="tile-secondary tone-medium tile-outline col-span-2 bg-surface-secondary border-borders-default"
           >
             <div>
@@ -450,7 +620,7 @@ const Home: React.FC = () => {
         {tPlacement && (
           <button
             key={`${tPlacement.uni}-small`}
-            onClick={() => navigate(`/docs/${tPlacement.uni}`)}
+            onClick={() => navigateToModule(tPlacement.uni)}
             className="tile-secondary tone-medium tile-outline col-span-2 bg-surface-secondary border-borders-default"
           >
             <div>
@@ -469,7 +639,7 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-3">
           <button
             key={`${tInvent.uni}-full`}
-            onClick={() => navigate(`/docs/${tInvent.uni}`)}
+            onClick={() => navigateToModule(tInvent.uni)}
             className="tile-secondary tone-medium tile-outline col-span-4 bg-surface-secondary border-borders-default"
           >
             <div>
@@ -500,7 +670,7 @@ const Home: React.FC = () => {
               return (
                 <button
                   key={docType.uni}
-                  onClick={() => navigate(`/docs/${docType.uni}`)}
+                  onClick={() => navigateToModule(docType.uni)}
                   className="tile-secondary tone-medium tile-outline bg-surface-secondary border-borders-default"
                 >
                   <div>

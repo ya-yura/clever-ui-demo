@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/design/components';
-import { AlertTriangle, PackageX, TrendingDown, Trash, HelpCircle, MessageSquare } from 'lucide-react';
+import { AlertTriangle, PackageX, TrendingDown, Trash, HelpCircle, MessageSquare, FileText, CheckCircle } from 'lucide-react';
 
 interface ReasonSelectorProps {
   operationType: 'return' | 'writeoff';
@@ -11,6 +11,7 @@ interface ReasonSelectorProps {
 /**
  * US V.2: Выбор причины возврата/списания
  * + дополнительный комментарий
+ * + шаблоны комментариев
  */
 export const ReasonSelector: React.FC<ReasonSelectorProps> = ({
   operationType,
@@ -20,7 +21,9 @@ export const ReasonSelector: React.FC<ReasonSelectorProps> = ({
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [comment, setComment] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
 
+  // Крупные кнопки причин для быстрого выбора
   const returnReasons = [
     { id: 'damaged_in_delivery', label: 'Повреждено при доставке', icon: PackageX, color: 'orange' },
     { id: 'wrong_item', label: 'Не тот товар', icon: AlertTriangle, color: 'yellow' },
@@ -37,6 +40,25 @@ export const ReasonSelector: React.FC<ReasonSelectorProps> = ({
     { id: 'write_off', label: 'Списание', icon: Trash, color: 'gray' },
     { id: 'other', label: 'Другое...', icon: MessageSquare, color: 'gray' },
   ];
+
+  // Шаблоны комментариев
+  const commentTemplates = operationType === 'return' 
+    ? [
+        'Повреждена упаковка',
+        'Царапины на поверхности',
+        'Не работает после распаковки',
+        'Не соответствует описанию',
+        'Клиент передумал',
+        'Нарушена целостность товара'
+      ]
+    : [
+        'Обнаружен при приемке',
+        'Выявлено при инвентаризации',
+        'Повреждено при перемещении',
+        'Истек срок годности',
+        'Не подлежит реализации',
+        'Утрачено на складе'
+      ];
 
   const reasons = operationType === 'return' ? returnReasons : writeoffReasons;
 
@@ -119,44 +141,46 @@ export const ReasonSelector: React.FC<ReasonSelectorProps> = ({
         </div>
 
         {/* Body - scrollable */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-3">
-          {reasons.map((reason) => {
-            const Icon = reason.icon;
-            const isSelected = selectedReason === reason.id;
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {/* Крупные кнопки причин */}
+          <div className="space-y-3">
+            {reasons.map((reason) => {
+              const Icon = reason.icon;
+              const isSelected = selectedReason === reason.id;
 
-            return (
-              <button
-                key={reason.id}
-                onClick={() => handleReasonClick(reason.id)}
-                className={`w-full p-4 rounded-lg transition-all ${getColorClasses(reason.color, isSelected)}`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${
-                    isSelected 
-                      ? `bg-${reason.color}-500/20` 
-                      : 'bg-surface-secondary'
-                  }`}>
-                    <Icon size={20} className={
+              return (
+                <button
+                  key={reason.id}
+                  onClick={() => handleReasonClick(reason.id)}
+                  className={`w-full p-5 rounded-xl transition-all ${getColorClasses(reason.color, isSelected)} shadow-sm hover:shadow-md`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-xl ${
                       isSelected 
-                        ? reason.color === 'red' ? 'text-error' :
-                          reason.color === 'orange' ? 'text-warning' :
-                          reason.color === 'yellow' ? 'text-warning-dark' :
-                          reason.color === 'blue' ? 'text-brand-primary' :
-                          reason.color === 'purple' ? 'text-purple-600' :
-                          'text-content-secondary'
-                        : 'text-content-tertiary'
-                    } />
+                        ? `bg-${reason.color}-500/20` 
+                        : 'bg-surface-secondary'
+                    }`}>
+                      <Icon size={28} className={
+                        isSelected 
+                          ? reason.color === 'red' ? 'text-error' :
+                            reason.color === 'orange' ? 'text-warning' :
+                            reason.color === 'yellow' ? 'text-warning-dark' :
+                            reason.color === 'blue' ? 'text-brand-primary' :
+                            reason.color === 'purple' ? 'text-purple-600' :
+                            'text-content-secondary'
+                          : 'text-content-tertiary'
+                      } />
+                    </div>
+                    <span className={`text-lg font-medium flex-1 text-left ${isSelected ? 'font-bold' : ''}`}>
+                      {reason.label}
+                    </span>
+                    {isSelected && (
+                      <CheckCircle className="text-success" size={24} />
+                    )}
                   </div>
-                  <span className={`font-medium ${isSelected ? 'font-bold' : ''}`}>
-                    {reason.label}
-                  </span>
-                  {isSelected && (
-                    <span className="ml-auto text-success">✓</span>
-                  )}
-                </div>
-              </button>
-            );
-          })}
+                </button>
+              );
+            })}
 
           {/* Custom input for "Other" */}
           {showCustomInput && (
@@ -177,14 +201,42 @@ export const ReasonSelector: React.FC<ReasonSelectorProps> = ({
 
           {/* Optional comment for predefined reasons */}
           {selectedReason && selectedReason !== 'other' && (
-            <div className="pt-2">
-              <label className="block text-sm font-medium mb-2">
-                Дополнительный комментарий (опционально):
-              </label>
+            <div className="pt-2 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium">
+                  Дополнительный комментарий (опционально):
+                </label>
+                <button
+                  onClick={() => setShowTemplates(!showTemplates)}
+                  className="text-sm text-brand-primary hover:underline flex items-center gap-1"
+                >
+                  <FileText size={14} />
+                  {showTemplates ? 'Скрыть' : 'Шаблоны'}
+                </button>
+              </div>
+
+              {/* Шаблоны комментариев */}
+              {showTemplates && (
+                <div className="grid grid-cols-2 gap-2">
+                  {commentTemplates.map((template, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setComment(template);
+                        setShowTemplates(false);
+                      }}
+                      className="p-2 text-xs text-left bg-surface-tertiary hover:bg-brand-primary/10 hover:border-brand-primary rounded-lg border border-separator transition-all"
+                    >
+                      {template}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Добавьте подробности..."
+                placeholder="Добавьте подробности или выберите шаблон..."
                 className="w-full p-3 border border-borders-default rounded-lg bg-surface-secondary resize-none"
                 rows={2}
               />
@@ -213,6 +265,9 @@ export const ReasonSelector: React.FC<ReasonSelectorProps> = ({
     </div>
   );
 };
+
+
+
 
 
 

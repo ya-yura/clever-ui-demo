@@ -63,11 +63,15 @@ const Return: React.FC = () => {
   const [lines, setLines] = useState<ReturnLine[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Настройки
+  const [autoPhoto, setAutoPhoto] = useState(false); // Автофото после сканирования
+
   // UI состояния
   const [showReasonSelector, setShowReasonSelector] = useState(false);
   const [showPhotoCapture, setShowPhotoCapture] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<any | null>(null);
   const [selectedLineForPhoto, setSelectedLineForPhoto] = useState<ReturnLine | null>(null);
+  const [pendingPhotoLine, setPendingPhotoLine] = useState<ReturnLine | null>(null);
 
   // Сканер
   const { handleScan: onScan } = useScanner({
@@ -217,8 +221,13 @@ const Return: React.FC = () => {
 
       feedback.success(`Добавлен товар: ${currentProduct.name}`);
 
-      // US V.4: Предложение добавить фото
-      if (confirm('Добавить фото для этого товара?')) {
+      // US V.4: Автофото или предложение добавить фото
+      if (autoPhoto) {
+        // Автоматически открываем камеру
+        setPendingPhotoLine(newLine);
+        setSelectedLineForPhoto(newLine);
+        setShowPhotoCapture(true);
+      } else if (confirm('Добавить фото для этого товара?')) {
         setSelectedLineForPhoto(newLine);
         setShowPhotoCapture(true);
       }
@@ -247,7 +256,7 @@ const Return: React.FC = () => {
         )
       );
 
-      feedback.success('✓ Фото добавлено');
+      feedback.success('Фото добавлено');
       setSelectedLineForPhoto(null);
     } catch (err: any) {
       feedback.error(`Ошибка сохранения фото: ${err.message}`);
@@ -290,7 +299,7 @@ const Return: React.FC = () => {
         updatedAt: Date.now(),
       });
 
-      feedback.success('✓ Удалено');
+      feedback.success('Удалено');
     } catch (err: any) {
       feedback.error(`Ошибка удаления: ${err.message}`);
     }
@@ -355,20 +364,49 @@ const Return: React.FC = () => {
                 <div className={`bg-surface-secondary rounded-lg p-4 border-2 border-${typeColor}`}>
                   <div className="flex items-center gap-3 mb-2">
                     <TypeIcon size={28} className={`text-${typeColor}`} />
-                    <div>
+                    <div className="flex-1">
                       <h2 className="text-lg font-bold">{document.id}</h2>
                       <p className="text-sm text-content-secondary">
                         {operationType === 'return' ? 'Возврат' : 'Списание'}
                       </p>
                     </div>
                   </div>
-                  <div className={`px-3 py-2 rounded-lg text-center font-bold ${
+                  <div className={`px-3 py-2 rounded-lg text-center font-bold mb-3 ${
                     document.status === 'completed'
                       ? 'bg-success-light text-success-dark'
                       : 'bg-warning-light text-warning-dark'
                   }`}>
-                    {document.status === 'completed' ? '✓ ЗАВЕРШЁН' : '⏳ В РАБОТЕ'}
+                    {document.status === 'completed' ? 'ЗАВЕРШЁН' : 'В РАБОТЕ'}
                   </div>
+
+                  {/* Настройка автофото */}
+                  {document.status !== 'completed' && (
+                    <label className="flex items-center justify-between p-3 bg-surface-primary rounded-lg cursor-pointer border border-borders-default">
+                      <div className="flex items-center gap-2">
+                        <Camera size={20} className={autoPhoto ? 'text-brand-primary' : 'text-content-tertiary'} />
+                        <span className="text-sm font-medium">Автофото после сканирования</span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="checkbox"
+                          checked={autoPhoto}
+                          onChange={(e) => setAutoPhoto(e.target.checked)}
+                          className="sr-only"
+                        />
+                        <div
+                          className={`w-11 h-6 rounded-full transition-colors ${
+                            autoPhoto ? 'bg-brand-primary' : 'bg-surface-tertiary'
+                          }`}
+                        >
+                          <div
+                            className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                              autoPhoto ? 'translate-x-5' : 'translate-x-0'
+                            }`}
+                          />
+                        </div>
+                      </div>
+                    </label>
+                  )}
                 </div>
               )}
 

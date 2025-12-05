@@ -95,7 +95,7 @@ export const PartnerStatus: React.FC<PartnerStatusProps> = ({
             onClick={onEnd}
             className="flex-1 bg-white hover:bg-opacity-90 hover:text-blue-600 rounded py-2 px-4 font-medium transition-all"
           >
-            ✓ Завершить
+            Завершить
           </button>
         )}
       </div>

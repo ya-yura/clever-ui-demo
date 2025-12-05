@@ -32,6 +32,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { DocumentHeaderProvider } from './contexts/DocumentHeaderContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NavigationTracker } from './components/NavigationTracker';
+import StatDashboard from './pages/StatDashboard';
 
 function App() {
   // Initial data loading
@@ -83,6 +84,7 @@ function App() {
                 <Route path="inventory/:id" element={<Inventory />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="statistics" element={<Statistics />} />
+                <Route path="stat" element={<StatDashboard />} />
                 <Route path="diagnostics" element={<Diagnostics />} />
                 <Route path="about" element={<About />} />
                 <Route path="feedback" element={<Feedback />} />

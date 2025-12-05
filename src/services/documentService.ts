@@ -12,6 +12,7 @@ import {
 import { DocumentStatus } from '@/types/common';
 import { odataCache } from './odataCache';
 import { ODataDocument } from '@/types/odata';
+import { compareByOperationalState } from '@/utils/documentOrdering';
 
 const normalizeDocTypeKey = (value?: string): string =>
   value
@@ -542,26 +543,33 @@ export class DocumentService {
    */
   sortDocuments(
     documents: UniversalDocument[],
-    sort: DocumentSort
+    sort?: DocumentSort
   ): UniversalDocument[] {
+    const activeSort: DocumentSort = sort || {
+      field: 'updatedAt',
+      direction: 'desc',
+    };
+
     const sorted = [...documents];
-    const direction = sort.direction === 'asc' ? 1 : -1;
+    const direction = activeSort.direction === 'asc' ? 1 : -1;
 
     sorted.sort((a, b) => {
-      let valueA: any = a[sort.field];
-      let valueB: any = b[sort.field];
+      const operationalDiff = compareByOperationalState(a, b);
+      if (operationalDiff !== 0) {
+        return operationalDiff;
+      }
 
-      // Handle undefined values
+      let valueA: any = a[activeSort.field];
+      let valueB: any = b[activeSort.field];
+
       if (valueA === undefined && valueB === undefined) return 0;
       if (valueA === undefined) return direction;
       if (valueB === undefined) return -direction;
 
-      // String comparison
       if (typeof valueA === 'string' && typeof valueB === 'string') {
         return direction * valueA.localeCompare(valueB);
       }
 
-      // Numeric comparison
       if (valueA < valueB) return -direction;
       if (valueA > valueB) return direction;
       return 0;

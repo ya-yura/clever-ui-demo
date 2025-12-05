@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/design/components';
-import { Warehouse, Grid3x3, MapPin } from 'lucide-react';
+import { Warehouse, Grid3x3, MapPin, CheckCircle } from 'lucide-react';
 
 interface InventoryTypeSelectorProps {
   onSelect: (type: 'full' | 'partial' | 'cell', zones?: string[], cells?: string[]) => void;
@@ -109,7 +109,7 @@ export const InventoryTypeSelector: React.FC<InventoryTypeSelectorProps> = ({
                 </div>
                 <p className="text-xs text-content-tertiary">Весь склад</p>
               </div>
-              {selectedType === 'full' && <span className="text-success text-xl">✓</span>}
+              {selectedType === 'full' && <CheckCircle className="text-success" size={24} />}
             </div>
           </button>
 
@@ -139,7 +139,7 @@ export const InventoryTypeSelector: React.FC<InventoryTypeSelectorProps> = ({
                 </div>
                 <p className="text-xs text-content-tertiary">Выбранные зоны/ячейки</p>
               </div>
-              {selectedType === 'partial' && <span className="text-success text-xl">✓</span>}
+              {selectedType === 'partial' && <CheckCircle className="text-success" size={24} />}
             </div>
           </button>
 
@@ -158,8 +158,8 @@ export const InventoryTypeSelector: React.FC<InventoryTypeSelectorProps> = ({
                         : 'border-separator hover:border-warning/30'
                     }`}
                   >
-                    {selectedZones.includes(zone) && '✓ '}
                     {zone}
+                    {selectedZones.includes(zone) && <CheckCircle size={14} className="inline ml-1" />}
                   </button>
                 ))}
               </div>
@@ -192,7 +192,7 @@ export const InventoryTypeSelector: React.FC<InventoryTypeSelectorProps> = ({
                 </div>
                 <p className="text-xs text-content-tertiary">Одна или несколько ячеек</p>
               </div>
-              {selectedType === 'cell' && <span className="text-success text-xl">✓</span>}
+              {selectedType === 'cell' && <CheckCircle className="text-success" size={24} />}
             </div>
           </button>
 
@@ -265,6 +265,9 @@ export const InventoryTypeSelector: React.FC<InventoryTypeSelectorProps> = ({
     </div>
   );
 };
+
+
+
 
 
 

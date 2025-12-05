@@ -7,7 +7,9 @@ import { odataCache } from '@/services/odataCache';
 import { ODataDocument, ODataDocumentType } from '@/types/odata';
 import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
 import { DocumentsByTypeSkeleton } from '@/components/documents/DocumentsByTypeSkeleton';
-import { Badge } from '@/design/components';
+import { DocumentPriority } from '@/types/document';
+import { DocumentStatus } from '@/types/common';
+import { compareByOperationalState } from '@/utils/documentOrdering';
 
 // Short, human-friendly titles per document type
 const SHORT_TITLES: Record<string, string> = {
@@ -36,6 +38,26 @@ const INTERACTIVE_ROUTES: Record<string, string> = {
   Otgruzka: '/shipment',
   Inventarizaciya: '/inventory',
   Vozvrat: '/return',
+};
+
+const mapODataStatus = (doc: ODataDocument): DocumentStatus => {
+  if (doc.inProcess) {
+    return 'in_progress';
+  }
+  if (doc.finished) {
+    return 'completed';
+  }
+  return 'pending';
+};
+
+const mapODataPriority = (priority?: number): DocumentPriority | undefined => {
+  if (priority === undefined || priority === null) {
+    return undefined;
+  }
+  if (priority >= 80) return 'urgent';
+  if (priority >= 50) return 'high';
+  if (priority <= 20) return 'low';
+  return 'normal';
 };
 
 const DocumentsByType: React.FC = () => {
@@ -114,10 +136,23 @@ const DocumentsByType: React.FC = () => {
       );
     }
 
-    // 3. Sort
-    return filtered.sort((a, b) => {
-      let valA: any = '';
-      let valB: any = '';
+    const sorted = [...filtered].sort((a, b) => {
+      const operationalDiff = compareByOperationalState(
+        {
+          status: mapODataStatus(a),
+          priority: mapODataPriority(a.priority),
+        },
+        {
+          status: mapODataStatus(b),
+          priority: mapODataPriority(b.priority),
+        },
+      );
+      if (operationalDiff !== 0) {
+        return operationalDiff;
+      }
+
+      let valA: number | string = '';
+      let valB: number | string = '';
 
       switch (sortField) {
         case 'date':
@@ -129,8 +164,8 @@ const DocumentsByType: React.FC = () => {
           valB = b.id || '';
           break;
         case 'status':
-          valA = a.finished ? 2 : a.inProcess ? 1 : 0;
-          valB = b.finished ? 2 : b.inProcess ? 1 : 0;
+          valA = mapODataStatus(a) === 'completed' ? 2 : mapODataStatus(a) === 'in_progress' ? 1 : 0;
+          valB = mapODataStatus(b) === 'completed' ? 2 : mapODataStatus(b) === 'in_progress' ? 1 : 0;
           break;
       }
 
@@ -138,6 +173,8 @@ const DocumentsByType: React.FC = () => {
       if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
+
+    return sorted;
   }, [documents, statusFilter, searchQuery, sortField, sortDirection]);
 
   // Update header with list info (short title)

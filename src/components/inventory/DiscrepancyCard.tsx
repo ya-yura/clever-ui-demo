@@ -158,7 +158,7 @@ export const DiscrepancyCard: React.FC<DiscrepancyCardProps> = ({
                   >
                     <div className="flex justify-between items-center">
                       <span>{item.productName}</span>
-                      <span className="text-success font-bold">✓ {item.actual}</span>
+                      <span className="text-success font-bold">{item.actual}</span>
                     </div>
                   </div>
                 ))}
@@ -199,6 +199,9 @@ export const DiscrepancyCard: React.FC<DiscrepancyCardProps> = ({
     </div>
   );
 };
+
+
+
 
 
 

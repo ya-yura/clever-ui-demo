@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Wifi, WifiOff, RefreshCw, AlertCircle } from 'lucide-react';
+import { Wifi, WifiOff, RefreshCw, AlertCircle, Clock } from 'lucide-react';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 import { useSync } from '@/hooks/useSync';
 
@@ -8,6 +8,23 @@ interface ConnectionIndicatorProps {
   showDetails?: boolean;
   className?: string;
 }
+
+// Форматирование времени последнего синка
+const formatTimeSince = (timestamp: number | null): string => {
+  if (!timestamp) return 'Никогда';
+  
+  const diff = Date.now() - timestamp;
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  
+  if (seconds < 60) return 'Только что';
+  if (minutes < 60) return `${minutes} мин. назад`;
+  if (hours < 24) return `${hours} ч. назад`;
+  
+  const days = Math.floor(hours / 24);
+  return `${days} дн. назад`;
+};
 
 /**
  * US IX.3: Connection Status Indicator
@@ -24,6 +41,29 @@ export const ConnectionIndicator: React.FC<ConnectionIndicatorProps> = ({
   const { isOnline, pendingSyncActions } = useOfflineStorage(module);
   const { isSyncing, syncError, sync } = useSync({ module });
   const [showDropdown, setShowDropdown] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  // Обновление текущего времени каждую минуту для таймера
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60000); // Каждую минуту
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Загрузка времени последнего синка
+  useEffect(() => {
+    const loadLastSync = () => {
+      const stored = localStorage.getItem('last_sync_time');
+      if (stored) {
+        setLastSyncTime(parseInt(stored, 10));
+      }
+    };
+    
+    loadLastSync();
+  }, [isSyncing]); // Обновляем при изменении статуса синхронизации
 
   // US IX.2.2: Auto-sync when going online
   useEffect(() => {
@@ -33,8 +73,11 @@ export const ConnectionIndicator: React.FC<ConnectionIndicatorProps> = ({
     }
   }, [isOnline, pendingSyncActions.length, isSyncing, sync]);
 
-  const handleRetry = () => {
-    sync();
+  const handleRetry = async () => {
+    await sync();
+    const now = Date.now();
+    setLastSyncTime(now);
+    localStorage.setItem('last_sync_time', now.toString());
   };
 
   const statusColor = isOnline
@@ -142,6 +185,17 @@ export const ConnectionIndicator: React.FC<ConnectionIndicatorProps> = ({
                 </span>
               </div>
 
+              {/* Таймер последнего синка */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-content-tertiary flex items-center gap-1">
+                  <Clock size={14} />
+                  Последняя синхронизация:
+                </span>
+                <span className="text-sm font-medium text-content-primary">
+                  {formatTimeSince(lastSyncTime)}
+                </span>
+              </div>
+
               {/* Sync queue */}
               {pendingSyncActions.length > 0 && (
                 <div className="flex items-center justify-between">
@@ -149,6 +203,23 @@ export const ConnectionIndicator: React.FC<ConnectionIndicatorProps> = ({
                   <span className="text-sm font-medium text-brand-primary">
                     {pendingSyncActions.length}
                   </span>
+                </div>
+              )}
+
+              {/* Простое объяснение когда всё синхронизировано */}
+              {isOnline && pendingSyncActions.length === 0 && !syncError && (
+                <div className="p-3 bg-success/10 rounded-lg border border-success/20">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle size={16} className="text-success flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-xs font-bold text-success-dark mb-1">
+                        Синхронизация не требуется
+                      </p>
+                      <p className="text-xs text-success-dark/80">
+                        Все ваши действия сохранены на сервере. Можете работать спокойно.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -163,21 +234,31 @@ export const ConnectionIndicator: React.FC<ConnectionIndicatorProps> = ({
               {/* Status message */}
               {!isOnline && (
                 <div className="p-3 bg-warning/10 rounded-lg">
-                  <p className="text-xs text-warning-dark">
-                    Работа продолжается локально. Данные будут синхронизированы при
-                    восстановлении связи.
-                  </p>
+                  <div className="flex items-start gap-2">
+                    <AlertCircle size={16} className="text-warning flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-warning-dark">
+                      Работа продолжается локально. Данные автоматически сохраняются и будут синхронизированы при восстановлении связи.
+                    </p>
+                  </div>
                 </div>
               )}
 
               {/* Actions */}
-              {isOnline && pendingSyncActions.length > 0 && !isSyncing && (
+              {isOnline && !isSyncing && (
                 <button
                   onClick={handleRetry}
-                  className="w-full py-2 bg-brand-primary text-white rounded-lg text-sm font-medium hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                  disabled={pendingSyncActions.length === 0}
+                  className={`w-full py-3 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                    pendingSyncActions.length > 0
+                      ? 'bg-brand-primary text-white hover:brightness-110'
+                      : 'bg-surface-tertiary text-content-tertiary cursor-not-allowed'
+                  }`}
                 >
                   <RefreshCw size={16} />
-                  Синхронизировать сейчас
+                  {pendingSyncActions.length > 0 
+                    ? `Синхронизировать (${pendingSyncActions.length})`
+                    : 'Синхронизация не требуется'
+                  }
                 </button>
               )}
             </div>
@@ -187,6 +268,9 @@ export const ConnectionIndicator: React.FC<ConnectionIndicatorProps> = ({
     </div>
   );
 };
+
+
+
 
 
 

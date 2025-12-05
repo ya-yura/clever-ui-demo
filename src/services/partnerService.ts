@@ -336,6 +336,40 @@ export class PartnerService {
   }
 
   /**
+   * Get partner from yesterday's work
+   * Returns partner ID if user worked with someone yesterday
+   */
+  async getYesterdayPartner(userId: string): Promise<string | null> {
+    try {
+      const now = new Date();
+      const yesterdayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      const yesterdayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      const yesterdaySessions = await db.partnerSessions
+        .where('userId')
+        .equals(userId)
+        .and(session => 
+          session.status === 'completed' && 
+          session.startedAt >= yesterdayStart.getTime() && 
+          session.startedAt < yesterdayEnd.getTime()
+        )
+        .toArray();
+
+      if (yesterdaySessions.length === 0) return null;
+
+      // Get the most recent partner from yesterday
+      const mostRecentSession = yesterdaySessions.reduce((latest, current) => 
+        current.startedAt > latest.startedAt ? current : latest
+      );
+
+      return mostRecentSession.partnerId;
+    } catch (error) {
+      console.error('Error fetching yesterday partner:', error);
+      return null;
+    }
+  }
+
+  /**
    * Update employee's last active time
    */
   private async updateEmployeeActivity(employeeId: string): Promise<void> {

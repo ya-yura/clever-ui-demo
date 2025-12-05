@@ -9,7 +9,7 @@ import { QuantityControl } from '@/components/QuantityControl';
 import { LineCard } from '@/components/LineCard';
 import { AutoCompletePrompt } from '@/components/AutoCompletePrompt';
 import { DiscrepancyAlert } from '@/components/DiscrepancyAlert';
-import { ArrowLeft, Package, MapPin, CheckCircle, X, Undo2 } from 'lucide-react';
+import { ArrowLeft, Package, MapPin, CheckCircle, X, Undo2, Scan, QrCode } from 'lucide-react';
 import { Button } from '@/design/components';
 import { feedback } from '@/utils/feedback';
 
@@ -38,6 +38,10 @@ const Placement: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<'cell' | 'product'>('cell');
   const [scannedCell, setScannedCell] = useState<string | null>(null);
   const [cellInfo, setCellInfo] = useState<any | null>(null);
+
+  // Определение текущей зоны оператора
+  const [operatorZone, setOperatorZone] = useState<string | null>(null);
+  const [lastScannedCells, setLastScannedCells] = useState<string[]>([]);
 
   // UI состояния
   const [showLineCard, setShowLineCard] = useState(false);
@@ -92,6 +96,29 @@ const Placement: React.FC = () => {
     };
   }, [documentId, document, setDocumentInfo, setListInfo]);
 
+  // Определение зоны из кода ячейки (формат: A1-01 → зона A)
+  const getCellZone = (cellCode: string): string => {
+    const match = cellCode.match(/^([A-Z]+)/i);
+    return match ? match[1].toUpperCase() : 'UNKNOWN';
+  };
+
+  // Вычисление "расстояния" между ячейками (упрощённо)
+  const getCellDistance = (cellA: string, cellB: string): number => {
+    const zoneA = getCellZone(cellA);
+    const zoneB = getCellZone(cellB);
+    
+    // Разные зоны - большое расстояние
+    if (zoneA !== zoneB) {
+      return 100;
+    }
+    
+    // Одна зона - извлекаем номера
+    const numA = parseInt(cellA.match(/\d+/)?.[0] || '0');
+    const numB = parseInt(cellB.match(/\d+/)?.[0] || '0');
+    
+    return Math.abs(numA - numB);
+  };
+
   // US II.1: Загрузка ячейки из справочника
   const loadCellInfo = async (cellCode: string) => {
     try {
@@ -102,10 +129,11 @@ const Placement: React.FC = () => {
       }
       
       // Если не найдено, создаём временную запись
+      const zone = getCellZone(cellCode);
       return {
         id: cellCode,
         name: cellCode,
-        zone: 'Неизвестная зона',
+        zone: `Зона ${zone}`,
         type: 'storage',
       };
     } catch (err) {
@@ -113,6 +141,26 @@ const Placement: React.FC = () => {
       return null;
     }
   };
+
+  // Автоопределение зоны оператора по истории сканирований
+  useEffect(() => {
+    if (lastScannedCells.length >= 3) {
+      // Определяем зону по большинству последних сканирований
+      const zones = lastScannedCells.slice(-5).map(getCellZone);
+      const zoneCounts = zones.reduce((acc, zone) => {
+        acc[zone] = (acc[zone] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      const dominantZone = Object.entries(zoneCounts)
+        .sort(([, a], [, b]) => b - a)[0]?.[0];
+      
+      if (dominantZone && dominantZone !== operatorZone) {
+        setOperatorZone(dominantZone);
+        feedback.info(`📍 Автоопределение: Зона ${dominantZone}`);
+      }
+    }
+  }, [lastScannedCells]);
 
   // US II.2: Обработка сканирования ячейки
   const handleCellScan = async (code: string) => {
@@ -122,7 +170,11 @@ const Placement: React.FC = () => {
       setScannedCell(code);
       setCellInfo(cell);
       setCurrentStep('product');
-      feedback.success(`Ячейка: ${cell.name}`);
+      
+      // Добавляем в историю для автоопределения зоны
+      setLastScannedCells(prev => [...prev, code].slice(-10));
+      
+      feedback.success(`Ячейка: ${cell.name}${cell.zone ? ` (${cell.zone})` : ''}`);
     } else {
       feedback.error('Ячейка не найдена');
     }
@@ -268,78 +320,189 @@ const Placement: React.FC = () => {
     );
   }
 
+  // Интеллектуальная сортировка строк
+  const sortedLines = useMemo(() => {
+    if (!operatorZone && !scannedCell) {
+      return lines;
+    }
+
+    return [...lines].sort((a, b) => {
+      // Сначала незавершённые
+      if (a.status === 'completed' && b.status !== 'completed') return 1;
+      if (a.status !== 'completed' && b.status === 'completed') return -1;
+
+      // Если есть текущая ячейка, приоритет товарам для этой ячейки
+      if (scannedCell) {
+        const aMatchesCell = a.cellId === scannedCell;
+        const bMatchesCell = b.cellId === scannedCell;
+        if (aMatchesCell && !bMatchesCell) return -1;
+        if (!aMatchesCell && bMatchesCell) return 1;
+      }
+
+      // Сортировка по близости к текущей зоне оператора
+      if (operatorZone && lastScannedCells.length > 0) {
+        const lastCell = lastScannedCells[lastScannedCells.length - 1];
+        
+        const distanceA = a.cellId ? getCellDistance(lastCell, a.cellId) : 999;
+        const distanceB = b.cellId ? getCellDistance(lastCell, b.cellId) : 999;
+        
+        if (distanceA !== distanceB) {
+          return distanceA - distanceB;
+        }
+      }
+
+      return 0;
+    });
+  }, [lines, operatorZone, scannedCell, lastScannedCells]);
+
+  // Фильтрация строк по зоне (если включено автоопределение)
+  const visibleLines = useMemo(() => {
+    if (!operatorZone) {
+      return sortedLines;
+    }
+
+    // Показываем только строки из текущей зоны оператора
+    return sortedLines.filter(line => {
+      if (!line.cellId) return true; // Показываем неразмещённые
+      const lineZone = getCellZone(line.cellId);
+      return lineZone === operatorZone;
+    });
+  }, [sortedLines, operatorZone]);
+
+  // Определение цвета по расстоянию
+  const getProximityColor = (cellId: string | undefined): string => {
+    if (!cellId || !lastScannedCells.length) return 'gray';
+    
+    const lastCell = lastScannedCells[lastScannedCells.length - 1];
+    const distance = getCellDistance(lastCell, cellId);
+    
+    if (distance === 0) return 'green'; // Та же ячейка
+    if (distance <= 3) return 'green'; // Близко (1-3 ячейки)
+    if (distance <= 10) return 'yellow'; // Средне (4-10 ячеек)
+    return 'gray'; // Далеко
+  };
+
   return (
     <>
       <div className="flex flex-col h-[calc(100vh-var(--header-height))]">
         {/* Главный экран */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
-          {/* US II.2: Индикатор текущего шага */}
-          <div className="bg-surface-secondary rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold">Двухшаговое сканирование</h3>
-              {actionHistory.length > 0 && (
-                <button
-                  onClick={handleUndo}
-                  className="flex items-center gap-2 px-3 py-1 bg-surface-tertiary hover:bg-warning-light rounded-lg text-sm transition-colors"
-                >
-                  <Undo2 size={16} />
-                  Отменить
-                </button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-4">
-              {/* Шаг 1: Ячейка */}
-              <div className={`flex-1 p-3 rounded-lg border-2 transition-all ${
-                currentStep === 'cell'
-                  ? 'border-brand-primary bg-brand-primary/10'
-                  : scannedCell
-                  ? 'border-success bg-success/10'
-                  : 'border-separator'
-              }`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <MapPin size={20} className={currentStep === 'cell' ? 'text-brand-primary' : 'text-content-tertiary'} />
-                  <span className="text-xs font-bold uppercase">Шаг 1: Ячейка</span>
-                </div>
-                {scannedCell ? (
+          {/* Автоопределение зоны */}
+          {operatorZone && (
+            <div className="bg-gradient-to-r from-brand-primary/20 to-brand-secondary/20 rounded-lg p-4 border-2 border-brand-primary/40">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MapPin size={20} className="text-brand-primary" />
                   <div>
-                    <div className="font-bold">{cellInfo?.name || scannedCell}</div>
-                    <div className="text-xs text-content-tertiary">{cellInfo?.zone}</div>
+                    <div className="text-xs text-brand-primary/80">Вы находитесь</div>
+                    <div className="font-bold text-brand-primary">Зона {operatorZone}</div>
                   </div>
-                ) : (
-                  <div className="text-sm text-content-tertiary">Отсканируйте ячейку</div>
-                )}
-              </div>
-
-              <div className="text-2xl text-content-tertiary">→</div>
-
-              {/* Шаг 2: Товар */}
-              <div className={`flex-1 p-3 rounded-lg border-2 transition-all ${
-                currentStep === 'product'
-                  ? 'border-brand-primary bg-brand-primary/10'
-                  : 'border-separator'
-              }`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <Package size={20} className={currentStep === 'product' ? 'text-brand-primary' : 'text-content-tertiary'} />
-                  <span className="text-xs font-bold uppercase">Шаг 2: Товар</span>
                 </div>
-                <div className="text-sm text-content-tertiary">
-                  {currentStep === 'product' ? 'Отсканируйте товар' : 'Ожидает'}
-                </div>
+                <button
+                  onClick={() => {
+                    setOperatorZone(null);
+                    setLastScannedCells([]);
+                    feedback.info('Автоопределение зоны отключено');
+                  }}
+                  className="text-xs text-brand-primary hover:underline"
+                >
+                  Сбросить
+                </button>
               </div>
+              <p className="text-xs text-brand-primary/70 mt-2">
+                Показываются только ячейки зоны {operatorZone}
+              </p>
             </div>
+          )}
 
+          {/* КРУПНЫЕ КНОПКИ сканирования */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => {
+                setCurrentStep('cell');
+                feedback.info('Готов к сканированию ячейки');
+              }}
+              className={`p-6 rounded-xl border-3 transition-all ${
+                currentStep === 'cell'
+                  ? 'border-brand-primary bg-brand-primary/10 shadow-lg'
+                  : 'border-separator bg-surface-secondary'
+              }`}
+            >
+              <div className="flex flex-col items-center gap-3">
+                <div className={`p-4 rounded-full ${
+                  currentStep === 'cell' ? 'bg-brand-primary' : 'bg-surface-tertiary'
+                }`}>
+                  <QrCode size={32} className={currentStep === 'cell' ? 'text-white' : 'text-content-tertiary'} />
+                </div>
+                <div className="text-center">
+                  <div className={`font-bold ${currentStep === 'cell' ? 'text-brand-primary' : 'text-content-secondary'}`}>
+                    Сканировать ячейку
+                  </div>
+                  {scannedCell && (
+                    <div className="text-xs text-success mt-1">{cellInfo?.name}</div>
+                  )}
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                if (!scannedCell) {
+                  feedback.error('Сначала отсканируйте ячейку');
+                } else {
+                  setCurrentStep('product');
+                  feedback.info('Готов к сканированию товара');
+                }
+              }}
+              disabled={!scannedCell}
+              className={`p-6 rounded-xl border-3 transition-all ${
+                currentStep === 'product' && scannedCell
+                  ? 'border-brand-primary bg-brand-primary/10 shadow-lg'
+                  : scannedCell
+                  ? 'border-separator bg-surface-secondary'
+                  : 'border-separator bg-surface-tertiary opacity-50'
+              }`}
+            >
+              <div className="flex flex-col items-center gap-3">
+                <div className={`p-4 rounded-full ${
+                  currentStep === 'product' && scannedCell ? 'bg-brand-primary' : 'bg-surface-tertiary'
+                }`}>
+                  <Scan size={32} className={currentStep === 'product' && scannedCell ? 'text-white' : 'text-content-tertiary'} />
+                </div>
+                <div className="text-center">
+                  <div className={`font-bold ${currentStep === 'product' && scannedCell ? 'text-brand-primary' : 'text-content-secondary'}`}>
+                    Сканировать товар
+                  </div>
+                  {scannedCell && (
+                    <div className="text-xs text-content-tertiary mt-1">в {cellInfo?.name}</div>
+                  )}
+                </div>
+              </div>
+            </button>
+          </div>
+
+          {/* Кнопка отмены + сброс */}
+          <div className="flex gap-2">
+            {actionHistory.length > 0 && (
+              <button
+                onClick={handleUndo}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-warning-light hover:bg-warning text-warning-dark rounded-lg font-medium transition-colors"
+              >
+                <Undo2 size={18} />
+                Отменить последнее
+              </button>
+            )}
             {scannedCell && (
               <button
                 onClick={() => {
                   setScannedCell(null);
                   setCellInfo(null);
                   setCurrentStep('cell');
-                  feedback.info('Сканирование ячейки сброшено');
+                  feedback.info('Ячейка сброшена');
                 }}
-                className="mt-3 w-full py-2 bg-surface-tertiary hover:bg-surface-primary rounded-lg text-sm transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-surface-tertiary hover:bg-surface-primary rounded-lg font-medium transition-colors"
               >
-                <X size={16} className="inline mr-1" />
+                <X size={18} />
                 Сбросить ячейку
               </button>
             )}
@@ -350,10 +513,10 @@ const Placement: React.FC = () => {
             onScan={onScanWithFeedback}
             placeholder={
               currentStep === 'cell'
-                ? 'Шаг 1: Скан ячейки...'
-                : `Шаг 2: Скан товара в ${cellInfo?.name || 'ячейку'}...`
+                ? 'Скан ячейки (например: A1-01)...'
+                : `Скан товара в ${cellInfo?.name || 'ячейку'}...`
             }
-            className="sticky top-0 z-10 shadow-md"
+            autoFocus
           />
 
           {/* Статус и прогресс */}
@@ -384,48 +547,108 @@ const Placement: React.FC = () => {
             </div>
           </div>
 
-          {/* Список строк */}
+          {/* Список строк с интеллектуальной сортировкой */}
           <div className="space-y-2">
-            <h3 className="font-bold text-sm text-content-tertiary uppercase">Товары к размещению</h3>
-            {lines.map((line) => (
-              <div
-                key={line.id}
-                onClick={() => handleLineClick(line)}
-                className="card p-4 cursor-pointer hover:border-brand-primary transition-colors"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1">
-                    <h4 className="font-bold">{line.productName}</h4>
-                    <p className="text-xs text-content-tertiary font-mono">{line.barcode}</p>
-                  </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    line.status === 'completed'
-                      ? 'bg-success-light text-success-dark'
-                      : line.status === 'partial'
-                      ? 'bg-warning-light text-warning-dark'
-                      : 'bg-surface-tertiary text-content-secondary'
-                  }`}>
-                    {line.quantityFact} / {line.quantityPlan}
-                  </div>
-                </div>
-
-                {line.cellId && (
-                  <div className="flex items-center gap-2 text-sm text-content-secondary">
-                    <MapPin size={14} />
-                    <span>Ячейка: {line.cellId}</span>
-                  </div>
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-sm text-content-tertiary uppercase">
+                Товары к размещению
+                {operatorZone && visibleLines.length !== lines.length && (
+                  <span className="ml-2 text-brand-primary">
+                    ({visibleLines.length} в зоне {operatorZone})
+                  </span>
                 )}
+              </h3>
+              {operatorZone && visibleLines.length !== lines.length && (
+                <button
+                  onClick={() => setOperatorZone(null)}
+                  className="text-xs text-brand-primary hover:underline"
+                >
+                  Показать все
+                </button>
+              )}
+            </div>
 
-                <div className="mt-2 h-1 bg-surface-tertiary rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all ${
-                      line.status === 'completed' ? 'bg-success' : 'bg-warning'
-                    }`}
-                    style={{ width: `${line.quantityPlan > 0 ? (line.quantityFact / line.quantityPlan) * 100 : 0}%` }}
-                  />
+            {visibleLines.map((line) => {
+              const proximityColor = getProximityColor(line.cellId);
+              
+              return (
+                <div
+                  key={line.id}
+                  onClick={() => handleLineClick(line)}
+                  className={`card p-4 cursor-pointer hover:border-brand-primary transition-all border-l-4 ${
+                    proximityColor === 'green' 
+                      ? 'border-l-success bg-success/5' 
+                      : proximityColor === 'yellow'
+                      ? 'border-l-warning bg-warning/5'
+                      : 'border-l-separator'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold">{line.productName}</h4>
+                        {proximityColor === 'green' && (
+                          <span className="text-xs bg-success/20 text-success-dark px-2 py-0.5 rounded-full font-bold">
+                            РЯДОМ
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-content-tertiary font-mono">{line.barcode}</p>
+                    </div>
+                    <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      line.status === 'completed'
+                        ? 'bg-success-light text-success-dark'
+                        : line.status === 'partial'
+                        ? 'bg-warning-light text-warning-dark'
+                        : 'bg-surface-tertiary text-content-secondary'
+                    }`}>
+                      {line.quantityFact} / {line.quantityPlan}
+                    </div>
+                  </div>
+
+                  {line.cellId && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin size={14} className={
+                        proximityColor === 'green' ? 'text-success' :
+                        proximityColor === 'yellow' ? 'text-warning' :
+                        'text-content-tertiary'
+                      } />
+                      <span className={
+                        proximityColor === 'green' ? 'text-success-dark font-medium' :
+                        proximityColor === 'yellow' ? 'text-warning-dark' :
+                        'text-content-secondary'
+                      }>
+                        {line.cellId}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="mt-2 h-1 bg-surface-tertiary rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all ${
+                        line.status === 'completed' ? 'bg-success' : 'bg-warning'
+                      }`}
+                      style={{ width: `${line.quantityPlan > 0 ? (line.quantityFact / line.quantityPlan) * 100 : 0}%` }}
+                    />
+                  </div>
                 </div>
+              );
+            })}
+
+            {visibleLines.length === 0 && operatorZone && (
+              <div className="text-center py-10">
+                <MapPin className="mx-auto mb-4 text-content-tertiary" size={48} />
+                <p className="text-content-tertiary">
+                  Нет товаров для размещения в зоне {operatorZone}
+                </p>
+                <button
+                  onClick={() => setOperatorZone(null)}
+                  className="mt-3 text-brand-primary hover:underline"
+                >
+                  Показать все зоны
+                </button>
               </div>
-            ))}
+            )}
           </div>
         </div>
 

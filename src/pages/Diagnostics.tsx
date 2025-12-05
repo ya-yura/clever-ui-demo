@@ -230,9 +230,9 @@ const Diagnostics: React.FC = () => {
                           className={`px-3 py-1 rounded-full text-sm font-medium ${style.badgeBg} ${style.badgeText}`}
                         >
                           {check.status === 'ok'
-                            ? '✓ OK'
+                            ? 'OK'
                             : check.status === 'warning'
-                            ? '⚠ Предупреждение'
+                            ? 'Предупреждение'
                             : check.status === 'error'
                             ? '✗ Ошибка'
                             : 'Проверка'}

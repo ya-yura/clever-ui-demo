@@ -1,18 +1,35 @@
 // === 📁 src/components/Layout.tsx ===
 // Main layout component with header and navigation
 
-import React, { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import React, { useState, useRef } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Header from './Header';
 import OfflineIndicator from './OfflineIndicator';
 import { HamburgerMenu } from '@/modules/menu';
 import { InterfaceInstaller } from './InterfaceInstaller';
 import { useSync } from '@/hooks/useSync';
 import { useReferences } from '@/hooks/useReferences';
+import { useSwipe } from '@/hooks/useSwipe';
+import { feedback } from '@/utils/feedback';
 
 const Layout: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const mainRef = useRef<HTMLDivElement>(null);
   const [showInterfaceInstaller, setShowInterfaceInstaller] = useState(false);
+
+  // Жест свайпа от края для возврата назад
+  useSwipe(mainRef, {
+    onSwipeRight: () => {
+      // Свайп вправо от левого края = назад
+      // Не работает на главной странице
+      if (location.pathname !== '/' && location.pathname !== '/home') {
+        navigate(-1);
+        feedback.info('← Назад');
+      }
+    },
+    minSwipeDistance: 100, // Больше порог для избежания случайных срабатываний
+  });
   
   // Sync hook for documents
   const { sync: triggerSync } = useSync({
@@ -59,7 +76,7 @@ const Layout: React.FC = () => {
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header />
-      <main className="container mx-auto px-4 py-6 pb-20">
+      <main ref={mainRef} className="container mx-auto px-4 py-6 pb-20">
         <Outlet />
       </main>
       <OfflineIndicator />

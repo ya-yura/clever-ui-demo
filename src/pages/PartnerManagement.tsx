@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { db } from '@/services/db';
+import { partnerService } from '@/services/partnerService';
 import { Button } from '@/design/components';
-import { Users, CheckCircle, Clock, UserPlus, UserMinus, Trophy } from 'lucide-react';
+import { Users, CheckCircle, Clock, UserPlus, UserMinus, Trophy, Search } from 'lucide-react';
 import { feedback } from '@/utils/feedback';
 
 /**
@@ -39,6 +40,8 @@ const PartnerManagement: React.FC = () => {
   const [currentSession, setCurrentSession] = useState<PartnerSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [yesterdayPartnerId, setYesterdayPartnerId] = useState<string | null>(null);
 
   const currentUserId = 'current-user-id'; // В реальном приложении из AuthContext
 
@@ -48,11 +51,11 @@ const PartnerManagement: React.FC = () => {
 
   const loadData = async () => {
     try {
-      // Загружаем сотрудников
+      // Загружаем только активных сотрудников (исключая текущего пользователя)
       const emps = await db.employees.toArray();
       setEmployees(emps.filter((e) => e.id !== currentUserId && e.isActive));
 
-      // Загружаем текущую сессию
+      // Загружаем текущую активную сессию (исключая завершенные)
       const sessions = await db.partnerSessions
         .where('userId')
         .equals(currentUserId)
@@ -61,6 +64,18 @@ const PartnerManagement: React.FC = () => {
 
       if (sessions.length > 0) {
         setCurrentSession(sessions[0]);
+      } else {
+        // Если нет активной сессии, загружаем напарника с вчерашнего дня
+        const yesterdayId = await partnerService.getYesterdayPartner(currentUserId);
+        setYesterdayPartnerId(yesterdayId);
+        
+        // Автоматически предлагаем вчерашнего напарника
+        if (yesterdayId) {
+          const yesterdayPartner = emps.find(e => e.id === yesterdayId && e.isActive);
+          if (yesterdayPartner) {
+            setSelectedPartnerId(yesterdayId);
+          }
+        }
       }
     } catch (error) {
       console.error('Failed to load partner data:', error);
@@ -131,7 +146,7 @@ const PartnerManagement: React.FC = () => {
           `Время работы: ${hours}ч ${minutes}мин\n` +
           `Документов: ${stats.documentsCompleted}\n` +
           `Позиций обработано: ${stats.itemsProcessed}\n\n` +
-          `Отличная работа! 🎉`
+          `Отличная работа!`
       );
 
       feedback.success('Сессия завершена');
@@ -217,6 +232,33 @@ const PartnerManagement: React.FC = () => {
     );
   }
 
+  // Filter employees with search and priority for name start
+  const filteredEmployees = useMemo(() => {
+    if (!searchQuery) {
+      return employees.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    const query = searchQuery.toLowerCase();
+    return employees
+      .filter((emp) => {
+        return (
+          emp.name.toLowerCase().includes(query) ||
+          emp.role?.toLowerCase().includes(query) ||
+          emp.department?.toLowerCase().includes(query)
+        );
+      })
+      .sort((a, b) => {
+        // Prioritize matches at the start of name
+        const aStartsWith = a.name.toLowerCase().startsWith(query);
+        const bStartsWith = b.name.toLowerCase().startsWith(query);
+        
+        if (aStartsWith && !bStartsWith) return -1;
+        if (!aStartsWith && bStartsWith) return 1;
+        
+        return a.name.localeCompare(b.name);
+      });
+  }, [employees, searchQuery]);
+
   // US X.1: Выбор напарника
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
@@ -230,45 +272,134 @@ const PartnerManagement: React.FC = () => {
         </p>
       </div>
 
-      <div className="space-y-3">
-        {employees.length === 0 ? (
-          <div className="card p-8 text-center">
-            <Users size={48} className="mx-auto mb-4 text-content-tertiary opacity-50" />
-            <p className="text-content-tertiary">Нет доступных сотрудников</p>
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-content-tertiary" size={20} />
+        <input
+          type="text"
+          placeholder="Найти по имени, роли или отделу..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 border border-borders-default rounded-lg bg-surface-secondary focus:outline-none focus:border-brand-primary"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-content-tertiary hover:text-content-primary"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      {/* Yesterday's partner suggestion */}
+      {yesterdayPartnerId && !searchQuery && (
+        <div className="card p-4 bg-gradient-to-r from-brand-primary/5 to-brand-primary/10 border-brand-primary">
+          <div className="flex items-center gap-2 mb-3">
+            <Clock className="text-brand-primary" size={20} />
+            <div className="text-sm font-semibold text-brand-primary">
+              💡 Вчера вы работали с этим напарником
+            </div>
           </div>
-        ) : (
-          employees.map((employee) => (
-            <button
-              key={employee.id}
-              onClick={() => setSelectedPartnerId(employee.id)}
-              className={`w-full card p-4 text-left transition-all ${
-                selectedPartnerId === employee.id
-                  ? 'border-brand-primary bg-brand-primary/5'
-                  : 'hover:border-brand-primary/50'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${
-                      selectedPartnerId === employee.id ? 'bg-brand-primary' : 'bg-surface-tertiary text-content-primary'
-                    }`}
-                  >
-                    {employee.name.charAt(0)}
-                  </div>
-                  <div>
-                    <div className="font-bold">{employee.name}</div>
-                    <div className="text-sm text-content-secondary">
-                      {employee.role} • {employee.department}
+          {(() => {
+            const yesterdayEmployee = employees.find(e => e.id === yesterdayPartnerId);
+            if (!yesterdayEmployee) return null;
+            return (
+              <button
+                onClick={() => setSelectedPartnerId(yesterdayEmployee.id)}
+                className={`w-full card p-4 text-left transition-all ${
+                  selectedPartnerId === yesterdayEmployee.id
+                    ? 'border-brand-primary bg-brand-primary/10'
+                    : 'hover:border-brand-primary/50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${
+                        selectedPartnerId === yesterdayEmployee.id ? 'bg-brand-primary' : 'bg-surface-tertiary text-content-primary'
+                      }`}
+                    >
+                      {yesterdayEmployee.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="font-bold">{yesterdayEmployee.name}</div>
+                      <div className="text-sm text-content-secondary">
+                        {yesterdayEmployee.role} • {yesterdayEmployee.department}
+                      </div>
                     </div>
                   </div>
+                  {selectedPartnerId === yesterdayEmployee.id && (
+                    <CheckCircle className="text-brand-primary" size={24} />
+                  )}
                 </div>
-                {selectedPartnerId === employee.id && (
-                  <CheckCircle className="text-brand-primary" size={24} />
-                )}
+              </button>
+            );
+          })()}
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {filteredEmployees.length === 0 ? (
+          <div className="card p-8 text-center">
+            <Users size={48} className="mx-auto mb-4 text-content-tertiary opacity-50" />
+            <p className="text-content-tertiary">
+              {searchQuery ? 'Сотрудники не найдены' : 'Нет доступных сотрудников'}
+            </p>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="mt-4 text-brand-primary hover:underline"
+              >
+                Сбросить поиск
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            {!searchQuery && yesterdayPartnerId && (
+              <div className="text-sm text-content-tertiary px-2">
+                Все доступные сотрудники ({filteredEmployees.length - 1} кроме предложенного):
               </div>
-            </button>
-          ))
+            )}
+            {filteredEmployees.map((employee) => {
+              // Skip yesterday's partner if already shown above
+              if (employee.id === yesterdayPartnerId && !searchQuery) return null;
+              
+              return (
+                <button
+                  key={employee.id}
+                  onClick={() => setSelectedPartnerId(employee.id)}
+                  className={`w-full card p-4 text-left transition-all ${
+                    selectedPartnerId === employee.id
+                      ? 'border-brand-primary bg-brand-primary/5'
+                      : 'hover:border-brand-primary/50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${
+                          selectedPartnerId === employee.id ? 'bg-brand-primary' : 'bg-surface-tertiary text-content-primary'
+                        }`}
+                      >
+                        {employee.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="font-bold">{employee.name}</div>
+                        <div className="text-sm text-content-secondary">
+                          {employee.role} • {employee.department}
+                        </div>
+                      </div>
+                    </div>
+                    {selectedPartnerId === employee.id && (
+                      <CheckCircle className="text-brand-primary" size={24} />
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </>
         )}
       </div>
 

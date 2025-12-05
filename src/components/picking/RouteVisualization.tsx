@@ -35,7 +35,7 @@ export const RouteVisualization: React.FC<RouteVisualizationProps> = ({
       {/* Заголовок и прогресс */}
       <div>
         <div className="flex justify-between items-center mb-2">
-          <h3 className="font-bold">Маршрут подбора</h3>
+          <h3 className="font-bold">Карта маршрута</h3>
           <span className="text-sm font-mono">
             {currentStepIndex + 1} / {route.length}
           </span>
@@ -48,97 +48,77 @@ export const RouteVisualization: React.FC<RouteVisualizationProps> = ({
         </div>
       </div>
 
-      {/* Список ячеек (скроллируемый) */}
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-        {route.map((step, index) => {
-          const isCurrent = index === currentStepIndex;
-          const isCompleted = step.status === 'completed';
-          const isSkipped = step.status === 'skipped';
-          const isPast = index < currentStepIndex;
-          const isFuture = index > currentStepIndex;
+      {/* Линейная карта маршрута */}
+      <div className="relative">
+        {/* Линия маршрута */}
+        <div className="absolute top-6 left-0 right-0 h-1 bg-surface-tertiary" />
+        <div
+          className="absolute top-6 left-0 h-1 bg-brand-primary transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        />
 
-          return (
-            <div
-              key={step.cellId}
-              onClick={() => onStepClick?.(index)}
-              className={`flex-shrink-0 w-32 p-3 rounded-lg border-2 transition-all cursor-pointer ${
-                isCurrent
-                  ? 'border-brand-primary bg-brand-primary/10 shadow-lg scale-105'
-                  : isCompleted
-                  ? 'border-success bg-success/10'
-                  : isSkipped
-                  ? 'border-warning bg-warning/10'
-                  : isPast
-                  ? 'border-separator bg-surface-tertiary opacity-60'
-                  : 'border-separator hover:border-brand-primary/50'
-              }`}
-            >
-              <div className="flex items-start justify-between mb-2">
-                <MapPin
-                  size={16}
-                  className={
+        {/* Ячейки на линии */}
+        <div className="relative flex justify-between">
+          {route.map((step, index) => {
+            const isCurrent = index === currentStepIndex;
+            const isCompleted = step.status === 'completed';
+            const isSkipped = step.status === 'skipped';
+            const isPast = index < currentStepIndex;
+
+            return (
+              <div
+                key={step.cellId}
+                onClick={() => onStepClick?.(index)}
+                className="flex flex-col items-center cursor-pointer"
+                style={{ width: `${100 / route.length}%` }}
+              >
+                {/* Точка на линии */}
+                <div
+                  className={`w-12 h-12 rounded-full border-4 flex items-center justify-center transition-all z-10 ${
                     isCurrent
-                      ? 'text-brand-primary'
+                      ? 'border-brand-primary bg-brand-primary shadow-lg scale-125'
                       : isCompleted
-                      ? 'text-success'
+                      ? 'border-success bg-success'
                       : isSkipped
-                      ? 'text-warning'
-                      : 'text-content-tertiary'
-                  }
-                />
-                {isCompleted && <CheckCircle size={16} className="text-success" />}
-                {isSkipped && <Circle size={16} className="text-warning" />}
+                      ? 'border-warning bg-warning'
+                      : isPast
+                      ? 'border-surface-tertiary bg-surface-tertiary'
+                      : 'border-surface-tertiary bg-white'
+                  }`}
+                >
+                  {isCompleted ? (
+                    <CheckCircle size={20} className="text-white" />
+                  ) : isSkipped ? (
+                    <Circle size={20} className="text-white" />
+                  ) : isCurrent ? (
+                    <MapPin size={20} className="text-white" />
+                  ) : (
+                    <span className="text-xs font-bold text-content-tertiary">{index + 1}</span>
+                  )}
+                </div>
+
+                {/* Название ячейки */}
+                <div className="mt-2 text-center max-w-20">
+                  <div className={`font-bold text-sm truncate ${
+                    isCurrent ? 'text-brand-primary' : isCompleted ? 'text-success' : ''
+                  }`}>
+                    {step.cellName}
+                  </div>
+                  <div className="text-xs text-content-tertiary">
+                    {step.products.length} шт
+                  </div>
+                </div>
               </div>
-
-              <div className="font-bold text-sm mb-1">{step.cellName}</div>
-              <div className="text-xs text-content-tertiary">
-                {step.products.length} {step.products.length === 1 ? 'товар' : 'товаров'}
-              </div>
-
-              {isCurrent && (
-                <div className="mt-2 pt-2 border-t border-separator">
-                  <div className="text-xs font-bold text-brand-primary">ТЕКУЩАЯ</div>
-                </div>
-              )}
-
-              {isCompleted && (
-                <div className="mt-2 pt-2 border-t border-separator">
-                  <div className="text-xs font-bold text-success">ГОТОВО</div>
-                </div>
-              )}
-
-              {isSkipped && (
-                <div className="mt-2 pt-2 border-t border-separator">
-                  <div className="text-xs font-bold text-warning">ПРОПУЩЕНО</div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Текущая и следующая ячейка */}
-      <div className="flex items-center gap-3 pt-2 border-t border-separator">
-        <div className="flex-1">
-          <div className="text-xs text-content-tertiary mb-1">Текущая ячейка</div>
-          <div className="font-bold text-brand-primary">
-            {route[currentStepIndex]?.cellName || '—'}
-          </div>
+            );
+          })}
         </div>
-
-        {currentStepIndex < route.length - 1 && (
-          <>
-            <ArrowRight size={20} className="text-content-tertiary" />
-            <div className="flex-1">
-              <div className="text-xs text-content-tertiary mb-1">Следующая</div>
-              <div className="font-bold">{route[currentStepIndex + 1]?.cellName || '—'}</div>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );
 };
+
+
+
 
 
 

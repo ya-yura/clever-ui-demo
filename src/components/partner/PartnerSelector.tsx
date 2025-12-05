@@ -22,6 +22,7 @@ export const PartnerSelector: React.FC<PartnerSelectorProps> = ({
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [recentPartners, setRecentPartners] = useState<PartnerStats[]>([]);
   const [selectedPartner, setSelectedPartner] = useState<Employee | null>(null);
+  const [yesterdayPartnerId, setYesterdayPartnerId] = useState<string | null>(null);
   const [filter, setFilter] = useState<PartnerFilter>({ isActive: true });
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'all' | 'recent'>('recent');
@@ -34,17 +35,27 @@ export const PartnerSelector: React.FC<PartnerSelectorProps> = ({
   const loadData = async () => {
     setLoading(true);
     try {
-      const [allEmployees, recent] = await Promise.all([
+      const [allEmployees, recent, yesterdayId] = await Promise.all([
         partnerService.getActiveEmployees(),
         showRecentPartners
           ? partnerService.getRecentPartners(currentUserId)
           : Promise.resolve([]),
+        partnerService.getYesterdayPartner(currentUserId),
       ]);
 
       // Exclude current user from list
       const filtered = allEmployees.filter(emp => emp.id !== currentUserId);
       setEmployees(filtered);
       setRecentPartners(recent);
+      setYesterdayPartnerId(yesterdayId);
+      
+      // Auto-suggest yesterday's partner if found
+      if (yesterdayId) {
+        const yesterdayPartner = filtered.find(emp => emp.id === yesterdayId);
+        if (yesterdayPartner && yesterdayPartner.isActive) {
+          setSelectedPartner(yesterdayPartner);
+        }
+      }
     } catch (error) {
       console.error('Error loading partner data:', error);
     } finally {
@@ -52,18 +63,33 @@ export const PartnerSelector: React.FC<PartnerSelectorProps> = ({
     }
   };
 
-  // Apply filters
-  const filteredEmployees = employees.filter(emp => {
-    if (filter.searchQuery) {
-      const query = filter.searchQuery.toLowerCase();
-      return (
-        emp.name.toLowerCase().includes(query) ||
-        emp.badge?.toLowerCase().includes(query) ||
-        emp.role?.toLowerCase().includes(query)
-      );
-    }
-    return true;
-  });
+  // Apply filters with priority for name start matches
+  const filteredEmployees = employees
+    .filter(emp => {
+      if (filter.searchQuery) {
+        const query = filter.searchQuery.toLowerCase();
+        return (
+          emp.name.toLowerCase().includes(query) ||
+          emp.badge?.toLowerCase().includes(query) ||
+          emp.role?.toLowerCase().includes(query)
+        );
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      // If searching, prioritize matches at the start of name
+      if (filter.searchQuery) {
+        const query = filter.searchQuery.toLowerCase();
+        const aStartsWith = a.name.toLowerCase().startsWith(query);
+        const bStartsWith = b.name.toLowerCase().startsWith(query);
+        
+        if (aStartsWith && !bStartsWith) return -1;
+        if (!aStartsWith && bStartsWith) return 1;
+      }
+      
+      // Default alphabetical sort
+      return a.name.localeCompare(b.name);
+    });
 
   const handleSelect = (employee: Employee) => {
     if (selectedPartner?.id === employee.id) {
@@ -163,14 +189,43 @@ export const PartnerSelector: React.FC<PartnerSelectorProps> = ({
 
       {/* List */}
       <div className="flex-1 overflow-auto p-4 space-y-3 bg-gray-50">
+        {/* Yesterday's partner suggestion */}
+        {yesterdayPartnerId && view === 'recent' && (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-3 mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl">💡</span>
+              <div className="text-sm font-semibold text-blue-900">
+                Вчера вы работали с этим напарником:
+              </div>
+            </div>
+            {(() => {
+              const employee = getEmployeeById(yesterdayPartnerId);
+              if (!employee || !employee.isActive) return null;
+              const stats = recentPartners.find(s => s.partnerId === yesterdayPartnerId);
+              return (
+                <PartnerCard
+                  key={employee.id}
+                  employee={employee}
+                  stats={stats}
+                  selected={selectedPartner?.id === employee.id}
+                  onClick={() => handleSelect(employee)}
+                  showStats
+                />
+              );
+            })()}
+          </div>
+        )}
+
         {view === 'recent' && recentPartners.length > 0 ? (
           <>
             <div className="text-sm text-gray-600 mb-2">
-              💡 Выберите из недавних напарников:
+              📋 Недавние напарники:
             </div>
             {recentPartners.map(stats => {
               const employee = getEmployeeById(stats.partnerId);
               if (!employee) return null;
+              // Skip yesterday's partner if already shown above
+              if (yesterdayPartnerId === employee.id) return null;
               return (
                 <PartnerCard
                   key={employee.id}
@@ -233,7 +288,7 @@ export const PartnerSelector: React.FC<PartnerSelectorProps> = ({
                 onClick={handleConfirm}
                 className="flex-1 py-3 px-4 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
               >
-                ✓ Начать работу
+                Начать работу
               </button>
             </div>
           </div>

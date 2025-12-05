@@ -160,7 +160,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         {/* End of List */}
         {!hasMore && documents.length > INITIAL_LOAD && (
           <div className="py-4 text-center text-sm text-gray-500">
-            ✓ Все документы загружены ({documents.length})
+            Все документы загружены ({documents.length})
           </div>
         )}
       </div>
