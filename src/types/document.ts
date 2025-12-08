@@ -31,6 +31,7 @@ export interface UniversalDocument {
   // Document metadata
   number?: string;              // Document number
   externalId?: string;          // External system ID
+  isPinned?: boolean;           // Pinned/favorite document
   
   // Dates
   createdAt: number;

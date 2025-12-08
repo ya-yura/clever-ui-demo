@@ -1,0 +1,34 @@
+{
+  "API_URL": "http://localhost:3000/api",
+  "TIMEOUT": 30000,
+  "RETRY_POLICY": {
+    "maxRetries": 3,
+    "retryDelay": 1000,
+    "retryableStatuses": [408, 429, 500, 502, 503, 504]
+  },
+  "OFFLINE_QUEUE": {
+    "enabled": true,
+    "maxQueueSize": 1000,
+    "syncInterval": 60000
+  },
+  "ENABLE_METRICS": true,
+  "METRICS_ENDPOINT": "/api/metrics/report",
+  "METRICS_BATCH_SIZE": 100,
+  "METRICS_FLUSH_INTERVAL": 60000,
+  "FEATURES": {
+    "enableOfflineMode": true,
+    "enableMetrics": true,
+    "enableExperiments": true,
+    "enableVoiceAssistant": true,
+    "enableTeamMode": true,
+    "enableOnboarding": true
+  },
+  "PERFORMANCE": {
+    "enableCodeSplitting": true,
+    "enableLazyLoading": true,
+    "imageOptimization": true,
+    "cacheStrategy": "balanced"
+  }
+}
+
+

@@ -262,3 +262,6 @@ export const trackProduct = (id: string, name: string, barcode: string) =>
   UserPreferencesService.trackProductScan(id, name, barcode);
 export const trackModule = (module: string, duration: number) =>
   UserPreferencesService.trackModuleUsage(module, duration);
+
+
+

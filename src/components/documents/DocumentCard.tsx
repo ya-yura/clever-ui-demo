@@ -13,11 +13,13 @@ import { DocumentStatus } from '@/types/common';
 import { documentService } from '@/services/documentService';
 import { formatDate, formatRelativeTime } from '@/utils/date';
 import { Card, Badge, ProgressBar, BadgeVariant } from '@/design/components';
-import { Eye } from 'lucide-react';
+import { Eye, Star } from 'lucide-react';
 
 interface DocumentCardProps {
   document: UniversalDocument;
   onQuickView?: (document: UniversalDocument) => void;
+  onTogglePin?: (documentId: string) => void;
+  isPinned?: boolean;
 }
 
 // Map document status to badge variant
@@ -32,7 +34,12 @@ const getStatusVariant = (status: DocumentStatus): BadgeVariant => {
   }
 };
 
-export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onQuickView }) => {
+export const DocumentCard: React.FC<DocumentCardProps> = ({ 
+  document, 
+  onQuickView, 
+  onTogglePin,
+  isPinned = false 
+}) => {
   const navigate = useNavigate();
   
   const completionPercentage = documentService.getCompletionPercentage(document);
@@ -49,27 +56,64 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onQuickVie
     onQuickView?.(document);
   };
 
+  const handleTogglePin = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onTogglePin?.(document.id);
+  };
+
+  const getActionButtonText = () => {
+    if (document.status === 'completed') return 'Просмотр';
+    if (document.status === 'in_progress') return 'Продолжить';
+    return 'Начать';
+  };
+
+  const handleActionClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleClick();
+  };
+
   return (
     <Card
       variant="interactive"
       onClick={handleClick}
-      className="p-4"
+      className="p-4 hover:shadow-lg transition-all duration-200"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl filter grayscale-[0.2]">{DOCUMENT_TYPE_ICONS[document.type]}</span>
-          <div>
-            <div className="font-semibold text-content-primary">
-              {document.number || document.id.slice(0, 8)}
+        <div className="flex items-center gap-3 flex-1">
+          <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-brand-primary/20 to-brand-secondary/20 rounded-xl">
+            <span className="text-2xl">{DOCUMENT_TYPE_ICONS[document.type]}</span>
+          </div>
+          <div className="flex-1">
+            <div className="text-lg font-bold text-content-primary mb-0.5">
+              {document.number || `#${document.id.slice(0, 8).toUpperCase()}`}
             </div>
-            <div className="text-xs text-content-tertiary">
-              {DOCUMENT_TYPE_LABELS[document.type]}
-            </div>
+            <Badge 
+              label={DOCUMENT_TYPE_LABELS[document.type]}
+              variant="neutral"
+              className="text-xs"
+            />
           </div>
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Pin/Favorite Button */}
+          {onTogglePin && (
+            <button
+              onClick={handleTogglePin}
+              className={`p-2 hover:bg-surface-tertiary rounded-lg transition-all ${
+                isPinned ? 'text-warning' : 'text-content-tertiary'
+              }`}
+              title={isPinned ? 'Открепить' : 'Закрепить'}
+            >
+              <Star 
+                size={18} 
+                fill={isPinned ? 'currentColor' : 'none'}
+                className="transition-all"
+              />
+            </button>
+          )}
+          
           {/* Quick View Button */}
           {onQuickView && (
             <button
@@ -80,12 +124,16 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onQuickVie
               <Eye size={18} className="text-brand-primary" />
             </button>
           )}
-          
-          <Badge 
-            label={STATUS_LABELS[document.status]} 
-            variant={getStatusVariant(document.status)} 
-          />
         </div>
+      </div>
+
+      {/* Status Badge */}
+      <div className="mb-3">
+        <Badge 
+          label={STATUS_LABELS[document.status]} 
+          variant={getStatusVariant(document.status)}
+          className="text-sm"
+        />
       </div>
 
       {/* Partner Info */}
@@ -111,22 +159,24 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onQuickVie
         </div>
       )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
+      {/* Stats - Крупное отображение количества позиций */}
+      <div className="grid grid-cols-2 gap-3 mb-3">
         {document.totalLines !== undefined && (
-          <div className="bg-surface-tertiary/50 rounded px-2 py-1">
-            <div className="text-xs text-content-tertiary">Строк</div>
-            <div className="font-medium text-content-primary">
-              {document.completedLines || 0} / {document.totalLines}
+          <div className="bg-gradient-to-br from-brand-primary/10 to-brand-secondary/5 border border-brand-primary/20 rounded-lg px-3 py-2.5">
+            <div className="text-xs font-medium text-content-tertiary mb-1">Позиций</div>
+            <div className="text-xl font-bold text-content-primary">
+              {document.completedLines || 0}
+              <span className="text-sm font-normal text-content-tertiary"> / {document.totalLines}</span>
             </div>
           </div>
         )}
         
         {document.totalQuantity !== undefined && (
-          <div className="bg-surface-tertiary/50 rounded px-2 py-1">
-            <div className="text-xs text-content-tertiary">Количество</div>
-            <div className="font-medium text-content-primary">
-              {document.completedQuantity || 0} / {document.totalQuantity}
+          <div className="bg-gradient-to-br from-success/10 to-brand-secondary/5 border border-success/20 rounded-lg px-3 py-2.5">
+            <div className="text-xs font-medium text-content-tertiary mb-1">Количество</div>
+            <div className="text-xl font-bold text-content-primary">
+              {document.completedQuantity || 0}
+              <span className="text-sm font-normal text-content-tertiary"> / {document.totalQuantity}</span>
             </div>
           </div>
         )}
@@ -190,6 +240,20 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onQuickVie
           💬 {document.notes}
         </div>
       )}
+
+      {/* CTA Button - Начать/Продолжить */}
+      <div className="mt-4 pt-3 border-t border-surface-tertiary">
+        <button
+          onClick={handleActionClick}
+          className={`w-full py-3 px-4 rounded-lg font-semibold text-sm transition-all duration-200 ${
+            document.status === 'completed'
+              ? 'bg-surface-tertiary text-content-primary hover:bg-surface-tertiary/80'
+              : 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white hover:shadow-md hover:scale-[1.02] active:scale-[0.98]'
+          }`}
+        >
+          {getActionButtonText()}
+        </button>
+      </div>
     </Card>
   );
 };

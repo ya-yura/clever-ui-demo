@@ -96,3 +96,6 @@ export const useSwipe = (
     };
   }, [ref, onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, minSwipeDistance, preventScroll]);
 };
+
+
+

@@ -195,3 +195,6 @@ export const quickVoice = {
   wait: () => WarehouseVoicePhrases.waitPlease(),
   ok: () => WarehouseVoicePhrases.confirmed(),
 };
+
+
+

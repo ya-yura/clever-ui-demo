@@ -134,3 +134,6 @@ export const useSmartError = () => {
     ErrorDialog: () => <SmartErrorDialog error={error} onClose={clearError} />,
   };
 };
+
+
+
