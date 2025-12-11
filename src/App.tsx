@@ -33,6 +33,8 @@ import { DocumentHeaderProvider } from './contexts/DocumentHeaderContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NavigationTracker } from './components/NavigationTracker';
 import StatDashboard from './pages/StatDashboard';
+import ReceivingModern from './pages/ReceivingModern';
+import UIKitDemo from './pages/UIKitDemo';
 
 function App() {
   // Initial data loading
@@ -72,6 +74,9 @@ function App() {
                 <Route path="partner" element={<PartnerManagement />} />
                 <Route path="receiving" element={<Receiving />} />
                 <Route path="receiving/:id" element={<Receiving />} />
+                <Route path="receiving-modern" element={<ReceivingModern />} />
+                <Route path="receiving-modern/:id" element={<ReceivingModern />} />
+                <Route path="ui-kit" element={<UIKitDemo />} />
                 <Route path="placement" element={<Placement />} />
                 <Route path="placement/:id" element={<Placement />} />
                 <Route path="picking" element={<Picking />} />

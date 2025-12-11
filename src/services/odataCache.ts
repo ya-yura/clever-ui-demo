@@ -92,8 +92,16 @@ class ODataCacheService {
       return cached;
     }
 
+    // Final fallback - use demo data
+    console.warn('⚠️ No DocTypes available from API/cache, falling back to demo data');
+    const demoData = demoDataService.getDocTypes();
+    if (demoData.value.length > 0) {
+      console.log('🎭 [DEMO FALLBACK] Loaded', demoData.value.length, 'DocTypes from demo data');
+      return demoData.value;
+    }
+
     // Return empty array to signal no data available
-    console.warn('⚠️ No DocTypes available (API failed and no cache)');
+    console.error('❌ No DocTypes available from any source');
     throw new Error('No DocTypes available');
   }
 
@@ -170,7 +178,14 @@ class ODataCacheService {
       return fallback;
     }
 
-    console.warn('⚠️ [CACHE] No documents available (API failed and cache empty)');
+    // Final fallback - use demo data
+    console.warn('⚠️ [CACHE] No documents available (API failed and cache empty), falling back to demo data');
+    const demoData = demoDataService.getAllDocuments();
+    if (demoData.length > 0) {
+      console.log(`🎭 [DEMO FALLBACK] Loaded ${demoData.length} documents from demo data`);
+      return demoData as any[];
+    }
+
     return [];
   }
 
@@ -273,6 +288,14 @@ class ODataCacheService {
     if (fallback.length > 0) {
       console.log(`⚠️ [CACHE] Using stale cache for ${docTypeUni}`);
       return fallback;
+    }
+
+    // Final fallback - use demo data
+    console.warn(`⚠️ No documents available from API/cache for ${docTypeUni}, falling back to demo data`);
+    const demoData = demoDataService.getDocuments(docTypeUni);
+    if (demoData.value.length > 0) {
+      console.log(`🎭 [DEMO FALLBACK] Loaded ${demoData.value.length} documents for ${docTypeUni} from demo data`);
+      return demoData.value;
     }
 
     return [];

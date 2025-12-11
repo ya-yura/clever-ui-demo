@@ -16,3 +16,6 @@ http.get('http://localhost:9000/MobileSMARTS/api/v1/DocTypes', (res) => {
 
 
 
+
+
+

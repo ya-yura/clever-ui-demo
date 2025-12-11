@@ -1,1 +1,15 @@
-{ "value": [] }
+{
+  "@odata.context": "http://localhost:9000/MobileSMARTS/api/v1/$metadata#Employees",
+  "value": [
+    { "id": "user-001", "code": "001", "name": "Иванов Иван", "badge": "001", "role": "Кладовщик", "department": "Склад основной", "phone": "+7 (900) 123-45-67", "isActive": true },
+    { "id": "user-002", "code": "002", "name": "Петров Петр", "badge": "002", "role": "Комплектовщик", "department": "Склад основной", "phone": "+7 (900) 123-45-68", "isActive": true },
+    { "id": "user-003", "code": "003", "name": "Сидорова Анна", "badge": "003", "role": "Комплектовщик", "department": "Склад основной", "phone": "+7 (900) 123-45-69", "isActive": true },
+    { "id": "user-004", "code": "004", "name": "Козлов Михаил", "badge": "004", "role": "Кладовщик", "department": "Склад запасной", "phone": "+7 (900) 123-45-70", "isActive": true },
+    { "id": "user-005", "code": "005", "name": "Смирнова Ольга", "badge": "005", "role": "Старший кладовщик", "department": "Склад основной", "phone": "+7 (900) 123-45-71", "isActive": true },
+    { "id": "user-006", "code": "006", "name": "Васильев Алексей", "badge": "006", "role": "Комплектовщик", "department": "Склад запасной", "phone": "+7 (900) 123-45-72", "isActive": true },
+    { "id": "user-007", "code": "007", "name": "Морозова Екатерина", "badge": "007", "role": "Приемщик", "department": "Склад основной", "phone": "+7 (900) 123-45-73", "isActive": true },
+    { "id": "user-008", "code": "008", "name": "Новиков Дмитрий", "badge": "008", "role": "Грузчик", "department": "Склад основной", "phone": "+7 (900) 123-45-74", "isActive": true },
+    { "id": "user-009", "code": "009", "name": "Павлова Мария", "badge": "009", "role": "Комплектовщик", "department": "Склад основной", "phone": "+7 (900) 123-45-75", "isActive": true },
+    { "id": "user-010", "code": "010", "name": "Федоров Сергей", "badge": "010", "role": "Кладовщик", "department": "Склад запасной", "phone": "+7 (900) 123-45-76", "isActive": false }
+  ]
+}

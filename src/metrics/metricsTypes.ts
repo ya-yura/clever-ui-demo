@@ -12,56 +12,118 @@ export type MetricCategory =
 
 /**
  * Performance metrics (Рабочие показатели)
+ * ✨ С учетом UX-эффективности
  */
 export interface PerformanceMetrics {
   // Время выполнения операций
-  documentProcessingTime: number;      // мс
-  pickingTime: number;                 // мс
-  inventoryTime: number;               // мс
-  shippingTime: number;                // мс
+  documentProcessingTime?: number;      // мс
+  pickingTime?: number;                 // мс
+  inventoryTime?: number;               // мс
+  shippingTime?: number;                // мс
   
   // Количественные показатели
-  skuProcessed: number;
-  correctionsCount: number;
-  wrongScansCount: number;
+  skuProcessed?: number;
+  correctionsCount?: number;
+  wrongScansCount?: number;
   
   // Скорость
-  itemsPerHour: number;
-  linesPerHour: number;
+  itemsPerHour?: number;
+  linesPerHour?: number;
+  
+  // === UX Impact ===
+  errorRate?: number;                   // % ошибок
+  completionRate?: number;              // % завершенных операций
 }
 
 /**
  * Error metrics (Ошибки)
+ * ✨ Расширенные метрики с контекстом исправления
  */
 export interface ErrorMetrics {
   // Процентные показатели
-  deviationPercent: number;
-  pickingErrorPercent: number;
-  quantityConflictsCount: number;
-  cancellationsCount: number;
+  deviationPercent?: number;
+  pickingErrorPercent?: number;
+  quantityConflictsCount?: number;
+  cancellationsCount?: number;
   
   // Технические
-  freezeTime: number;  // время зависаний в мс
-  networkErrors: number;
-  validationErrors: number;
+  freezeTime?: number;              // время зависаний в мс
+  networkErrors?: number;
+  validationErrors?: number;
+  
+  // === Error-as-Guidance metrics ===
+  errorType?: string;               // тип ошибки
+  guidanceProvided?: boolean;       // была ли предоставлена помощь
+  resolved?: boolean;               // была ли ошибка исправлена
+  resolutionTime?: number;          // время на исправление (мс)
+  userRetries?: number;             // попыток исправления
 }
 
 /**
  * UX metrics (Метрики пользовательского опыта)
+ * ✨ Расширенные метрики по паттернам коммуникации Джеки Рида
  */
 export interface UXMetrics {
-  // Поиск и навигация
-  documentSearchTime: number;  // мс
-  clicksToTarget: number;
-  backNavigationsCount: number;
+  // === Signal → Action → Feedback ===
+  timeToFirstScan?: number;           // время от открытия документа до первого скана
+  scanSuccessRate?: number;           // % успешных сканов
+  feedbackLatency?: number;           // задержка обратной связи (мс)
   
-  // Интерфейс
-  errorDialogsCount: number;
-  helpViewsCount: number;
+  // === Поиск и навигация ===
+  documentSearchTime?: number;        // время поиска документа (мс)
+  clicksToTarget?: number;            // кликов до целевого действия
+  backNavigationsCount?: number;      // количество возвратов назад
+  navigationMethod?: 'auto' | 'manual' | 'back';
+  navigationTime?: number;            // время перехода (мс)
   
-  // Производительность интерфейса
-  pageLoadTime: number;
-  componentRenderTime: number;
+  // === Chunking ===
+  chunkedViewUsed?: boolean;          // использовалась ли группировка
+  groupsShown?: number;               // количество групп на экране
+  itemsPerGroup?: number;             // среднее кол-во элементов в группе
+  
+  // === Progressive Disclosure ===
+  elementsShown?: number;             // видимых элементов
+  elementsHidden?: number;            // скрытых элементов
+  revealInteractions?: number;        // раскрытий информации
+  cognitiveLoadReduction?: number;    // снижение когнитивной нагрузки (0-1)
+  
+  // === Contextual Guidance ===
+  hintShown?: boolean;                // была ли показана подсказка
+  hintType?: 'micro_hint' | 'error_hint' | 'contextual';
+  hintEffective?: boolean;            // помогла ли подсказка
+  timeToAction?: number;              // время от подсказки до действия (мс)
+  hintsShownCount?: number;           // общее количество подсказок
+  hintsPerItem?: number;              // подсказок на элемент
+  
+  // === Error-as-Guidance ===
+  errorType?: string;                 // тип ошибки
+  guidanceProvided?: boolean;         // была ли предоставлена помощь
+  errorRecoveryTime?: number;         // время исправления ошибки (мс)
+  errorDialogsCount?: number;         // количество диалогов с ошибками
+  
+  // === Screen Interaction ===
+  screenFocusTime?: number;           // время фокуса на экране (мс)
+  interactionsPerMinute?: number;     // взаимодействий в минуту
+  screenComplexity?: 'low' | 'medium' | 'high';
+  swipeActionsCount?: number;         // количество свайпов
+  
+  // === Micro Rewards ===
+  rewardsShown?: number;              // показано микро-наград
+  progressUpdates?: number;           // обновлений прогресса
+  
+  // === Efficiency ===
+  efficiencyScore?: number;           // общий показатель эффективности
+  stepsReduction?: number;            // сокращение шагов относительно базового
+  filtersUsed?: number;               // использовано фильтров
+  
+  // === Performance UI ===
+  pageLoadTime?: number;              // время загрузки страницы (мс)
+  componentRenderTime?: number;       // время рендера компонента (мс)
+  helpViewsCount?: number;            // просмотров справки
+  
+  // === Custom Events ===
+  eventType?: string;                 // тип кастомного события
+  duration?: number;                  // длительность события (мс)
 }
 
 /**

@@ -1,1 +1,23 @@
-{ "value": [] }
+{
+  "@odata.context": "http://localhost:9000/MobileSMARTS/api/v1/$metadata#Cells",
+  "value": [
+    { "id": "A-01-01", "code": "A-01-01", "barcode": "A0101", "zone": "A", "row": "01", "level": "01", "capacity": 100, "occupied": 45, "type": "standard", "name": "Ячейка A-01-01" },
+    { "id": "A-01-02", "code": "A-01-02", "barcode": "A0102", "zone": "A", "row": "01", "level": "02", "capacity": 100, "occupied": 30, "type": "standard", "name": "Ячейка A-01-02" },
+    { "id": "A-01-03", "code": "A-01-03", "barcode": "A0103", "zone": "A", "row": "01", "level": "03", "capacity": 100, "occupied": 60, "type": "standard", "name": "Ячейка A-01-03" },
+    { "id": "A-02-01", "code": "A-02-01", "barcode": "A0201", "zone": "A", "row": "02", "level": "01", "capacity": 100, "occupied": 85, "type": "standard", "name": "Ячейка A-02-01" },
+    { "id": "A-02-02", "code": "A-02-02", "barcode": "A0202", "zone": "A", "row": "02", "level": "02", "capacity": 100, "occupied": 20, "type": "standard", "name": "Ячейка A-02-02" },
+    { "id": "A-02-03", "code": "A-02-03", "barcode": "A0203", "zone": "A", "row": "02", "level": "03", "capacity": 100, "occupied": 70, "type": "standard", "name": "Ячейка A-02-03" },
+    { "id": "B-01-01", "code": "B-01-01", "barcode": "B0101", "zone": "B", "row": "01", "level": "01", "capacity": 150, "occupied": 90, "type": "large", "name": "Ячейка B-01-01" },
+    { "id": "B-01-02", "code": "B-01-02", "barcode": "B0102", "zone": "B", "row": "01", "level": "02", "capacity": 150, "occupied": 110, "type": "large", "name": "Ячейка B-01-02" },
+    { "id": "B-02-01", "code": "B-02-01", "barcode": "B0201", "zone": "B", "row": "02", "level": "01", "capacity": 150, "occupied": 45, "type": "large", "name": "Ячейка B-02-01" },
+    { "id": "B-02-02", "code": "B-02-02", "barcode": "B0202", "zone": "B", "row": "02", "level": "02", "capacity": 150, "occupied": 130, "type": "large", "name": "Ячейка B-02-02" },
+    { "id": "C-01-01", "code": "C-01-01", "barcode": "C0101", "zone": "C", "row": "01", "level": "01", "capacity": 200, "occupied": 150, "type": "bulk", "name": "Ячейка C-01-01" },
+    { "id": "C-01-02", "code": "C-01-02", "barcode": "C0102", "zone": "C", "row": "01", "level": "02", "capacity": 200, "occupied": 80, "type": "bulk", "name": "Ячейка C-01-02" },
+    { "id": "C-02-01", "code": "C-02-01", "barcode": "C0201", "zone": "C", "row": "02", "level": "01", "capacity": 200, "occupied": 180, "type": "bulk", "name": "Ячейка C-02-01" },
+    { "id": "D-01-01", "code": "D-01-01", "barcode": "D0101", "zone": "D", "row": "01", "level": "01", "capacity": 50, "occupied": 25, "type": "cold", "name": "Ячейка D-01-01" },
+    { "id": "D-01-02", "code": "D-01-02", "barcode": "D0102", "zone": "D", "row": "01", "level": "02", "capacity": 50, "occupied": 40, "type": "cold", "name": "Ячейка D-01-02" },
+    { "id": "D-02-01", "code": "D-02-01", "barcode": "D0201", "zone": "D", "row": "02", "level": "01", "capacity": 50, "occupied": 15, "type": "cold", "name": "Ячейка D-02-01" },
+    { "id": "E-01-01", "code": "E-01-01", "barcode": "E0101", "zone": "E", "row": "01", "level": "01", "capacity": 30, "occupied": 20, "type": "freezer", "name": "Ячейка E-01-01" },
+    { "id": "E-01-02", "code": "E-01-02", "barcode": "E0102", "zone": "E", "row": "01", "level": "02", "capacity": 30, "occupied": 25, "type": "freezer", "name": "Ячейка E-01-02" }
+  ]
+}

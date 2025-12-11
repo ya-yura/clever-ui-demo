@@ -70,19 +70,7 @@ const getDescriptionForType = (type: ODataDocumentType): string => {
   return DESCRIPTION_BY_UNI[type.uni] || `Выполнить операцию: ${getShortTitleForType(type)}.`;
 };
 
-// Icon mapping based on document type name
-const getIconForDocType = (name: string): string => {
-  const lowerName = name.toLowerCase();
-  if (lowerName.includes('прих') || lowerName.includes('receiving')) return '📦';
-  if (lowerName.includes('инвентар') || lowerName.includes('inventory')) return '📊';
-  if (lowerName.includes('подбор') || lowerName.includes('pick')) return '🚚';
-  if (lowerName.includes('размещ') || lowerName.includes('placement')) return '📝';
-  if (lowerName.includes('отгруз') || lowerName.includes('shipment')) return '📄';
-  if (lowerName.includes('возврат') || lowerName.includes('return')) return '📷';
-  if (lowerName.includes('перемещ') || lowerName.includes('move')) return '🔄';
-  if (lowerName.includes('маркир') || lowerName.includes('label')) return '🏷️';
-  return '📋';
-};
+// Icon mapping removed - no icons/emojis should be displayed
 
 // Color mapping based on index (returns raw color values)
 const getColorForIndex = (index: number): string => {
@@ -327,11 +315,11 @@ const Home: React.FC = () => {
             description: getDescriptionForType(type),
             color: bgClass,
             backgroundColor: bgStyle,
-            icon: getIconForDocType(type.name),
+            icon: '',
             docsCount,
           };
 
-          console.log(`📦 [TYPE ${index}]`, result.displayName, '→ bgClass:', result.color, 'bgStyle:', result.backgroundColor, 'icon:', result.icon);
+          console.log(`📦 [TYPE ${index}]`, result.displayName, '→ bgClass:', result.color, 'bgStyle:', result.backgroundColor);
 
           return result;
         })
@@ -366,7 +354,7 @@ const Home: React.FC = () => {
           displayName: type.displayName || type.name,
           description: `Работа с документами типа "${type.displayName || type.name}"`,
           color: color,
-          icon: getIconForDocType(type.name),
+          icon: '',
           docsCount: 0,
         };
       });
@@ -391,7 +379,7 @@ const Home: React.FC = () => {
     navigate(`/docs/${uni}`);
   };
 
-  // Получение последних использованных модулей из docTypes
+  // Получение последних использованных модулей из docTypes (3 штуки для новой области)
   const recentModuleTiles = recentModules
     .map(uni => docTypes.find(dt => dt.uni === uni))
     .filter((x): x is DocTypeCard => Boolean(x))
@@ -412,8 +400,7 @@ const Home: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-2xl px-4">
-          <div className="text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-error mb-2">Ошибка загрузки</h2>
+          <div className="text-2xl font-bold text-error mb-2">Ошибка загрузки</div>
           <pre className="text-content-tertiary mb-6 text-left bg-surface-primary p-4 rounded-lg whitespace-pre-wrap text-sm">{error}</pre>
           <div className="flex gap-4 justify-center flex-wrap">
             <button
@@ -499,34 +486,10 @@ const Home: React.FC = () => {
         )}
       </div>
 
-      {/* Последние использованные модули */}
-      {recentModuleTiles.length > 0 && (
-        <div className="bg-surface-secondary rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Clock size={18} className="text-brand-primary" />
-            <h3 className="font-bold text-sm">Последние использованные</h3>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {recentModuleTiles.map((tile) => (
-              <button
-                key={tile.uni}
-                onClick={() => navigateToModule(tile.uni)}
-                className="p-3 bg-brand-primary/10 hover:bg-brand-primary/20 border-2 border-brand-primary/30 rounded-lg transition-all text-left"
-              >
-                <div className="text-2xl mb-1">{tile.icon}</div>
-                <div className="font-bold text-sm text-brand-primary">{tile.displayName}</div>
-                <div className="text-xs text-content-tertiary mt-1">{tile.docsCount} док.</div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Warning banner if using mock data */}
       {usingMockData && (
         <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <span className="text-2xl">⚠️</span>
             <div className="flex-1">
               <h3 className="text-yellow-400 font-semibold mb-1">
                 Демо-режим
@@ -545,24 +508,79 @@ const Home: React.FC = () => {
         </div>
       )}
 
-      {/* Hero layout: 4-column grid (matching Figma mockup) */}
+      {/* Hero layout: 4-column grid */}
       <div className="grid grid-cols-4 gap-1.5 md:gap-2">
-        {/* 1. Приход - Left large tile (yellow) */}
-        {tPrihod && (
-          <button
-            key={tPrihod.uni}
-            onClick={() => navigateToModule(tPrihod.uni)}
-            className="tile-primary tone-strong col-span-2 row-span-2 bg-module-receiving-bg text-module-receiving-text"
-          >
-            <div>
-              <h2 className="tile-title-lg">{tPrihod.displayName}</h2>
-              <p className="tile-subtext opacity-80">{tPrihod.description}</p>
-            </div>
-            <div className="tile-footer">
-              <span className="tile-count-hero">{tPrihod.docsCount}</span>
-            </div>
-          </button>
-        )}
+        {/* Область 2: Последние операции - Left large area (2x2 grid) */}
+        <div className="col-span-2 row-span-2 grid grid-cols-2 gap-1.5">
+          {/* Большая кнопка - последняя операция (занимает 2 строки) */}
+          {recentModuleTiles[0] && (
+            <button
+              onClick={() => navigateToModule(recentModuleTiles[0].uni)}
+              className="tile-primary tone-strong row-span-2 bg-module-receiving-bg text-module-receiving-text"
+            >
+              <div>
+                <h2 className="tile-title-lg">{recentModuleTiles[0].displayName}</h2>
+                <p className="tile-subtext opacity-80">{recentModuleTiles[0].description}</p>
+              </div>
+            </button>
+          )}
+          
+          {/* Боковые кнопки - более ранние операции */}
+          {recentModuleTiles[1] && (
+            <button
+              onClick={() => navigateToModule(recentModuleTiles[1].uni)}
+              className="tile-secondary tone-medium bg-module-picking-bg text-module-picking-text"
+            >
+              <div>
+                <h2 className="tile-title-sm">{recentModuleTiles[1].displayName}</h2>
+              </div>
+            </button>
+          )}
+          
+          {recentModuleTiles[2] && (
+            <button
+              onClick={() => navigateToModule(recentModuleTiles[2].uni)}
+              className="tile-secondary tone-medium bg-module-inventory-bg text-module-inventory-text"
+            >
+              <div>
+                <h2 className="tile-title-sm">{recentModuleTiles[2].displayName}</h2>
+              </div>
+            </button>
+          )}
+          
+          {/* Если нет последних операций, показываем Приход по умолчанию */}
+          {!recentModuleTiles[0] && tPrihod && (
+            <button
+              onClick={() => navigateToModule(tPrihod.uni)}
+              className="tile-primary tone-strong row-span-2 bg-module-receiving-bg text-module-receiving-text"
+            >
+              <div>
+                <h2 className="tile-title-lg">{tPrihod.displayName}</h2>
+                <p className="tile-subtext opacity-80">{tPrihod.description}</p>
+              </div>
+            </button>
+          )}
+          {!recentModuleTiles[1] && tPodbor && (
+            <button
+              onClick={() => navigateToModule(tPodbor.uni)}
+              className="tile-secondary tone-medium bg-module-picking-bg text-module-picking-text"
+            >
+              <div>
+                <h2 className="tile-title-sm">{tPodbor.displayName}</h2>
+              </div>
+            </button>
+          )}
+          {!recentModuleTiles[2] && tOtgruzka && (
+            <button
+              onClick={() => navigateToModule(tOtgruzka.uni)}
+              className="tile-secondary tone-medium bg-module-inventory-bg text-module-inventory-text"
+            >
+              <div>
+                <h2 className="tile-title-sm">{tOtgruzka.displayName}</h2>
+              </div>
+            </button>
+          )}
+        </div>
 
         {/* 2. Отгрузка - Right top tile (coral) */}
         {tOtgruzka && (
@@ -574,9 +592,6 @@ const Home: React.FC = () => {
             <div>
               <h2 className="tile-title-lg">{tOtgruzka.displayName}</h2>
               <p className="tile-subtext opacity-80">{tOtgruzka.description}</p>
-            </div>
-            <div className="tile-footer">
-              <span className="tile-count-hero">{tOtgruzka.docsCount}</span>
             </div>
           </button>
         )}
@@ -591,9 +606,6 @@ const Home: React.FC = () => {
             <div>
               <h2 className="tile-title-lg">{tPodbor.displayName}</h2>
               <p className="tile-subtext opacity-80">{tPodbor.description}</p>
-            </div>
-            <div className="tile-footer">
-              <span className="tile-count-hero">{tPodbor.docsCount}</span>
             </div>
           </button>
         )}
@@ -611,9 +623,6 @@ const Home: React.FC = () => {
               <h2 className="tile-title-sm" style={{ color: 'var(--color-accent-cyan)' }}>{tVozvrat.displayName}</h2>
               <p className="tile-subtext text-content-secondary">{tVozvrat.description}</p>
             </div>
-            <div className="tile-footer">
-              <span className="text-content-secondary">{tVozvrat.docsCount}</span>
-            </div>
           </button>
         )}
 
@@ -626,9 +635,6 @@ const Home: React.FC = () => {
             <div>
               <h2 className="tile-title-sm" style={{ color: 'var(--color-accent-green)' }}>{tPlacement.displayName}</h2>
               <p className="tile-subtext text-content-secondary">{tPlacement.description}</p>
-            </div>
-            <div className="tile-footer">
-              <span className="text-content-secondary">{tPlacement.docsCount}</span>
             </div>
           </button>
         )}
@@ -645,9 +651,6 @@ const Home: React.FC = () => {
             <div>
               <h2 className="tile-title-md text-content-primary">{tInvent.displayName}</h2>
               <p className="tile-subtext text-content-secondary">{tInvent.description}</p>
-            </div>
-            <div className="tile-footer">
-              <span className="text-content-secondary">{tInvent.docsCount}</span>
             </div>
           </button>
         </div>
@@ -677,9 +680,6 @@ const Home: React.FC = () => {
                     <h2 className="tile-title-sm" style={{ color: accentColor }}>{docType.displayName}</h2>
                     <p className="tile-subtext text-content-secondary">{docType.description}</p>
                   </div>
-                  <div className="tile-footer">
-                    <span className="text-content-secondary">{docType.docsCount}</span>
-                  </div>
                 </button>
               );
             })}
@@ -689,7 +689,6 @@ const Home: React.FC = () => {
       {/* Empty state */}
       {docTypes.length === 0 && (
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">📋</div>
           <h3 className="text-xl text-content-tertiary mb-2">Нет доступных типов документов</h3>
           <p className="text-sm text-content-tertiary opacity-80">
             Проверьте настройки подключения к серверу

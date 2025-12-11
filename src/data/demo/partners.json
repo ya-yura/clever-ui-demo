@@ -1,1 +1,15 @@
-{ "value": [] }
+{
+  "@odata.context": "http://localhost:9000/MobileSMARTS/api/v1/$metadata#Partners",
+  "value": [
+    { "id": "partner-001", "code": "POST-001", "name": "ООО Поставщик №1", "type": "supplier", "inn": "7701234567", "phone": "+7 (495) 123-45-67", "address": "Москва, ул. Ленина, 1", "isActive": true },
+    { "id": "partner-002", "code": "IP-001", "name": "ИП Иванов", "type": "supplier", "inn": "771234567890", "phone": "+7 (495) 123-45-68", "address": "Москва, ул. Пушкина, 5", "isActive": true },
+    { "id": "partner-003", "code": "PROD-001", "name": "ООО Продукты Оптом", "type": "supplier", "inn": "7703456789", "phone": "+7 (495) 234-56-78", "address": "Москва, пр. Мира, 10", "isActive": true },
+    { "id": "partner-004", "code": "NAPITKI-001", "name": "ООО Торговый Дом Напитки", "type": "supplier", "inn": "7704567890", "phone": "+7 (495) 345-67-89", "address": "Москва, ул. Гагарина, 20", "isActive": true },
+    { "id": "partner-005", "code": "MOLOKO-001", "name": "ЗАО Молочный Мир", "type": "supplier", "inn": "7705678901", "phone": "+7 (495) 456-78-90", "address": "Москва, ул. Чехова, 15", "isActive": true },
+    { "id": "partner-006", "code": "IP-PETROV", "name": "ИП Петров А.В.", "type": "customer", "inn": "772345678901", "phone": "+7 (926) 123-45-67", "address": "Москва, ул. Тверская, 8", "isActive": true },
+    { "id": "partner-007", "code": "MAGNIT", "name": "ООО Магнит", "type": "customer", "inn": "7706789012", "phone": "+7 (495) 567-89-01", "address": "Москва, ул. Арбат, 25", "isActive": true },
+    { "id": "partner-008", "code": "5KA", "name": "ООО Пятёрочка", "type": "customer", "inn": "7707890123", "phone": "+7 (495) 678-90-12", "address": "Москва, пр. Вернадского, 30", "isActive": true },
+    { "id": "partner-009", "code": "IP-SIDOROV", "name": "ИП Сидоров К.П.", "type": "customer", "inn": "773456789012", "phone": "+7 (916) 234-56-78", "address": "Москва, ул. Красная, 12", "isActive": true },
+    { "id": "partner-010", "code": "PEREK", "name": "ООО Перекресток", "type": "customer", "inn": "7708901234", "phone": "+7 (495) 789-01-23", "address": "Москва, ул. Новый Арбат, 40", "isActive": true }
+  ]
+}

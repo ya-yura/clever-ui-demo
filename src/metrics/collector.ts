@@ -167,6 +167,237 @@ export class MetricsCollector {
   }
 
   /**
+   * ✨ Record UX event - расширенная метрика по паттернам Джеки Рида
+   */
+  async trackUXEvent(data: {
+    userId: string;
+    eventType: 'hint_shown' | 'scan_success' | 'scan_error' | 'auto_navigation' | 
+               'screen_focus' | 'back_navigation' | 'error_shown' | 'swipe_action' |
+               'progressive_disclosure' | 'micro_reward' | 'chunked_view';
+    operationType?: string;
+    documentId?: string;
+    duration?: number;
+    metadata?: Record<string, any>;
+  }): Promise<void> {
+    await this.record('ux', {
+      userId: data.userId,
+      operationType: data.operationType || data.eventType,
+      documentId: data.documentId,
+      ux: {
+        eventType: data.eventType,
+        duration: data.duration,
+      },
+      metadata: data.metadata,
+    });
+  }
+
+  /**
+   * 📊 Track first-scan time (Signal → Action time)
+   */
+  async trackFirstScanTime(data: {
+    userId: string;
+    documentId: string;
+    operationType: string;
+    timeToFirstScan: number;
+  }): Promise<void> {
+    await this.record('ux', {
+      userId: data.userId,
+      documentId: data.documentId,
+      operationType: data.operationType,
+      ux: {
+        timeToFirstScan: data.timeToFirstScan,
+      },
+      metadata: {
+        metric: 'first_scan_latency',
+      },
+    });
+  }
+
+  /**
+   * 🔍 Track document search efficiency
+   */
+  async trackDocumentSearch(data: {
+    userId: string;
+    searchDuration: number;
+    clicksToDocument: number;
+    searchQuery?: string;
+    filtersUsed?: number;
+  }): Promise<void> {
+    await this.record('ux', {
+      userId: data.userId,
+      operationType: 'document_search',
+      ux: {
+        documentSearchTime: data.searchDuration,
+        clicksToTarget: data.clicksToDocument,
+        filtersUsed: data.filtersUsed,
+      },
+      metadata: {
+        hasQuery: !!data.searchQuery,
+      },
+    });
+  }
+
+  /**
+   * 🔄 Track navigation patterns
+   */
+  async trackNavigation(data: {
+    userId: string;
+    from: string;
+    to: string;
+    navigationMethod: 'auto' | 'manual' | 'back';
+    duration: number;
+  }): Promise<void> {
+    await this.record('ux', {
+      userId: data.userId,
+      operationType: 'navigation',
+      ux: {
+        navigationMethod: data.navigationMethod,
+        navigationTime: data.duration,
+      },
+      metadata: {
+        from: data.from,
+        to: data.to,
+      },
+    });
+  }
+
+  /**
+   * 💬 Track hint effectiveness
+   */
+  async trackHintInteraction(data: {
+    userId: string;
+    hintType: 'micro_hint' | 'error_hint' | 'contextual';
+    hintMessage: string;
+    operationType: string;
+    actionTaken: boolean;
+    timeToAction?: number;
+  }): Promise<void> {
+    await this.record('ux', {
+      userId: data.userId,
+      operationType: data.operationType,
+      ux: {
+        hintShown: true,
+        hintEffective: data.actionTaken,
+        timeToAction: data.timeToAction,
+      },
+      metadata: {
+        hintType: data.hintType,
+        hintMessage: data.hintMessage,
+      },
+    });
+  }
+
+  /**
+   * ⚠️ Track error patterns
+   */
+  async trackErrorPattern(data: {
+    userId: string;
+    errorType: string;
+    operationType: string;
+    documentId?: string;
+    guidanceProvided: boolean;
+    errorResolved: boolean;
+    timeToResolve?: number;
+  }): Promise<void> {
+    await this.record('errors', {
+      userId: data.userId,
+      operationType: data.operationType,
+      documentId: data.documentId,
+      errors: {
+        errorType: data.errorType,
+        guidanceProvided: data.guidanceProvided,
+        resolved: data.errorResolved,
+      },
+      ux: {
+        errorRecoveryTime: data.timeToResolve,
+      },
+    });
+  }
+
+  /**
+   * 📈 Track cognitive load reduction
+   */
+  async trackCognitiveLoad(data: {
+    userId: string;
+    operationType: string;
+    screenComplexity: 'low' | 'medium' | 'high';
+    elementsShown: number;
+    elementsHidden: number;
+    progressiveDisclosureUsed: boolean;
+  }): Promise<void> {
+    await this.record('ux', {
+      userId: data.userId,
+      operationType: data.operationType,
+      ux: {
+        screenComplexity: data.screenComplexity,
+        cognitiveLoadReduction: data.elementsHidden / (data.elementsShown + data.elementsHidden),
+      },
+      metadata: {
+        elementsShown: data.elementsShown,
+        elementsHidden: data.elementsHidden,
+        progressiveDisclosure: data.progressiveDisclosureUsed,
+      },
+    });
+  }
+
+  /**
+   * ⏱️ Track screen focus time
+   */
+  async trackScreenFocus(data: {
+    userId: string;
+    screen: string;
+    focusTime: number;
+    interactionCount: number;
+  }): Promise<void> {
+    await this.record('ux', {
+      userId: data.userId,
+      operationType: 'screen_focus',
+      ux: {
+        screenFocusTime: data.focusTime,
+        interactionsPerMinute: (data.interactionCount / data.focusTime) * 60000,
+      },
+      metadata: {
+        screen: data.screen,
+      },
+    });
+  }
+
+  /**
+   * 🎯 Track completion efficiency
+   */
+  async trackCompletionEfficiency(data: {
+    userId: string;
+    operationType: string;
+    documentId: string;
+    totalTime: number;
+    totalItems: number;
+    totalErrors: number;
+    totalBackNavigations: number;
+    totalHintsShown: number;
+  }): Promise<void> {
+    const errorRate = data.totalItems > 0 ? data.totalErrors / data.totalItems : 0;
+    const hintsPerItem = data.totalItems > 0 ? data.totalHintsShown / data.totalItems : 0;
+
+    await this.record('performance', {
+      userId: data.userId,
+      operationType: data.operationType,
+      documentId: data.documentId,
+      performance: {
+        documentProcessingTime: data.totalTime,
+        skuProcessed: data.totalItems,
+        wrongScansCount: data.totalErrors,
+        errorRate,
+      },
+      ux: {
+        backNavigationCount: data.totalBackNavigations,
+        hintsShownCount: data.totalHintsShown,
+        hintsPerItem,
+        efficiencyScore: calculateEfficiencyScore(data),
+      },
+    });
+  }
+
+  /**
    * Record team metric
    */
   async recordTeam(data: {
@@ -324,6 +555,31 @@ export class MetricsCollector {
   private generateEventId(): string {
     return `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
+}
+
+/**
+ * 🎯 Calculate efficiency score based on UX metrics
+ */
+function calculateEfficiencyScore(data: {
+  totalTime: number;
+  totalItems: number;
+  totalErrors: number;
+  totalBackNavigations: number;
+  totalHintsShown: number;
+}): number {
+  // Базовая эффективность: items per minute
+  const baseEfficiency = data.totalItems / (data.totalTime / 60000);
+  
+  // Штрафы за ошибки и навигацию назад
+  const errorPenalty = data.totalErrors * 0.1;
+  const navigationPenalty = data.totalBackNavigations * 0.05;
+  
+  // Бонус за использование подсказок (они помогают)
+  const hintBonus = Math.min(data.totalHintsShown * 0.02, 0.5);
+  
+  const score = Math.max(0, baseEfficiency - errorPenalty - navigationPenalty + hintBonus);
+  
+  return Math.round(score * 100) / 100;
 }
 
 // Export singleton instance

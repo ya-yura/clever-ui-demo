@@ -1,1 +1,8 @@
-{ "value": [] }
+{
+  "@odata.context": "http://localhost:9000/MobileSMARTS/api/v1/$metadata#Warehouses",
+  "value": [
+    { "id": "WAREHOUSE-001", "code": "WH-001", "name": "Склад основной", "address": "Москва, ул. Складская, 5", "type": "main", "capacity": 10000, "occupied": 7500, "isActive": true },
+    { "id": "WAREHOUSE-002", "code": "WH-002", "name": "Склад запасной", "address": "Москва, ул. Запасная, 10", "type": "backup", "capacity": 5000, "occupied": 2500, "isActive": true },
+    { "id": "WAREHOUSE-003", "code": "WH-003", "name": "Холодильный склад", "address": "Москва, пр. Холодный, 15", "type": "cold", "capacity": 2000, "occupied": 1200, "isActive": true }
+  ]
+}
