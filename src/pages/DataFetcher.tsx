@@ -2,7 +2,7 @@
 // Страница для загрузки данных с сервера
 
 import React, { useState } from 'react';
-import { Layout } from '@/components/Layout';
+import Layout from '@/components/Layout';
 import { Card } from '@/design/components/Card';
 import { Button } from '@/design/components/Button';
 import { Checkbox } from '@/design/components/Checkbox';
@@ -171,6 +171,10 @@ export const DataFetcher: React.FC = () => {
 };
 
 export default DataFetcher;
+
+
+
+
 
 
 
