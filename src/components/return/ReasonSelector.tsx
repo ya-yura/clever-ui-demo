@@ -181,6 +181,7 @@ export const ReasonSelector: React.FC<ReasonSelectorProps> = ({
                 </button>
               );
             })}
+          </div>
 
           {/* Custom input for "Other" */}
           {showCustomInput && (

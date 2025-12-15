@@ -15,6 +15,7 @@
     "fetch-data:custom": "node scripts/fetchServerData.js"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@supabase/supabase-js": "^2.86.0",
     "axios": "^1.6.2",
     "dexie": "^3.2.4",
