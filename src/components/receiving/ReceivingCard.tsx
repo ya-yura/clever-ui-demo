@@ -26,7 +26,7 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
   const showDifference = difference !== 0;
 
   return (
-    <div className={`card border-2 ${statusColor} transition-colors p-3`}>
+    <div className={`card border-2 ${statusColor} transition-colors p-2.5`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center space-x-2 mb-1.5">
@@ -46,20 +46,20 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-1 text-center mt-2">
-            <div className="bg-surface-primary border border-border-default/50 rounded p-1.5">
+          <div className="grid grid-cols-3 gap-1 text-center mt-1.5">
+            <div className="bg-surface-primary/70 border border-border-default/30 rounded p-1.5">
               <div className="text-xs text-content-secondary">План</div>
               <div className="text-lg font-bold text-content-primary">
                 {line.quantityPlan}
               </div>
             </div>
-            <div className="bg-surface-primary border border-border-default/50 rounded p-1.5">
+            <div className="bg-surface-primary/70 border border-border-default/30 rounded p-1.5">
               <div className="text-xs text-content-secondary">Факт</div>
               <div className="text-lg font-bold text-brand-primary">
                 {line.quantityFact}
               </div>
             </div>
-            <div className="bg-surface-primary border border-border-default/50 rounded p-1.5">
+            <div className="bg-surface-primary/70 border border-border-default/30 rounded p-1.5">
               <div className="text-xs text-content-secondary">Остаток</div>
               <div className={`text-lg font-bold ${
                 showDifference 
@@ -76,17 +76,17 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
       </div>
 
       {/* Quick actions */}
-      <div className="flex gap-1 mt-2.5">
+      <div className="flex gap-1 mt-2">
         <button
           onClick={(e) => { e.stopPropagation(); onAdjust(-1); }}
-          className="btn-secondary flex-1 border border-border-default h-12 text-base"
+          className="btn-secondary flex-1 border border-border-default h-14 text-lg font-semibold"
           disabled={line.quantityFact === 0}
         >
           −1
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onAdjust(1); }}
-          className="btn-primary flex-1 h-12 text-base"
+          className="btn-primary flex-1 h-14 text-lg font-semibold"
         >
           +1
         </button>
