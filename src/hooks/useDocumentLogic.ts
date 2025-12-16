@@ -72,7 +72,7 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
             deliveryNumber: odataDoc.barcode || odataDoc.name,
             notes: odataDoc.description || '',
           };
-
+          
           // Конвертируем строки
           const declaredItems = odataDoc.declaredItems || [];
           const currentItems = odataDoc.currentItems || [];
@@ -93,7 +93,7 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
               status: quantityFact >= quantityPlan ? 'completed' : quantityFact > 0 ? 'partial' : 'pending',
             };
           });
-
+          
           // Сохраняем в IndexedDB для оффлайн работы
           await docTable.put(doc);
           await linesTable.bulkPut(docLines);
@@ -102,10 +102,8 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
         } catch (apiError) {
           console.error(`❌ [LOGIC] Failed to load from OData:`, apiError);
           
-          // 🎭 Fallback to demo data if in demo mode
-          const isDemoMode = localStorage.getItem('demo_mode') === 'true';
-          if (isDemoMode) {
-            console.log(`🎭 [LOGIC] Trying to load from demo data...`);
+          // 🎭 Fallback to demo data (всегда пробуем, даже если не demo_mode)
+          try {
             const { demoDataService } = await import('@/services/demoDataService');
             const odataTypeName = odataAPI.mapInternalToODataType(docType);
             const demoDoc = demoDataService.getDocumentWithItems(odataTypeName, docId);
@@ -123,7 +121,7 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
                 deliveryNumber: demoDoc.barcode || demoDoc.name,
                 notes: demoDoc.description || '',
               };
-
+              
               // Конвертируем строки
               const declaredItems = demoDoc.declaredItems || [];
               const currentItems = demoDoc.currentItems || [];
@@ -144,7 +142,7 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
                   status: quantityFact >= quantityPlan ? 'completed' : quantityFact > 0 ? 'partial' : 'pending',
                 };
               });
-
+              
               // Сохраняем в IndexedDB для оффлайн работы
               await docTable.put(doc);
               await linesTable.bulkPut(docLines);
@@ -153,8 +151,8 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
             } else {
               throw new Error('Документ не найден ни локально, ни на сервере, ни в демо-данных');
             }
-          } else {
-            throw new Error('Документ не найден ни локально, ни на сервере');
+          } catch (demoError) {
+            throw demoError;
           }
         }
       } else {
