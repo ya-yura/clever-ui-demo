@@ -290,7 +290,7 @@ const Home: React.FC = () => {
                 console.log(`✅ [API] Type "${type.uni}": ${docsCount} documents (count fallback)`);
               } catch (countErr: any) {
                 console.error(`❌ [API] Failed to load docs count for "${type.uni}":`, countErr?.message || countErr);
-              docsCount = 0;
+                docsCount = 0;
               }
             }
           }
