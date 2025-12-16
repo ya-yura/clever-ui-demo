@@ -54,6 +54,13 @@
   --color-border-strong: #707070;
   --color-border-focus: #d89668;
 
+  /* Atomized surfaces/borders (used across cards and chips) */
+  --atom-card-bg: var(--color-surface-secondary);
+  --atom-card-border: color-mix(in srgb, var(--color-border-default) 65%, transparent);
+  --atom-card-hover: color-mix(in srgb, var(--color-surface-tertiary) 80%, transparent);
+  --atom-chip-bg: color-mix(in srgb, var(--color-surface-primary) 85%, transparent);
+  --atom-chip-border: color-mix(in srgb, var(--color-border-default) 45%, transparent);
+
   /* Brand colors (base palette from Figma) */
   --color-brand-primary: #d89668;
   --color-brand-dark: #3d2817;
@@ -129,6 +136,13 @@
   --color-border-strong: #d0d5dd;
   --color-border-focus: #d89668;
   
+  /* Atomized surfaces/borders overrides for light */
+  --atom-card-bg: var(--color-surface-secondary);
+  --atom-card-border: color-mix(in srgb, var(--color-border-default) 55%, transparent);
+  --atom-card-hover: color-mix(in srgb, var(--color-surface-tertiary) 80%, transparent);
+  --atom-chip-bg: color-mix(in srgb, var(--color-surface-primary) 90%, transparent);
+  --atom-chip-border: color-mix(in srgb, var(--color-border-default) 45%, transparent);
+  
   /* In light mode, we might want to adjust some module colors if they are too light/dark, 
      but for now we keep branding consistent. 
      If needed, we can override them here using the 'light' variant from design system. */
@@ -159,6 +173,21 @@ body {
   background-color: var(--color-surface-primary);
   color: var(--color-content-secondary);
   font-family: inherit;
+}
+
+/* Shared atoms */
+.atom-card {
+  background-color: var(--atom-card-bg);
+  border: 1px solid var(--atom-card-border);
+  border-radius: 12px;
+}
+.atom-card.hoverable:hover {
+  background-color: var(--atom-card-hover);
+}
+.atom-chip {
+  background-color: var(--atom-chip-bg);
+  border: 1px solid var(--atom-chip-border);
+  border-radius: 10px;
 }
 
 * {

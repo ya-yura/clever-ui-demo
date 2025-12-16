@@ -481,7 +481,7 @@ const DocumentsByType: React.FC = () => {
                   }
                   navigate(targetPath, { state: { doc } });
                 }}
-                className="w-full bg-surface-secondary hover:bg-surface-tertiary rounded border-b border-borders-light last:border-0 px-3 py-2 text-left transition-colors"
+                className="w-full atom-card hoverable px-3 py-2 text-left transition-colors"
               >
                 <div className="flex gap-3">
                 {/* Left Content Area: Title and Info */}

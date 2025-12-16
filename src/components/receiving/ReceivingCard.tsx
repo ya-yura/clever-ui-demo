@@ -16,16 +16,8 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
     line.status === 'error' ? 'bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-500/50' :
     'bg-surface-secondary border-border-default';
 
-  const statusIcon =
-    line.status === 'completed' ? '🟢' :
-    line.status === 'partial' ? '🟡' :
-    line.status === 'error' ? '🔴' :
-    '⚪';
-
   const difference = line.quantityFact - line.quantityPlan;
   const showDifference = difference !== 0;
-  const softBorder = { borderColor: 'color-mix(in srgb, var(--color-border-default) 40%, transparent)' };
-  const softBg = { backgroundColor: 'color-mix(in srgb, var(--color-surface-primary) 80%, transparent)' };
 
   return (
     <div className={`card border-2 ${statusColor} transition-colors p-2.5`}>
@@ -46,19 +38,19 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
           </div>
 
           <div className="grid grid-cols-3 gap-1 text-center mt-1.5">
-            <div className="bg-surface-primary border rounded p-1.5" style={{ ...softBorder, ...softBg }}>
+            <div className="atom-chip p-1.5">
               <div className="text-xs text-content-secondary">План</div>
               <div className="text-lg font-bold text-content-primary">
                 {line.quantityPlan}
               </div>
             </div>
-            <div className="bg-surface-primary border rounded p-1.5" style={{ ...softBorder, ...softBg }}>
+            <div className="atom-chip p-1.5">
               <div className="text-xs text-content-secondary">Факт</div>
               <div className="text-lg font-bold text-brand-primary">
                 {line.quantityFact}
               </div>
             </div>
-            <div className="bg-surface-primary border rounded p-1.5" style={{ ...softBorder, ...softBg }}>
+            <div className="atom-chip p-1.5">
               <div className="text-xs text-content-secondary">Остаток</div>
               <div className={`text-lg font-bold ${
                 showDifference 
