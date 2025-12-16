@@ -384,10 +384,31 @@ const Home: React.FC = () => {
   };
 
   // Получение последних использованных модулей из docTypes (3 штуки для оранжевых кнопок)
-  const recentModuleTiles = recentModules
+  let recentModuleTiles = recentModules
     .map(uni => docTypes.find(dt => dt.uni === uni))
     .filter((x): x is DocTypeCard => Boolean(x))
     .slice(0, 3);
+
+  // Fallback для первого запуска - если нет истории, показываем модули по умолчанию
+  if (recentModuleTiles.length === 0 && docTypes.length > 0) {
+    const defaultModules = ['PrihodNaSklad', 'Otgruzka', 'PodborZakaza'];
+    recentModuleTiles = defaultModules
+      .map(uni => docTypes.find(dt => dt.uni === uni))
+      .filter((x): x is DocTypeCard => Boolean(x));
+    
+    console.log('📌 First launch detected - using default modules:', recentModuleTiles.map(t => t.displayName));
+  }
+
+  // Если все ещё меньше 3 модулей, дополняем любыми доступными
+  while (recentModuleTiles.length < 3 && docTypes.length > recentModuleTiles.length) {
+    const used = new Set(recentModuleTiles.map(t => t.uni));
+    const nextModule = docTypes.find(dt => !used.has(dt.uni));
+    if (nextModule) {
+      recentModuleTiles.push(nextModule);
+    } else {
+      break;
+    }
+  }
 
   // Сортировка всех остальных модулей по истории использования
   const usageOrder = getAllModulesSortedByUsage();
@@ -455,8 +476,8 @@ const Home: React.FC = () => {
     <div ref={containerRef} className="space-y-1 max-w-md mx-auto px-2">
       {/* Главная сетка: 3 основные кнопки - ПОСЛЕДНИЕ ИСПОЛЬЗОВАННЫЕ ОПЕРАЦИИ */}
       <div className="grid grid-cols-2 gap-1.5">
-        {/* Самая последняя операция - большая кнопка (2 ряда) */}
-        {recentModuleTiles[0] ? (
+        {/* Самая последняя операция - большая кнопка (2 ряды) */}
+        {recentModuleTiles[0] && (
           <button
             onClick={() => navigateToModule(recentModuleTiles[0].uni)}
             className="row-span-2 rounded-lg p-4 flex flex-col justify-between shadow-sm"
@@ -471,14 +492,10 @@ const Home: React.FC = () => {
               <p className="text-xs">Документов:</p>
             </div>
           </button>
-        ) : (
-          <div className="row-span-2 rounded-lg p-4 flex items-center justify-center border-2 border-dashed border-gray-600 bg-surface-secondary">
-            <p className="text-center text-sm text-gray-500">Начните работу<br/>с любого модуля</p>
-          </div>
         )}
 
         {/* Предпоследняя операция - верхняя правая */}
-        {recentModuleTiles[1] ? (
+        {recentModuleTiles[1] && (
           <button
             onClick={() => navigateToModule(recentModuleTiles[1].uni)}
             className="rounded-lg p-3 flex flex-col justify-between shadow-sm"
@@ -490,14 +507,10 @@ const Home: React.FC = () => {
             </div>
             <div className="text-right text-2xl font-normal text-white">{recentModuleTiles[1].docsCount || 0}</div>
           </button>
-        ) : (
-          <div className="rounded-lg p-3 flex items-center justify-center border-2 border-dashed border-gray-600 bg-surface-secondary" style={{ minHeight: '88px' }}>
-            <p className="text-xs text-center text-gray-500">Операция #2</p>
-          </div>
         )}
 
         {/* Третья с конца операция - нижняя правая */}
-        {recentModuleTiles[2] ? (
+        {recentModuleTiles[2] && (
           <button
             onClick={() => navigateToModule(recentModuleTiles[2].uni)}
             className="rounded-lg p-3 flex flex-col justify-between shadow-sm"
@@ -509,10 +522,6 @@ const Home: React.FC = () => {
             </div>
             <div className="text-right text-2xl font-normal text-white">{recentModuleTiles[2].docsCount || 0}</div>
           </button>
-        ) : (
-          <div className="rounded-lg p-3 flex items-center justify-center border-2 border-dashed border-gray-600 bg-surface-secondary" style={{ minHeight: '88px' }}>
-            <p className="text-xs text-center text-gray-500">Операция #3</p>
-          </div>
         )}
       </div>
 
