@@ -10,10 +10,9 @@ import { LineCard } from '@/components/LineCard';
 import { AutoCompletePrompt } from '@/components/AutoCompletePrompt';
 import { DiscrepancyAlert } from '@/components/DiscrepancyAlert';
 import { RouteVisualization } from '@/components/picking/RouteVisualization';
-import { MapPin, Package, CheckCircle, SkipForward, AlertTriangle, Volume2, XCircle, Zap, Navigation } from 'lucide-react';
+import { MapPin, Package, CheckCircle, SkipForward, AlertTriangle, XCircle, Zap, Navigation } from 'lucide-react';
 import { Button } from '@/design/components';
 import { feedback } from '@/utils/feedback';
-import { VoiceService, speakCell, speakCellCompleted, speakError } from '@/utils/voice';
 
 /**
  * МОДУЛЬ ПОДБОРА
@@ -51,7 +50,6 @@ const Picking: React.FC = () => {
   const [awaitingProduct, setAwaitingProduct] = useState(false);
 
   // Настройки
-  const [voiceMode, setVoiceMode] = useState(false);
   const [autoNextMode, setAutoNextMode] = useState(true); // По умолчанию включен
 
   // UI состояния
@@ -163,33 +161,18 @@ const Picking: React.FC = () => {
     };
   }, [documentId, document, setDocumentInfo, setListInfo]);
 
-  // Загрузка голосовых настроек
-  useEffect(() => {
-    const settings = VoiceService.loadSettings();
-    setVoiceMode(settings.enabled);
-  }, []);
-
-  // Голосовая подсказка при смене ячейки
-  useEffect(() => {
-    if (voiceMode && currentCell && !scannedCell) {
-      speakCell(currentCell.cellName);
-    }
-  }, [currentCellIndex, voiceMode, scannedCell]);
-
   // US III.2: Обработка сканирования ячейки
   const handleCellScan = async (code: string) => {
     const currentCell = route[currentCellIndex];
     
     if (!currentCell) {
       feedback.error('Маршрут не построен');
-      if (voiceMode) speakError('Маршрут не построен');
       return;
     }
 
     // Проверяем, правильная ли ячейка
     if (code !== currentCell.cellId) {
       feedback.error(`⚠️ Неправильная ячейка!\nТребуется: ${currentCell.cellName}\nОтсканирована: ${code}`);
-      if (voiceMode) speakError(`Неправильная ячейка. Требуется ${currentCell.cellName}`);
       return;
     }
 
@@ -241,7 +224,6 @@ const Picking: React.FC = () => {
     // US III.6: Автопереход к следующей ячейке
     if (allPickedInCell) {
       feedback.success(`✅ Ячейка ${currentCell.cellName} завершена`);
-      if (voiceMode) speakCellCompleted(currentCell.cellName);
       
       if (autoNextMode) {
         setTimeout(() => {
@@ -289,7 +271,6 @@ const Picking: React.FC = () => {
       }
       
       feedback.warning(`Зафиксировано отсутствие ${problems.length} позиций`);
-      if (voiceMode) speakError(`Товары отсутствуют. Ячейка пропущена.`);
       
       // Пропускаем ячейку
       setRoute(prev => prev.map((step, index) => 
@@ -313,20 +294,6 @@ const Picking: React.FC = () => {
       setAwaitingProduct(false);
       const nextCell = route[currentCellIndex + 1];
       feedback.info(`Следующая ячейка: ${nextCell?.cellName}`);
-      if (voiceMode && nextCell) {
-        speakCell(nextCell.cellName);
-      }
-    }
-  };
-
-  // Переключение голосового режима
-  const toggleVoiceMode = () => {
-    const newValue = !voiceMode;
-    setVoiceMode(newValue);
-    VoiceService.updateSettings({ enabled: newValue, volume: 1.0, rate: 1.0 });
-    
-    if (newValue && currentCell && !scannedCell) {
-      speakCell(currentCell.cellName);
     }
   };
 
@@ -493,28 +460,6 @@ const Picking: React.FC = () => {
                 }`}>
                   <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
                     autoNextMode ? 'translate-x-5' : 'translate-x-0'
-                  }`} />
-                </div>
-              </div>
-            </label>
-
-            <label className="flex items-center justify-between cursor-pointer p-2 bg-surface-primary rounded-lg">
-              <div className="flex items-center gap-2">
-                <Volume2 size={18} className={voiceMode ? 'text-brand-primary' : 'text-content-tertiary'} />
-                <span className="text-sm font-medium">Голосовые подсказки</span>
-              </div>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={voiceMode}
-                  onChange={toggleVoiceMode}
-                  className="sr-only"
-                />
-                <div className={`w-11 h-6 rounded-full transition-colors ${
-                  voiceMode ? 'bg-brand-primary' : 'bg-surface-tertiary'
-                }`}>
-                  <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                    voiceMode ? 'translate-x-5' : 'translate-x-0'
                   }`} />
                 </div>
               </div>

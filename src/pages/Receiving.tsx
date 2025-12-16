@@ -12,11 +12,10 @@ import { LineCard } from '@/components/LineCard';
 import { AutoCompletePrompt } from '@/components/AutoCompletePrompt';
 import ReceivingCard from '@/components/receiving/ReceivingCard';
 import { ReceivingDocument } from '@/types/receiving';
-import { ArrowLeft, CheckCircle, XCircle, Package, Info, AlertTriangle, Volume2, Search, Filter } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Package, Info, AlertTriangle, Search, Filter } from 'lucide-react';
 import { Button } from '@/design/components';
 import { feedback } from '@/utils/feedback';
 import { sortByOperationalState } from '@/utils/documentOrdering';
-import { VoiceService, speakSuccess } from '@/utils/voice';
 
 const Receiving: React.FC = () => {
   const { id, docId } = useParams(); // Support both legacy /receiving/:id and new /docs/PrihodNaSklad/:docId
@@ -37,7 +36,6 @@ const Receiving: React.FC = () => {
 
   // Новые фильтры и настройки
   const [showOnlyIncomplete, setShowOnlyIncomplete] = useState(false);
-  const [voiceMode, setVoiceMode] = useState(false);
   const [groupByPriority, setGroupByPriority] = useState(true);
   const [lineScanFrequency, setLineScanFrequency] = useState<Map<string, number>>(new Map());
 
@@ -145,12 +143,8 @@ const Receiving: React.FC = () => {
     }
   }, [documentId]);
 
-  // Загрузка голосовых настроек
+  // Загрузка частоты сканирования строк
   useEffect(() => {
-    const settings = VoiceService.loadSettings();
-    setVoiceMode(settings.enabled);
-    
-    // Загрузка частоты сканирования строк
     try {
       const stored = localStorage.getItem('line_scan_frequency');
       if (stored) {
@@ -304,11 +298,6 @@ const Receiving: React.FC = () => {
         // Трекинг частоты для автосортировки
         trackScanFrequency(result.line.id);
         
-        // Голосовая помощь
-        if (voiceMode) {
-          speakSuccess(`Товар ${result.line.productName} принят`);
-        }
-        
         setActiveLine(result.line);
         feedback.success(`${result.line.productName} (+1)`);
         
@@ -332,9 +321,6 @@ const Receiving: React.FC = () => {
         
         feedback.error(errorMsg);
         
-        if (voiceMode) {
-          VoiceService.speak('Товар не найден в документе', { pitch: 0.8 });
-        }
       }
     },
   });
@@ -674,37 +660,6 @@ const Receiving: React.FC = () => {
                 />
               </div>
             </div>
-          </div>
-
-          {/* Настройки режимов */}
-          <div className="bg-surface-secondary rounded-lg p-4 space-y-3">
-            <h3 className="font-bold text-sm">Режимы работы</h3>
-            
-            <label className="flex items-center justify-between cursor-pointer p-2 bg-surface-primary rounded-lg">
-              <div className="flex items-center gap-2">
-                <Volume2 size={18} className={voiceMode ? 'text-brand-primary' : 'text-content-tertiary'} />
-                <span className="text-sm font-medium">Голосовая помощь</span>
-              </div>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={voiceMode}
-                  onChange={(e) => {
-                    const newValue = e.target.checked;
-                    setVoiceMode(newValue);
-                    VoiceService.updateSettings({ enabled: newValue, volume: 1.0 });
-                  }}
-                  className="sr-only"
-                />
-                <div className={`w-11 h-6 rounded-full transition-colors ${
-                  voiceMode ? 'bg-brand-primary' : 'bg-surface-tertiary'
-                }`}>
-                  <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                    voiceMode ? 'translate-x-5' : 'translate-x-0'
-                  }`} />
-                </div>
-              </div>
-            </label>
           </div>
 
           {/* US I.2: Список строк документа с автосортировкой */}
