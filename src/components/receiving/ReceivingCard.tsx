@@ -47,19 +47,19 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center mt-4">
-            <div className="bg-surface-tertiary border border-border-default rounded p-2">
+            <div className="bg-surface-primary border border-border-default/40 rounded p-2">
               <div className="text-xs text-content-secondary">План</div>
               <div className="text-lg font-bold text-content-primary">
                 {line.quantityPlan}
               </div>
             </div>
-            <div className="bg-surface-tertiary border border-border-default rounded p-2">
+            <div className="bg-surface-primary border border-border-default/40 rounded p-2">
               <div className="text-xs text-content-secondary">Факт</div>
               <div className="text-lg font-bold text-brand-primary">
                 {line.quantityFact}
               </div>
             </div>
-            <div className="bg-surface-tertiary border border-border-default rounded p-2">
+            <div className="bg-surface-primary border border-border-default/40 rounded p-2">
               <div className="text-xs text-content-secondary">Остаток</div>
               <div className={`text-lg font-bold ${
                 showDifference 
