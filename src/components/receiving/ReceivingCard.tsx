@@ -92,11 +92,13 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
       </div>
 
       {showDifference && (
-        <div className={`mt-1.5 p-2 rounded text-sm text-center ${
-          difference > 0 
-            ? 'bg-warning/20 text-warning-dark'
-            : 'bg-error/20 text-error-dark'
-        }`}>
+        <div
+          className={`mt-1.5 px-3 py-2 rounded text-sm font-semibold text-center shadow-sm ${
+            difference > 0
+              ? 'bg-warning/30 text-warning-dark'
+              : 'bg-error/30 text-error-dark'
+          }`}
+        >
           {difference > 0 ? '⚠️ Излишки' : '⚠️ Недостача'}: {Math.abs(difference)} шт.
         </div>
       )}
