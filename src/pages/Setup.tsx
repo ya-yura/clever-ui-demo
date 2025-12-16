@@ -5,11 +5,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { configService } from '@/services/configService';
 import { Logo } from '@/components/Logo';
-import { useAuth } from '@/contexts/AuthContext';
 
 const Setup: React.FC = () => {
   const navigate = useNavigate();
-  const { loginDemo } = useAuth();
   const [serverUrl, setServerUrl] = useState('http://localhost:9000/MobileSMARTS/api/v1');
   const [error, setError] = useState('');
   const [isValidating, setIsValidating] = useState(false);
@@ -79,14 +77,6 @@ const Setup: React.FC = () => {
     } finally {
       setIsValidating(false);
     }
-  };
-
-  const handleDemoMode = () => {
-    console.log('🎭 Entering demo mode from Setup page');
-    loginDemo();
-    setTimeout(() => {
-      navigate('/');
-    }, 300);
   };
 
   return (
@@ -173,25 +163,6 @@ const Setup: React.FC = () => {
               className="w-full py-3 px-4 bg-surface-secondary hover:bg-surface-tertiary text-content-primary border border-borders-default font-medium rounded-lg transition-colors disabled:bg-surface-disabled disabled:text-content-disabled disabled:cursor-not-allowed"
             >
               Проверить соединение
-            </button>
-
-            {/* Demo Mode Button */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-borders-default"></div>
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-surface-primary px-2 text-content-tertiary">или</span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleDemoMode}
-              disabled={isValidating}
-              className="w-full py-3 px-4 bg-accent-green/20 hover:bg-accent-green/30 text-accent-green border border-accent-green/40 font-medium rounded-lg transition-colors disabled:bg-surface-disabled disabled:text-content-disabled disabled:cursor-not-allowed"
-            >
-              🎭 Попробовать демо-режим (без сервера)
             </button>
           </div>
         </form>
