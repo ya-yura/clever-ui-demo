@@ -438,9 +438,9 @@ const Picking: React.FC = () => {
         </div>
 
         {/* Главный экран */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
+        <div className="flex-1 overflow-y-auto p-2 space-y-2 pb-16">
           {/* Настройки режима */}
-          <div className="bg-surface-secondary rounded-lg p-4 space-y-3">
+          <div className="bg-surface-secondary rounded-lg p-3 space-y-2">
             <h3 className="font-bold text-sm">Режимы работы</h3>
             
             <label className="flex items-center justify-between cursor-pointer p-2 bg-surface-primary rounded-lg">
@@ -492,37 +492,37 @@ const Picking: React.FC = () => {
 
           {/* Текущая ячейка и инструкции */}
           {currentCell && (
-            <div className={`rounded-lg p-4 border-2 transition-all ${
+            <div className={`rounded-lg p-3 border transition-all ${
               scannedCell
                 ? 'border-success bg-success/10'
                 : 'border-brand-primary bg-brand-primary/10'
             }`}>
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex items-start justify-between mb-2">
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <MapPin size={20} className="text-brand-primary" />
-                    <h3 className="font-bold text-lg">{currentCell.cellName}</h3>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <MapPin size={18} className="text-brand-primary" />
+                    <h3 className="font-bold text-base leading-tight">{currentCell.cellName}</h3>
                   </div>
-                  <p className="text-sm text-content-secondary">
+                  <p className="text-xs text-content-secondary leading-tight">
                     {!scannedCell
                       ? '1️⃣ Отсканируйте ячейку'
                       : '2️⃣ Отсканируйте товары из списка ниже'}
                   </p>
                 </div>
                 {scannedCell && (
-                  <CheckCircle size={24} className="text-success" />
+                  <CheckCircle size={20} className="text-success" />
                 )}
               </div>
 
               {/* Действия с ячейкой */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
                 {/* СУПЕР-КНОПКА: Нет в ячейке */}
                 {scannedCell && (
                   <button
                     onClick={handleNotInCell}
-                    className="col-span-2 py-3 bg-error hover:brightness-110 text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2 text-base shadow-md"
+                    className="col-span-2 py-2.5 bg-error hover:brightness-110 text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2 text-sm shadow-md"
                   >
-                    <XCircle size={20} />
+                    <XCircle size={18} />
                     НЕТ В ЯЧЕЙКЕ
                   </button>
                 )}
@@ -530,11 +530,11 @@ const Picking: React.FC = () => {
                 {/* Кнопка пропуска */}
                 <button
                   onClick={handleSkipCell}
-                  className={`py-2 bg-warning-light hover:bg-warning text-warning-dark rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                  className={`py-2 bg-warning-light hover:bg-warning text-warning-dark rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-2 ${
                     scannedCell ? 'col-span-1' : 'col-span-2'
                   }`}
                 >
-                  <SkipForward size={16} />
+                  <SkipForward size={14} />
                   Пропустить
                 </button>
 
@@ -562,14 +562,14 @@ const Picking: React.FC = () => {
                 <div
                   key={line.id}
                   onClick={() => handleLineClick(line)}
-                  className="card p-4 cursor-pointer hover:border-brand-primary transition-colors"
+                  className="card p-3 cursor-pointer hover:border-brand-primary transition-colors"
                 >
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="flex justify-between items-start mb-1.5">
                     <div className="flex-1">
-                      <h4 className="font-bold">{line.productName}</h4>
-                      <p className="text-xs text-content-tertiary font-mono">{line.barcode}</p>
+                      <h4 className="font-bold text-sm leading-tight">{line.productName}</h4>
+                      <p className="text-[11px] text-content-tertiary font-mono leading-tight">{line.barcode}</p>
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    <div className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                       line.quantityFact >= line.quantityPlan
                         ? 'bg-success-light text-success-dark'
                         : line.quantityFact > 0
@@ -580,7 +580,7 @@ const Picking: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="mt-2 h-1 bg-surface-tertiary rounded-full overflow-hidden">
+                  <div className="mt-1.5 h-1 bg-surface-tertiary rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all ${
                         line.quantityFact >= line.quantityPlan ? 'bg-success' : 'bg-warning'
@@ -590,13 +590,13 @@ const Picking: React.FC = () => {
                   </div>
 
                   {/* Быстрые действия */}
-                  <div className="mt-3 flex gap-2">
+                  <div className="mt-2 flex gap-1.5">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         updateQuantity(line.id, 1);
                       }}
-                      className="flex-1 py-2 bg-brand-primary hover:brightness-110 text-white rounded text-sm font-medium transition-all"
+                      className="flex-1 py-1.5 bg-brand-primary hover:brightness-110 text-white rounded text-sm font-semibold transition-all"
                     >
                       +1
                     </button>
@@ -609,7 +609,7 @@ const Picking: React.FC = () => {
                         }
                       }}
                       disabled={line.quantityFact >= line.quantityPlan}
-                      className="flex-1 py-2 bg-success hover:brightness-110 text-white rounded text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 py-1.5 bg-success hover:brightness-110 text-white rounded text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Всё ({line.quantityPlan - line.quantityFact})
                     </button>
