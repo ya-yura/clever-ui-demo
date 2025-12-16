@@ -167,7 +167,7 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
         setLoading(false);
         return;
       }
-      if (!docLines) {
+      if (!Array.isArray(docLines)) {
         docLines = [];
       }
 
