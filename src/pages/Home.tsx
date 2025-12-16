@@ -483,9 +483,9 @@ const Home: React.FC = () => {
             className="row-span-2 rounded p-2 flex flex-col justify-between"
             style={{ backgroundColor: '#DAA320', color: '#715918', minHeight: '200px' }}
           >
-            <div className="text-left">
-              <h2 className="text-2xl font-bold mb-1">{recentModuleTiles[0].displayName}</h2>
-              <p className="text-xs opacity-80 leading-tight">{recentModuleTiles[0].description}</p>
+            <div className="text-left overflow-hidden">
+              <h2 className="text-2xl font-bold mb-1 truncate">{recentModuleTiles[0].displayName}</h2>
+              <p className="text-xs opacity-80 leading-tight line-clamp-2">{recentModuleTiles[0].description}</p>
             </div>
             <div className="text-right">
               <div className="text-4xl font-normal text-white leading-none">{recentModuleTiles[0].docsCount || 0}</div>
@@ -501,9 +501,9 @@ const Home: React.FC = () => {
             className="rounded p-2 flex flex-col justify-between"
             style={{ backgroundColor: '#FEA079', color: '#8C5338', minHeight: '99px' }}
           >
-            <div className="text-left">
-              <h2 className="text-xl font-bold leading-tight">{recentModuleTiles[1].displayName}</h2>
-              <p className="text-[10px] opacity-80 mt-0.5 leading-tight">{recentModuleTiles[1].description?.slice(0, 35)}...</p>
+            <div className="text-left overflow-hidden">
+              <h2 className="text-xl font-bold leading-tight truncate">{recentModuleTiles[1].displayName}</h2>
+              <p className="text-[10px] opacity-80 mt-0.5 leading-tight line-clamp-2">{recentModuleTiles[1].description}</p>
             </div>
             <div className="text-right text-2xl font-normal text-white leading-none mt-1">{recentModuleTiles[1].docsCount || 0}</div>
           </button>
@@ -516,9 +516,9 @@ const Home: React.FC = () => {
             className="rounded p-2 flex flex-col justify-between"
             style={{ backgroundColor: '#F3A361', color: '#8B5931', minHeight: '99px' }}
           >
-            <div className="text-left">
-              <h2 className="text-xl font-bold leading-tight">{recentModuleTiles[2].displayName}</h2>
-              <p className="text-[10px] opacity-80 mt-0.5 leading-tight">{recentModuleTiles[2].description?.slice(0, 35)}...</p>
+            <div className="text-left overflow-hidden">
+              <h2 className="text-xl font-bold leading-tight truncate">{recentModuleTiles[2].displayName}</h2>
+              <p className="text-[10px] opacity-80 mt-0.5 leading-tight line-clamp-2">{recentModuleTiles[2].description}</p>
             </div>
             <div className="text-right text-2xl font-normal text-white leading-none mt-1">{recentModuleTiles[2].docsCount || 0}</div>
           </button>
@@ -536,12 +536,12 @@ const Home: React.FC = () => {
               <button
                 key={docType.uni}
                 onClick={() => navigateToModule(docType.uni)}
-                className="rounded p-1.5 border border-gray-700 bg-surface-primary text-left"
+                className="rounded p-1.5 border border-gray-700 bg-surface-primary text-left overflow-hidden"
                 style={{ minHeight: '48px' }}
               >
-                <h3 className="text-sm font-bold mb-0.5 leading-tight" style={{ color }}>{docType.displayName}</h3>
+                <h3 className="text-sm font-bold mb-0.5 leading-tight truncate" style={{ color }}>{docType.displayName}</h3>
                 <div className="flex justify-between items-end gap-1">
-                  <p className="text-[9px] text-gray-400 leading-tight flex-1">{docType.description?.slice(0, 30)}...</p>
+                  <p className="text-[9px] text-gray-400 leading-tight flex-1 line-clamp-1">{docType.description}</p>
                   <span className="text-sm text-gray-500 shrink-0">{docType.docsCount || 0}</span>
                 </div>
               </button>
