@@ -12,6 +12,12 @@ import { HomeSkeleton } from '@/components/HomeSkeleton';
 import { api } from '@/services/api';
 import { Clock, Mic, MicOff } from 'lucide-react';
 import { useSwipe } from '@/hooks/useSwipe';
+import { 
+  trackModuleUsage as trackUsage, 
+  getRecentModules, 
+  getAllModulesSortedByUsage,
+  subscribeToUsageUpdates 
+} from '@/utils/moduleUsageTracker';
 
 interface DocTypeCard {
   uni: string;
@@ -113,31 +119,29 @@ const Home: React.FC = () => {
     },
   });
 
-  // Загрузка последних использованных модулей
+  // Загрузка последних использованных модулей и подписка на обновления
   useEffect(() => {
     const loadRecent = () => {
-      try {
-        const stored = localStorage.getItem('recent_modules');
-        if (stored) {
-          setRecentModules(JSON.parse(stored));
-        }
-      } catch (error) {
-        console.error('Failed to load recent modules:', error);
-      }
+      const recent = getRecentModules(10); // Загружаем топ-10 для сортировки всех кнопок
+      setRecentModules(recent);
+      console.log('📊 Loaded recent modules:', recent);
     };
     
+    // Загрузить при монтировании
     loadRecent();
+    
+    // Подписаться на обновления использования модулей
+    const unsubscribe = subscribeToUsageUpdates(() => {
+      console.log('🔄 Module usage updated, reloading...');
+      loadRecent();
+    });
+    
+    return unsubscribe;
   }, []);
 
   // Сохранение использованного модуля
   const trackModuleUsage = (uni: string) => {
-    try {
-      const recent = [uni, ...recentModules.filter(m => m !== uni)].slice(0, 5);
-      setRecentModules(recent);
-      localStorage.setItem('recent_modules', JSON.stringify(recent));
-    } catch (error) {
-      console.error('Failed to save recent module:', error);
-    }
+    trackUsage(uni); // Используем новую систему с временными метками
   };
 
   // Инициализация голосового поиска
@@ -379,11 +383,27 @@ const Home: React.FC = () => {
     navigate(`/docs/${uni}`);
   };
 
-  // Получение последних использованных модулей из docTypes (3 штуки для новой области)
+  // Получение последних использованных модулей из docTypes (3 штуки для оранжевых кнопок)
   const recentModuleTiles = recentModules
     .map(uni => docTypes.find(dt => dt.uni === uni))
     .filter((x): x is DocTypeCard => Boolean(x))
     .slice(0, 3);
+
+  // Сортировка всех остальных модулей по истории использования
+  const usageOrder = getAllModulesSortedByUsage();
+  
+  // Сортировка docTypes по истории использования
+  const sortedByUsage = docTypes.sort((a, b) => {
+    const indexA = usageOrder.indexOf(a.uni);
+    const indexB = usageOrder.indexOf(b.uni);
+    
+    // Если модуль не в истории, поместить в конец
+    if (indexA === -1 && indexB === -1) return 0;
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+    
+    return indexA - indexB;
+  });
 
   // Render custom interface if installed
   if (hasCustomInterface) {
@@ -427,193 +447,97 @@ const Home: React.FC = () => {
     );
   }
 
-  // Prioritization (Android Compact – 22): primary → secondary → tertiary
-  const primaryOrder = ['PrihodNaSklad', 'PodborZakaza', 'Otgruzka', 'Inventarizaciya'];
-  const secondaryOrder = ['RazmeshhenieVYachejki', 'Vozvrat', 'Peremeshenie', 'Markirovka'];
-
-  const included = new Set<string>();
-  const byUni = (uni: string) => docTypes.find((d) => d.uni === uni);
-
-  // Hero-specific tiles (matching Figma mockup layout)
-  const tPrihod = byUni('PrihodNaSklad');        // 1. Left large tile (yellow)
-  const tOtgruzka = byUni('Otgruzka');           // 2. Right top tile (coral) - "Отгрузка"
-  const tPodbor = byUni('PodborZakaza');         // 3. Right bottom tile (orange)
-  const tInvent = byUni('Inventarizaciya');      // Full-width below
-  const tVozvrat = byUni('Vozvrat');
-  const tPlacement = byUni('RazmeshhenieVYachejki');
-
-  [tPrihod, tOtgruzka, tPodbor, tInvent, tVozvrat, tPlacement].forEach((t) => {
-    if (t) included.add(t.uni);
-  });
-
-  // Keep secondary/tertiary as before for the rest
-  const secondaryTiles = secondaryOrder
-    .map(byUni)
-    .filter((x): x is DocTypeCard => Boolean(x))
-    .filter((x) => !included.has(x.uni))
-    .map((x) => (included.add(x.uni), x));
-
-  const tertiaryTiles = docTypes.filter((d) => !included.has(d.uni));
+  // Остальные модули (исключаем первые 3, которые уже показываем в оранжевых кнопках)
+  const used = new Set(recentModuleTiles.map(t => t.uni));
+  const remainingModules = sortedByUsage.filter(d => !used.has(d.uni));
 
   return (
     <div ref={containerRef} className="space-y-1 max-w-md mx-auto px-2">
-      {/* Главная сетка: 3 основные кнопки */}
+      {/* Главная сетка: 3 основные кнопки - ПОСЛЕДНИЕ ИСПОЛЬЗОВАННЫЕ ОПЕРАЦИИ */}
       <div className="grid grid-cols-2 gap-1.5">
-        {/* Приход - большая кнопка (2 ряда) */}
-        {tPrihod && (
+        {/* Самая последняя операция - большая кнопка (2 ряда) */}
+        {recentModuleTiles[0] ? (
           <button
-            onClick={() => navigateToModule(tPrihod.uni)}
+            onClick={() => navigateToModule(recentModuleTiles[0].uni)}
             className="row-span-2 rounded-lg p-4 flex flex-col justify-between shadow-sm"
             style={{ backgroundColor: '#DAA320', color: '#715918', minHeight: '180px' }}
           >
             <div className="text-left">
-              <h2 className="text-2xl font-bold mb-2">{tPrihod.displayName}</h2>
-              <p className="text-xs opacity-80">Перемещение товаров между ячейками</p>
+              <h2 className="text-2xl font-bold mb-2">{recentModuleTiles[0].displayName}</h2>
+              <p className="text-xs opacity-80">{recentModuleTiles[0].description}</p>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-normal text-white">{tPrihod.docsCount || 139}</div>
+              <div className="text-3xl font-normal text-white">{recentModuleTiles[0].docsCount || 0}</div>
               <p className="text-xs">Документов:</p>
             </div>
           </button>
+        ) : (
+          <div className="row-span-2 rounded-lg p-4 flex items-center justify-center border-2 border-dashed border-gray-600 bg-surface-secondary">
+            <p className="text-center text-sm text-gray-500">Начните работу<br/>с любого модуля</p>
+          </div>
         )}
 
-        {/* Остатки - верхняя правая */}
-        {tInvent && (
+        {/* Предпоследняя операция - верхняя правая */}
+        {recentModuleTiles[1] ? (
           <button
-            onClick={() => navigateToModule(tInvent.uni)}
+            onClick={() => navigateToModule(recentModuleTiles[1].uni)}
             className="rounded-lg p-3 flex flex-col justify-between shadow-sm"
             style={{ backgroundColor: '#FEA079', color: '#8C5338', minHeight: '88px' }}
           >
             <div className="text-left">
-              <h2 className="text-xl font-bold">{tInvent.displayName}</h2>
-              <p className="text-xs opacity-80 mt-1">Перемещение товаров между ячейками</p>
+              <h2 className="text-xl font-bold">{recentModuleTiles[1].displayName}</h2>
+              <p className="text-xs opacity-80 mt-1">{recentModuleTiles[1].description?.slice(0, 30)}...</p>
             </div>
-            <div className="text-right text-2xl font-normal text-white">{tInvent.docsCount || 73}</div>
+            <div className="text-right text-2xl font-normal text-white">{recentModuleTiles[1].docsCount || 0}</div>
           </button>
+        ) : (
+          <div className="rounded-lg p-3 flex items-center justify-center border-2 border-dashed border-gray-600 bg-surface-secondary" style={{ minHeight: '88px' }}>
+            <p className="text-xs text-center text-gray-500">Операция #2</p>
+          </div>
         )}
 
-        {/* Подбор - нижняя правая */}
-        {tPodbor && (
+        {/* Третья с конца операция - нижняя правая */}
+        {recentModuleTiles[2] ? (
           <button
-            onClick={() => navigateToModule(tPodbor.uni)}
+            onClick={() => navigateToModule(recentModuleTiles[2].uni)}
             className="rounded-lg p-3 flex flex-col justify-between shadow-sm"
             style={{ backgroundColor: '#F3A361', color: '#8B5931', minHeight: '88px' }}
           >
             <div className="text-left">
-              <h2 className="text-xl font-bold">{tPodbor.displayName}</h2>
-              <p className="text-xs opacity-80 mt-1">Перемещение товаров между ячейками</p>
+              <h2 className="text-xl font-bold">{recentModuleTiles[2].displayName}</h2>
+              <p className="text-xs opacity-80 mt-1">{recentModuleTiles[2].description?.slice(0, 30)}...</p>
             </div>
-            <div className="text-right text-2xl font-normal text-white">{tPodbor.docsCount || 11}</div>
+            <div className="text-right text-2xl font-normal text-white">{recentModuleTiles[2].docsCount || 0}</div>
           </button>
-        )}
-      </div>
-
-      {/* Второстепенные кнопки */}
-      <div className="grid grid-cols-2 gap-1.5 mt-1.5">
-        {/* Учёт */}
-        {docTypes.find(d => d.uni === 'Inventarizaciya' || d.displayName?.includes('Учёт')) && (
-          <button
-            onClick={() => navigateToModule(docTypes.find(d => d.uni === 'Inventarizaciya' || d.displayName?.includes('Учёт'))!.uni)}
-            className="rounded-lg p-3 border border-gray-600 bg-surface-primary shadow-sm"
-            style={{ minHeight: '62px' }}
-          >
-            <div className="text-left">
-              <h2 className="text-base font-bold" style={{ color: '#86E0CB' }}>Учёт</h2>
-              <div className="flex justify-between items-end mt-1">
-                <p className="text-[8px] text-gray-400">Перемещение товаров<br/>между ячейками</p>
-                <span className="text-lg text-gray-500">3</span>
-              </div>
-            </div>
-          </button>
-        )}
-
-        {/* Документооборот */}
-        {docTypes.find(d => d.displayName?.includes('Документ')) && (
-          <button
-            onClick={() => navigateToModule(docTypes.find(d => d.displayName?.includes('Документ'))!.uni)}
-            className="rounded-lg p-3 border border-gray-600 bg-surface-primary shadow-sm"
-            style={{ minHeight: '62px' }}
-          >
-            <div className="text-left">
-              <h2 className="text-base font-bold" style={{ color: '#91EDC1' }}>Документооборот</h2>
-              <div className="flex justify-between items-end mt-1">
-                <p className="text-[8px] text-gray-400">Перемещение товаров<br/>между ячейками</p>
-                <span className="text-lg text-gray-500">99</span>
-              </div>
-            </div>
-          </button>
-        )}
-      </div>
-
-      {/* Штрихкоды */}
-      <div className="mt-1.5">
-        <button
-          onClick={() => navigate('/docs/SborShK')}
-          className="w-full rounded-lg p-3 border border-gray-600 bg-surface-primary shadow-sm text-left"
-          style={{ minHeight: '52px' }}
-        >
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-normal text-gray-400">Штрихкоды</h2>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-[8px] text-gray-400">Перемещение товаров между ячейками</p>
-                <span className="text-lg text-gray-500 text-right block">101</span>
-              </div>
-            </div>
+        ) : (
+          <div className="rounded-lg p-3 flex items-center justify-center border-2 border-dashed border-gray-600 bg-surface-secondary" style={{ minHeight: '88px' }}>
+            <p className="text-xs text-center text-gray-500">Операция #3</p>
           </div>
-        </button>
+        )}
       </div>
 
-      {/* Перемещения */}
-      <div className="mt-1.5">
-        <button
-          className="w-full rounded-lg p-3 border border-gray-600 bg-surface-primary shadow-sm text-left"
-          style={{ minHeight: '80px' }}
-        >
-          <div>
-            <h2 className="text-lg font-normal text-gray-400 mb-2">Перемещения</h2>
-            <div className="flex justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-bold" style={{ color: '#F0E78D' }}>По складам</p>
-                <p className="text-[8px] text-gray-400 mt-0.5">Перемещение товаров<br/>между ячейками</p>
-                <span className="text-lg text-gray-500 block mt-1">72</span>
-              </div>
-              <div className="w-px bg-gray-600 mx-2"></div>
-              <div className="flex-1">
-                <p className="text-sm font-bold" style={{ color: '#DEB88E' }}>По ячейкам</p>
-                <p className="text-[8px] text-gray-400 mt-0.5">Перемещение товаров<br/>между ячейками</p>
-                <span className="text-lg text-gray-500 block mt-1">1</span>
-              </div>
-            </div>
-          </div>
-        </button>
-      </div>
-
-      {/* Остальные операции второстепенными мелкими кнопками */}
-      {(secondaryTiles.length > 0 || tertiaryTiles.length > 0) && (
+      {/* Остальные операции - отсортированные по использованию */}
+      {remainingModules.length > 0 && (
         <div className="grid grid-cols-2 gap-1.5 mt-1.5">
-          {[...secondaryTiles, ...tertiaryTiles]
-            .filter(d => !['PrihodNaSklad', 'PodborZakaza', 'Inventarizaciya'].includes(d.uni))
-            .slice(0, 6)
-            .map((docType, index) => {
-              const colors = ['#4dd0e1', '#7ed321', '#e0b536', '#d89668', '#f0a58a', '#91EDC1'];
-              const color = colors[index % colors.length];
-              
-              return (
-                <button
-                  key={docType.uni}
-                  onClick={() => navigateToModule(docType.uni)}
-                  className="rounded-lg p-2.5 border border-gray-600 bg-surface-primary shadow-sm text-left"
-                  style={{ minHeight: '48px' }}
-                >
-                  <h3 className="text-xs font-bold mb-1" style={{ color }}>{docType.displayName}</h3>
-                  <div className="flex justify-between items-end">
-                    <p className="text-[7px] text-gray-400 leading-tight">{docType.description?.slice(0, 30)}...</p>
-                    <span className="text-sm text-gray-500">{docType.docsCount || 0}</span>
-                  </div>
-                </button>
-              );
-            })}
+          {remainingModules.slice(0, 10).map((docType, index) => {
+            const colors = ['#86E0CB', '#91EDC1', '#F0E78D', '#DEB88E', '#4dd0e1', '#7ed321', '#e0b536', '#d89668', '#f0a58a', '#bd93f9'];
+            const color = colors[index % colors.length];
+            
+            return (
+              <button
+                key={docType.uni}
+                onClick={() => navigateToModule(docType.uni)}
+                className="rounded-lg p-2.5 border border-gray-600 bg-surface-primary shadow-sm text-left"
+                style={{ minHeight: '52px' }}
+              >
+                <h3 className="text-sm font-bold mb-1" style={{ color }}>{docType.displayName}</h3>
+                <div className="flex justify-between items-end">
+                  <p className="text-[7px] text-gray-400 leading-tight">{docType.description?.slice(0, 35)}...</p>
+                  <span className="text-base text-gray-500">{docType.docsCount || 0}</span>
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
 
