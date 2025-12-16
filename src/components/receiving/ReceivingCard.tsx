@@ -29,37 +29,37 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
     <div className={`card border-2 ${statusColor} transition-colors`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="flex items-center space-x-2 mb-2">
+          <div className="flex items-center space-x-2 mb-1.5">
             <span className="text-2xl">{statusIcon}</span>
             <div>
-              <h3 className="font-semibold text-content-primary">
+              <h3 className="font-semibold text-content-primary leading-tight">
                 {line.productName}
               </h3>
-              <p className="text-sm text-content-secondary">
+              <p className="text-sm text-content-secondary leading-tight">
                 Артикул: {line.productSku}
               </p>
               {line.barcode && (
-                <p className="text-xs text-content-tertiary">
+                <p className="text-xs text-content-tertiary leading-tight">
                   ШК: {line.barcode}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 text-center mt-4">
-            <div className="bg-surface-primary border border-border-default/50 rounded p-2">
+          <div className="grid grid-cols-3 gap-1.5 text-center mt-2.5">
+            <div className="bg-surface-primary border border-border-default/50 rounded p-1.5">
               <div className="text-xs text-content-secondary">План</div>
               <div className="text-lg font-bold text-content-primary">
                 {line.quantityPlan}
               </div>
             </div>
-            <div className="bg-surface-primary border border-border-default/50 rounded p-2">
+            <div className="bg-surface-primary border border-border-default/50 rounded p-1.5">
               <div className="text-xs text-content-secondary">Факт</div>
               <div className="text-lg font-bold text-brand-primary">
                 {line.quantityFact}
               </div>
             </div>
-            <div className="bg-surface-primary border border-border-default/50 rounded p-2">
+            <div className="bg-surface-primary border border-border-default/50 rounded p-1.5">
               <div className="text-xs text-content-secondary">Остаток</div>
               <div className={`text-lg font-bold ${
                 showDifference 
@@ -76,7 +76,7 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
       </div>
 
       {/* Quick actions */}
-      <div className="flex gap-2 mt-4">
+      <div className="flex gap-1.5 mt-3">
         <button
           onClick={(e) => { e.stopPropagation(); onAdjust(-1); }}
           className="btn-secondary flex-1 border border-border-default"
