@@ -56,6 +56,9 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
         try {
           const odataTypeName = odataAPI.mapInternalToODataType(docType);
           const odataDoc = await odataAPI.getDocument(odataTypeName, docId);
+          if (!odataDoc) {
+            throw new Error('Документ не найден в OData');
+          }
           
           // Конвертируем OData документ во внутренний формат
           doc = {
