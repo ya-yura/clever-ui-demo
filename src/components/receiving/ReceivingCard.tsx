@@ -20,10 +20,10 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
   const showDifference = difference !== 0;
 
   return (
-    <div className={`card border-2 ${statusColor} transition-colors p-2.5`}>
+    <div className={`card border-2 ${statusColor} transition-colors p-2`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="flex flex-col space-y-0.5 mb-1">
+          <div className="flex flex-col space-y-0.5 mb-0.5">
             <h3 className="font-semibold text-content-primary leading-tight">
               {line.productName}
             </h3>
@@ -37,22 +37,22 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
             )}
           </div>
 
-          <div className="grid grid-cols-3 gap-1 text-center mt-1.5">
-            <div className="atom-chip p-1.5">
+          <div className="grid grid-cols-3 gap-1 text-center mt-1">
+            <div className="atom-chip p-1">
               <div className="text-xs text-content-secondary">План</div>
-              <div className="text-lg font-bold text-content-primary">
+              <div className="text-base font-bold text-content-primary leading-tight">
                 {line.quantityPlan}
               </div>
             </div>
-            <div className="atom-chip p-1.5">
+            <div className="atom-chip p-1">
               <div className="text-xs text-content-secondary">Факт</div>
-              <div className="text-lg font-bold text-brand-primary">
+              <div className="text-base font-bold text-brand-primary leading-tight">
                 {line.quantityFact}
               </div>
             </div>
-            <div className="atom-chip p-1.5">
+            <div className="atom-chip p-1">
               <div className="text-xs text-content-secondary">Остаток</div>
-              <div className={`text-lg font-bold ${
+              <div className={`text-base font-bold leading-tight ${
                 showDifference 
                   ? difference > 0 
                     ? 'text-warning' 
@@ -67,17 +67,17 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
       </div>
 
       {/* Quick actions */}
-      <div className="flex gap-1 mt-2">
+      <div className="flex gap-1 mt-1.5">
         <button
           onClick={(e) => { e.stopPropagation(); onAdjust(-1); }}
-          className="btn-secondary flex-1 border border-border-default h-14 text-lg font-semibold"
+          className="btn-secondary flex-1 border border-border-default h-12 text-base font-semibold"
           disabled={line.quantityFact === 0}
         >
           −1
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onAdjust(1); }}
-          className="btn-primary flex-1 h-14 text-lg font-semibold"
+          className="btn-primary flex-1 h-12 text-base font-semibold"
         >
           +1
         </button>
@@ -85,7 +85,7 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
 
       {showDifference && (
         <div
-          className={`mt-1.5 px-3 py-2 rounded text-sm font-semibold text-center shadow-sm ${
+          className={`mt-1 px-2.5 py-1.5 rounded text-sm font-semibold text-center shadow-sm ${
             difference > 0
               ? 'bg-warning/30 text-warning-dark'
               : 'bg-error/30 text-error-dark'
