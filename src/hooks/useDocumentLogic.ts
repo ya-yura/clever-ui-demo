@@ -1,10 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { db } from '@/services/db';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 import { feedback } from '@/utils/feedback';
 import analytics, { EventType } from '@/lib/analytics';
 import { UniversalDocument } from '@/types/document';
 import { odataAPI } from '@/services/odata-api';
+import { SoundEffects } from '@/utils/soundEffects';
 
 export type DocLine = {
   id: string;
@@ -30,6 +31,7 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDiscrepancyAlert, setShowDiscrepancyAlert] = useState(false);
+  const completionCooldownUntilRef = useRef<number>(0);
 
   const { addSyncAction } = useOfflineStorage(docType);
 
@@ -261,10 +263,25 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
   }, [lines, docType, activeLine, addSyncAction]);
 
   const updateQuantity = (lineId: string, delta: number, absolute?: boolean) => {
+      // Блокируем повторные клики в течение 1 секунды после достижения плана
+      const now = Date.now();
+      if (completionCooldownUntilRef.current > now) {
+        return;
+      }
+
       const line = lines.find(l => l.id === lineId);
       if (!line) return;
+
+      const previousFact = line.quantityFact;
       const newFact = absolute ? delta : Math.max(0, line.quantityFact + delta);
+
       updateLine(lineId, { quantityFact: newFact });
+
+      const justCompleted = line.quantityPlan > 0 && previousFact < line.quantityPlan && newFact >= line.quantityPlan;
+      if (justCompleted) {
+        SoundEffects.playSuccess();
+        completionCooldownUntilRef.current = now + 1000; // 1 секунда паузы от лишних кликов
+      }
   };
 
   // --- 4. Получение расхождений (US I.3, VI.3) ---
