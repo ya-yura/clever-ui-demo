@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '@/services/db';
 import { useScanner } from '@/hooks/useScanner';
@@ -664,58 +665,65 @@ const Receiving: React.FC = () => {
 
           {/* US I.2: Список строк документа с автосортировкой */}
           <div ref={linesContainerRef} className="space-y-2">
-            {lines
-              .slice() // Копируем для избежания мутации
-              .sort((a, b) => {
-                // Сортировка по частоте сканирования (самые частые первые)
-                const freqA = lineScanFrequency.get(a.id) || 0;
-                const freqB = lineScanFrequency.get(b.id) || 0;
-                
-                if (freqA !== freqB) {
-                  return freqB - freqA;
-                }
-                
-                // Затем по статусу (незавершённые первые)
-                if (a.status !== b.status) {
-                  const statusOrder = { pending: 0, partial: 1, completed: 2, over: 3 };
-                  return (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0);
-                }
-                
-                return 0;
-              })
-              .map((line, index) => (
-                <div 
-                  key={line.id}
-                  ref={(el) => {
-                    if (el) lineRefs.current.set(line.id, el);
-                  }}
-                  onClick={() => handleLineClick(line)}
-                  className="cursor-pointer"
-                  style={{
-                    // Фиксация позиции для предотвращения прыжков
-                    position: 'relative',
-                  }}
-                >
-                  <ReceivingCard
-                    line={{
-                      id: line.id,
-                      documentId: documentId || '',
-                      productId: line.productId,
-                      productName: line.productName,
-                      productSku: line.productSku,
-                      barcode: line.barcode,
-                      quantity: line.quantityFact,
-                      quantityPlan: line.quantityPlan,
-                      quantityFact: line.quantityFact,
-                      status: line.status === 'over' ? 'completed' : line.status,
-                      notes: ''
+            <AnimatePresence>
+              {lines
+                .slice() // Копируем для избежания мутации
+                .sort((a, b) => {
+                  // Сортировка по частоте сканирования (самые частые первые)
+                  const freqA = lineScanFrequency.get(a.id) || 0;
+                  const freqB = lineScanFrequency.get(b.id) || 0;
+                  
+                  if (freqA !== freqB) {
+                    return freqB - freqA;
+                  }
+                  
+                  // Затем по статусу (незавершённые первые)
+                  if (a.status !== b.status) {
+                    const statusOrder = { pending: 0, partial: 1, completed: 2, over: 3 };
+                    return (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0);
+                  }
+                  
+                  return 0;
+                })
+                .map((line, index) => (
+                  <motion.div 
+                    key={line.id}
+                    layout
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    transition={{ duration: 0.9, ease: 'easeOut' }}
+                    ref={(el) => {
+                      if (el) lineRefs.current.set(line.id, el);
                     }}
-                    onAdjust={(delta) => {
-                      updateQuantity(line.id, delta);
+                    onClick={() => handleLineClick(line)}
+                    className="cursor-pointer"
+                    style={{
+                      // Фиксация позиции для предотвращения прыжков
+                      position: 'relative',
                     }}
-                  />
-                </div>
-              ))}
+                  >
+                    <ReceivingCard
+                      line={{
+                        id: line.id,
+                        documentId: documentId || '',
+                        productId: line.productId,
+                        productName: line.productName,
+                        productSku: line.productSku,
+                        barcode: line.barcode,
+                        quantity: line.quantityFact,
+                        quantityPlan: line.quantityPlan,
+                        quantityFact: line.quantityFact,
+                        status: line.status === 'over' ? 'completed' : line.status,
+                        notes: ''
+                      }}
+                      onAdjust={(delta) => {
+                        updateQuantity(line.id, delta);
+                      }}
+                    />
+                  </motion.div>
+                ))}
+            </AnimatePresence>
           </div>
         </div>
 
