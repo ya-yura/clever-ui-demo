@@ -645,12 +645,29 @@ const Receiving: React.FC = () => {
             className="sticky top-0 z-10 shadow-md"
           />
 
+          {/* Banner завершения документа */}
+          <AnimatePresence>
+            {docCompletionAnim && (
+              <motion.div
+                className="rounded-lg bg-success/15 border border-success/40 text-success-dark px-4 py-3 flex items-center gap-3 shadow-md"
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+              >
+                <CheckCircle size={20} />
+                <div className="text-sm font-semibold">Документ завершён</div>
+                <div className="ml-auto text-xs text-success-dark/70">Сохранено</div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* US I.2.3: Статус и прогресс документа */}
           <motion.div
             className="bg-surface-secondary rounded-lg p-4 space-y-3 relative overflow-hidden"
             animate={
               docCompletionAnim
-                ? { scale: 1.02, boxShadow: '0 0 22px rgba(16, 185, 129, 0.35)' }
+                ? { scale: 1.04, boxShadow: '0 0 28px rgba(16, 185, 129, 0.45)' }
                 : { scale: 1, boxShadow: 'none' }
             }
             transition={{ duration: 1.0, ease: 'easeOut' }}
@@ -660,14 +677,29 @@ const Receiving: React.FC = () => {
                 <motion.div
                   className="absolute inset-0 pointer-events-none bg-success/15"
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.6 }}
+                  animate={{ opacity: 0.75 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.8 }}
                 />
               )}
             </AnimatePresence>
             <div className="flex justify-between items-center relative z-10">
-              <h3 className="font-bold">Прогресс приёмки</h3>
+              <h3 className="font-bold flex items-center gap-2">
+                Прогресс приёмки
+                <AnimatePresence>
+                  {docCompletionAnim && (
+                    <motion.span
+                      className="inline-flex items-center gap-1 text-success-dark text-xs font-semibold bg-success/20 px-2 py-1 rounded"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.4 }}
+                    >
+                      <CheckCircle size={14} /> Завершено
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </h3>
               <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                 document.status === 'completed'
                   ? 'bg-success-light text-success-dark'
