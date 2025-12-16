@@ -662,45 +662,22 @@ const Receiving: React.FC = () => {
             )}
           </AnimatePresence>
 
-          {/* US I.2.3: Статус и прогресс документа */}
-          <motion.div
-            className="bg-surface-secondary rounded-lg p-4 space-y-3 relative overflow-hidden"
-            animate={
-              docCompletionAnim
-                ? { scale: 1.04, boxShadow: '0 0 28px rgba(16, 185, 129, 0.45)' }
-                : { scale: 1, boxShadow: 'none' }
-            }
-            transition={{ duration: 1.0, ease: 'easeOut' }}
-          >
-            <AnimatePresence>
-              {docCompletionAnim && (
-                <motion.div
-                  className="absolute inset-0 pointer-events-none bg-success/15"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.75 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8 }}
+          {/* US I.2.3: Статус и прогресс документа (сверхкомпактно) */}
+          <div className="flex items-center justify-between gap-2 text-xs text-content-secondary">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-semibold text-content-primary truncate">Прогресс</span>
+              <span className="font-mono text-content-primary">
+                {document.completedLines}/{document.totalLines}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-1.5 bg-surface-tertiary rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-brand-primary transition-all duration-300"
+                  style={{ width: `${document.totalLines > 0 ? (document.completedLines / document.totalLines) * 100 : 0}%` }}
                 />
-              )}
-            </AnimatePresence>
-            <div className="flex justify-between items-center relative z-10">
-              <h3 className="font-bold flex items-center gap-2">
-                Прогресс приёмки
-                <AnimatePresence>
-                  {docCompletionAnim && (
-                    <motion.span
-                      className="inline-flex items-center gap-1 text-success-dark text-xs font-semibold bg-success/20 px-2 py-1 rounded"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <CheckCircle size={14} /> Завершено
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </h3>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+              </div>
+              <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
                 document.status === 'completed'
                   ? 'bg-success-light text-success-dark'
                   : document.status === 'in_progress'
@@ -710,22 +687,7 @@ const Receiving: React.FC = () => {
                 {document.status === 'completed' ? 'ЗАВЕРШЁН' : document.status === 'in_progress' ? 'В РАБОТЕ' : 'НОВЫЙ'}
               </span>
             </div>
-            <div className="relative z-10">
-              <div className="flex justify-between text-sm mb-1">
-                <span>Выполнено строк</span>
-                <span className="font-mono">{document.completedLines} / {document.totalLines}</span>
-              </div>
-              <div className="h-2 bg-surface-tertiary rounded-full overflow-hidden">
-                <motion.div 
-                  className="h-full bg-brand-primary"
-                  style={{ width: `${document.totalLines > 0 ? (document.completedLines / document.totalLines) * 100 : 0}%` }}
-                  initial={false}
-                  animate={{ width: `${document.totalLines > 0 ? (document.completedLines / document.totalLines) * 100 : 0}%` }}
-                  transition={{ duration: 0.9, ease: 'easeOut' }}
-                />
-              </div>
-            </div>
-          </motion.div>
+          </div>
 
           {/* US I.2: Список строк документа с автосортировкой */}
           <div ref={linesContainerRef} className="space-y-2">
