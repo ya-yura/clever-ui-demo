@@ -76,7 +76,7 @@ const Layout: React.FC = () => {
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header />
-      <main ref={mainRef} className="container mx-auto px-4 py-6 pb-20">
+      <main ref={mainRef} className="container mx-auto px-1 py-1 pb-16">
         <Outlet />
       </main>
       <OfflineIndicator />

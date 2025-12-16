@@ -71,16 +71,16 @@ const Header: React.FC = () => {
 
   return (
     <header className="bg-surface-secondary text-content-secondary shadow-lg sticky top-0 z-50 border-b border-surface-tertiary">
-      <div className="container mx-auto px-3 py-2.5">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
+      <div className="container mx-auto px-2 py-1.5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
             {!isHome && (
               <button
                 onClick={() => navigate(parentPath, { replace: false })}
-                className="p-2 hover:bg-surface-tertiary rounded-lg transition-colors text-content-secondary"
+                className="p-1.5 hover:bg-surface-tertiary rounded transition-colors text-content-secondary"
                 aria-label="Назад"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
@@ -88,45 +88,45 @@ const Header: React.FC = () => {
             {isHome && (
               <button
                 onClick={openMenu}
-                className="p-2 hover:bg-surface-tertiary rounded-lg transition-colors touch-manipulation text-content-secondary"
+                className="p-1.5 hover:bg-surface-tertiary rounded transition-colors touch-manipulation text-content-secondary"
                 aria-label="Открыть меню"
               >
-                <Menu className="w-6 h-6" />
+                <Menu className="w-5 h-5" />
               </button>
             )}
             <div 
               className="cursor-pointer flex-1"
               onClick={() => navigate('/')}
             >
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-medium tracking-wide text-content-primary">
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-base font-medium text-content-primary leading-tight">
                   {listInfo ? listInfo.title : pageInfo.title}
                 </h1>
                 {documentInfo && (
-                  <span className="text-sm text-content-tertiary">
+                  <span className="text-xs text-content-tertiary">
                     {documentInfo.documentId}
                   </span>
                 )}
               </div>
               {documentInfo ? (
-                <div className="flex items-center gap-1.5 mt-1">
-                  <div className="flex-1 max-w-[200px] bg-surface-tertiary rounded-full h-1">
+                <div className="flex items-center gap-1 mt-0.5">
+                  <div className="flex-1 max-w-[180px] bg-surface-tertiary rounded-full h-0.5">
                     <div
-                      className="bg-brand-secondary h-1 rounded-full transition-all"
+                      className="bg-brand-secondary h-0.5 rounded-full transition-all"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
-                  <span className="text-xs text-content-tertiary min-w-[50px]">
+                  <span className="text-[10px] text-content-tertiary min-w-[40px]">
                     {documentInfo.completed}/{documentInfo.total}
                   </span>
                 </div>
               ) : listInfo ? (
-                <p className="text-[11px] text-content-tertiary mt-0.5">
+                <p className="text-[10px] text-content-tertiary mt-0.5 leading-tight">
                   Всего: {listInfo.count}
                 </p>
               ) : (
                 pageInfo.subtitle && (
-                  <p className="text-[11px] text-content-tertiary mt-0.5">
+                  <p className="text-[10px] text-content-tertiary mt-0.5 leading-tight">
                     {pageInfo.subtitle}
                   </p>
                 )
@@ -134,28 +134,28 @@ const Header: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
             {/* Online/Offline status */}
-            <div className="flex items-center gap-1.5">
-              <div className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-success' : 'bg-error'}`} />
-              <span className="text-sm hidden sm:inline text-content-secondary">{isOnline ? 'Онлайн' : 'Оффлайн'}</span>
+            <div className="flex items-center gap-1">
+              <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-success' : 'bg-error'}`} />
+              <span className="text-xs hidden sm:inline text-content-secondary">{isOnline ? 'Онлайн' : 'Оффлайн'}</span>
             </div>
 
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 hover:bg-surface-tertiary rounded-lg transition-colors text-content-secondary"
+              className="p-1.5 hover:bg-surface-tertiary rounded transition-colors text-content-secondary"
               aria-label={theme === 'light' ? 'Включить тёмную тему' : 'Включить светлую тему'}
               title={theme === 'light' ? 'Включить тёмную тему' : 'Включить светлую тему'}
             >
               {theme === 'light' ? (
                 // Moon icon for light theme
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
                 </svg>
               ) : (
                 // Sun icon for dark theme
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="5" />
                   <line x1="12" y1="1" x2="12" y2="3" />
                   <line x1="12" y1="21" x2="12" y2="23" />
@@ -172,12 +172,12 @@ const Header: React.FC = () => {
             {/* Partner quick access (service icon) */}
             <button
               onClick={() => navigate('/partner')}
-              className="p-2 hover:bg-surface-tertiary rounded-lg transition-colors text-content-secondary"
+              className="p-1.5 hover:bg-surface-tertiary rounded transition-colors text-content-secondary"
               aria-label="Напарник"
               title="Напарник"
             >
               {/* Handshake/Partner icon - two people */}
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                 <circle cx="9" cy="7" r="4" />
                 <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
