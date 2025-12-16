@@ -31,21 +31,18 @@ const ReceivingCard: React.FC<Props> = ({ line, onAdjust }) => {
     <div className={`card border-2 ${statusColor} transition-colors p-2.5`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="flex items-center space-x-2 mb-1.5">
-            <span className="text-2xl">{statusIcon}</span>
-            <div>
-              <h3 className="font-semibold text-content-primary leading-tight">
-                {line.productName}
-              </h3>
-              <p className="text-sm text-content-secondary leading-tight">
-                Артикул: {line.productSku}
+          <div className="flex flex-col space-y-0.5 mb-1">
+            <h3 className="font-semibold text-content-primary leading-tight">
+              {line.productName}
+            </h3>
+            <p className="text-sm text-content-secondary leading-tight">
+              Артикул: {line.productSku}
+            </p>
+            {line.barcode && (
+              <p className="text-xs text-content-tertiary leading-tight">
+                ШК: {line.barcode}
               </p>
-              {line.barcode && (
-                <p className="text-xs text-content-tertiary leading-tight">
-                  ШК: {line.barcode}
-                </p>
-              )}
-            </div>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-1 text-center mt-1.5">
