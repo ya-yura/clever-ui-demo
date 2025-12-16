@@ -637,7 +637,7 @@ const Receiving: React.FC = () => {
         )}
 
         {/* 2. Основной экран документа */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
+        <div className="flex-1 overflow-y-auto p-2 space-y-3 pb-20">
           {/* US I.2: Поле сканирования */}
           <ScannerInput
             onScan={onScanWithFeedback}
