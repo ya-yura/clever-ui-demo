@@ -121,13 +121,13 @@ const Receiving: React.FC = () => {
       setListInfo(null);
     } else if (!documentId) {
       setDocumentInfo(null);
-      setListInfo({ title: 'Приёмка', count: filteredDocuments.length });
+      setListInfo({ title: 'Приёмка', count: documentsList.length });
     }
     return () => {
       setDocumentInfo(null);
       setListInfo(null);
     };
-  }, [documentId, document, filteredDocuments.length, setDocumentInfo, setListInfo]);
+  }, [documentId, document, documentsList.length, setDocumentInfo, setListInfo]);
 
   // --- US I.1: Загрузка списка документов (<1 sec) ---
   useEffect(() => {
