@@ -158,7 +158,19 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
         // Документ найден в IndexedDB
         docLines = await linesTable.where('documentId').equals(docId).toArray();
       }
-      
+
+      // Если так и не получили документ — выходим безопасно
+      if (!doc) {
+        setDocument(null);
+        setLines([]);
+        setError('Документ не найден');
+        setLoading(false);
+        return;
+      }
+      if (!docLines) {
+        docLines = [];
+      }
+
       setDocument(doc);
       setLines(docLines);
       
