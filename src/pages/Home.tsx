@@ -456,229 +456,160 @@ const Home: React.FC = () => {
   const tertiaryTiles = docTypes.filter((d) => !included.has(d.uni));
 
   return (
-    <div ref={containerRef} className="space-y-3 max-w-7xl mx-auto">
-      {/* Голосовой поиск */}
-      <div className="bg-surface-secondary rounded-lg p-4">
-        <button
-          onClick={toggleVoiceSearch}
-          className={`w-full py-4 rounded-xl transition-all flex items-center justify-center gap-3 ${
-            isListening
-              ? 'bg-error text-white animate-pulse'
-              : 'bg-brand-primary text-white hover:brightness-110'
-          }`}
-        >
-          {isListening ? (
-            <>
-              <MicOff size={24} />
-              <span className="font-bold">Говорите название модуля...</span>
-            </>
-          ) : (
-            <>
-              <Mic size={24} />
-              <span className="font-bold">Голосовой поиск модулей</span>
-            </>
-          )}
-        </button>
-        {voiceSearchText && (
-          <p className="text-xs text-content-tertiary mt-2 text-center">
-            Последний запрос: "{voiceSearchText}"
-          </p>
-        )}
-      </div>
-
-      {/* Warning banner if using mock data */}
-      {usingMockData && (
-        <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <div className="flex-1">
-              <h3 className="text-yellow-400 font-semibold mb-1">
-                Демо-режим
-              </h3>
-              <p className="text-sm text-yellow-200/90 mb-2">
-                API сервер недоступен. Показаны демонстрационные типы документов.
-              </p>
-              <p className="text-xs text-yellow-200/70">
-                Для работы с реальными данными запустите API сервер: <br />
-                <code className="bg-black/30 px-2 py-1 rounded mt-1 inline-block">
-                  http://localhost:9000/MobileSMARTS/api/v1/
-                </code>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Hero layout: 4-column grid */}
-      <div className="grid grid-cols-4 gap-1.5 md:gap-2">
-        {/* Область 2: Последние операции - Left large area (2x2 grid) */}
-        <div className="col-span-2 row-span-2 grid grid-cols-2 gap-1.5">
-          {/* Большая кнопка - последняя операция (занимает 2 строки) */}
-          {recentModuleTiles[0] && (
-            <button
-              onClick={() => navigateToModule(recentModuleTiles[0].uni)}
-              className="tile-primary tone-strong row-span-2 bg-module-receiving-bg text-module-receiving-text"
-            >
-              <div>
-                <h2 className="tile-title-lg">{recentModuleTiles[0].displayName}</h2>
-                <p className="tile-subtext opacity-80">{recentModuleTiles[0].description}</p>
-              </div>
-            </button>
-          )}
-          
-          {/* Боковые кнопки - более ранние операции */}
-          {recentModuleTiles[1] && (
-            <button
-              onClick={() => navigateToModule(recentModuleTiles[1].uni)}
-              className="tile-secondary tone-medium bg-module-picking-bg text-module-picking-text"
-            >
-              <div>
-                <h2 className="tile-title-sm">{recentModuleTiles[1].displayName}</h2>
-              </div>
-            </button>
-          )}
-          
-          {recentModuleTiles[2] && (
-            <button
-              onClick={() => navigateToModule(recentModuleTiles[2].uni)}
-              className="tile-secondary tone-medium bg-module-inventory-bg text-module-inventory-text"
-            >
-              <div>
-                <h2 className="tile-title-sm">{recentModuleTiles[2].displayName}</h2>
-              </div>
-            </button>
-          )}
-          
-          {/* Если нет последних операций, показываем Приход по умолчанию */}
-          {!recentModuleTiles[0] && tPrihod && (
-            <button
-              onClick={() => navigateToModule(tPrihod.uni)}
-              className="tile-primary tone-strong row-span-2 bg-module-receiving-bg text-module-receiving-text"
-            >
-              <div>
-                <h2 className="tile-title-lg">{tPrihod.displayName}</h2>
-                <p className="tile-subtext opacity-80">{tPrihod.description}</p>
-              </div>
-            </button>
-          )}
-          {!recentModuleTiles[1] && tPodbor && (
-            <button
-              onClick={() => navigateToModule(tPodbor.uni)}
-              className="tile-secondary tone-medium bg-module-picking-bg text-module-picking-text"
-            >
-              <div>
-                <h2 className="tile-title-sm">{tPodbor.displayName}</h2>
-              </div>
-            </button>
-          )}
-          {!recentModuleTiles[2] && tOtgruzka && (
-            <button
-              onClick={() => navigateToModule(tOtgruzka.uni)}
-              className="tile-secondary tone-medium bg-module-inventory-bg text-module-inventory-text"
-            >
-              <div>
-                <h2 className="tile-title-sm">{tOtgruzka.displayName}</h2>
-              </div>
-            </button>
-          )}
-        </div>
-
-        {/* 2. Отгрузка - Right top tile (coral) */}
-        {tOtgruzka && (
+    <div ref={containerRef} className="space-y-1 max-w-md mx-auto px-2">
+      {/* Главная сетка: 3 основные кнопки */}
+      <div className="grid grid-cols-2 gap-1.5">
+        {/* Приход - большая кнопка (2 ряда) */}
+        {tPrihod && (
           <button
-            key={tOtgruzka.uni}
-            onClick={() => navigateToModule(tOtgruzka.uni)}
-            className="tile-primary tone-strong col-span-2 bg-module-inventory-bg text-module-inventory-text"
+            onClick={() => navigateToModule(tPrihod.uni)}
+            className="row-span-2 rounded-lg p-4 flex flex-col justify-between shadow-sm"
+            style={{ backgroundColor: '#DAA320', color: '#715918', minHeight: '180px' }}
           >
-            <div>
-              <h2 className="tile-title-lg">{tOtgruzka.displayName}</h2>
-              <p className="tile-subtext opacity-80">{tOtgruzka.description}</p>
+            <div className="text-left">
+              <h2 className="text-2xl font-bold mb-2">{tPrihod.displayName}</h2>
+              <p className="text-xs opacity-80">Перемещение товаров между ячейками</p>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-normal text-white">{tPrihod.docsCount || 139}</div>
+              <p className="text-xs">Документов:</p>
             </div>
           </button>
         )}
 
-        {/* 3. Подбор - Right bottom tile (orange) */}
+        {/* Остатки - верхняя правая */}
+        {tInvent && (
+          <button
+            onClick={() => navigateToModule(tInvent.uni)}
+            className="rounded-lg p-3 flex flex-col justify-between shadow-sm"
+            style={{ backgroundColor: '#FEA079', color: '#8C5338', minHeight: '88px' }}
+          >
+            <div className="text-left">
+              <h2 className="text-xl font-bold">{tInvent.displayName}</h2>
+              <p className="text-xs opacity-80 mt-1">Перемещение товаров между ячейками</p>
+            </div>
+            <div className="text-right text-2xl font-normal text-white">{tInvent.docsCount || 73}</div>
+          </button>
+        )}
+
+        {/* Подбор - нижняя правая */}
         {tPodbor && (
           <button
-            key={tPodbor.uni}
             onClick={() => navigateToModule(tPodbor.uni)}
-            className="tile-primary tone-strong col-span-2 bg-module-picking-bg text-module-picking-text"
+            className="rounded-lg p-3 flex flex-col justify-between shadow-sm"
+            style={{ backgroundColor: '#F3A361', color: '#8B5931', minHeight: '88px' }}
           >
-            <div>
-              <h2 className="tile-title-lg">{tPodbor.displayName}</h2>
-              <p className="tile-subtext opacity-80">{tPodbor.description}</p>
+            <div className="text-left">
+              <h2 className="text-xl font-bold">{tPodbor.displayName}</h2>
+              <p className="text-xs opacity-80 mt-1">Перемещение товаров между ячейками</p>
+            </div>
+            <div className="text-right text-2xl font-normal text-white">{tPodbor.docsCount || 11}</div>
+          </button>
+        )}
+      </div>
+
+      {/* Второстепенные кнопки */}
+      <div className="grid grid-cols-2 gap-1.5 mt-1.5">
+        {/* Учёт */}
+        {docTypes.find(d => d.uni === 'Inventarizaciya' || d.displayName?.includes('Учёт')) && (
+          <button
+            onClick={() => navigateToModule(docTypes.find(d => d.uni === 'Inventarizaciya' || d.displayName?.includes('Учёт'))!.uni)}
+            className="rounded-lg p-3 border border-gray-600 bg-surface-primary shadow-sm"
+            style={{ minHeight: '62px' }}
+          >
+            <div className="text-left">
+              <h2 className="text-base font-bold" style={{ color: '#86E0CB' }}>Учёт</h2>
+              <div className="flex justify-between items-end mt-1">
+                <p className="text-[8px] text-gray-400">Перемещение товаров<br/>между ячейками</p>
+                <span className="text-lg text-gray-500">3</span>
+              </div>
+            </div>
+          </button>
+        )}
+
+        {/* Документооборот */}
+        {docTypes.find(d => d.displayName?.includes('Документ')) && (
+          <button
+            onClick={() => navigateToModule(docTypes.find(d => d.displayName?.includes('Документ'))!.uni)}
+            className="rounded-lg p-3 border border-gray-600 bg-surface-primary shadow-sm"
+            style={{ minHeight: '62px' }}
+          >
+            <div className="text-left">
+              <h2 className="text-base font-bold" style={{ color: '#91EDC1' }}>Документооборот</h2>
+              <div className="flex justify-between items-end mt-1">
+                <p className="text-[8px] text-gray-400">Перемещение товаров<br/>между ячейками</p>
+                <span className="text-lg text-gray-500">99</span>
+              </div>
             </div>
           </button>
         )}
       </div>
 
-      {/* Row: Secondary tiles with accent colors from palette */}
-      <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-3">
-        {tVozvrat && (
-          <button
-            key={`${tVozvrat.uni}-small`}
-            onClick={() => navigateToModule(tVozvrat.uni)}
-            className="tile-secondary tone-medium tile-outline col-span-2 bg-surface-secondary border-borders-default"
-          >
-            <div>
-              <h2 className="tile-title-sm" style={{ color: 'var(--color-accent-cyan)' }}>{tVozvrat.displayName}</h2>
-              <p className="tile-subtext text-content-secondary">{tVozvrat.description}</p>
+      {/* Штрихкоды */}
+      <div className="mt-1.5">
+        <button
+          onClick={() => navigate('/docs/SborShK')}
+          className="w-full rounded-lg p-3 border border-gray-600 bg-surface-primary shadow-sm text-left"
+          style={{ minHeight: '52px' }}
+        >
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-normal text-gray-400">Штрихкоды</h2>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-[8px] text-gray-400">Перемещение товаров между ячейками</p>
+                <span className="text-lg text-gray-500 text-right block">101</span>
+              </div>
             </div>
-          </button>
-        )}
-
-        {tPlacement && (
-          <button
-            key={`${tPlacement.uni}-small`}
-            onClick={() => navigateToModule(tPlacement.uni)}
-            className="tile-secondary tone-medium tile-outline col-span-2 bg-surface-secondary border-borders-default"
-          >
-            <div>
-              <h2 className="tile-title-sm" style={{ color: 'var(--color-accent-green)' }}>{tPlacement.displayName}</h2>
-              <p className="tile-subtext text-content-secondary">{tPlacement.description}</p>
-            </div>
-          </button>
-        )}
+          </div>
+        </button>
       </div>
 
-      {/* Secondary row: Инвентаризация (full-width neutral tile) */}
-      {tInvent && (
-        <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-3">
-          <button
-            key={`${tInvent.uni}-full`}
-            onClick={() => navigateToModule(tInvent.uni)}
-            className="tile-secondary tone-medium tile-outline col-span-4 bg-surface-secondary border-borders-default"
-          >
-            <div>
-              <h2 className="tile-title-md text-content-primary">{tInvent.displayName}</h2>
-              <p className="tile-subtext text-content-secondary">{tInvent.description}</p>
+      {/* Перемещения */}
+      <div className="mt-1.5">
+        <button
+          className="w-full rounded-lg p-3 border border-gray-600 bg-surface-primary shadow-sm text-left"
+          style={{ minHeight: '80px' }}
+        >
+          <div>
+            <h2 className="text-lg font-normal text-gray-400 mb-2">Перемещения</h2>
+            <div className="flex justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-bold" style={{ color: '#F0E78D' }}>По складам</p>
+                <p className="text-[8px] text-gray-400 mt-0.5">Перемещение товаров<br/>между ячейками</p>
+                <span className="text-lg text-gray-500 block mt-1">72</span>
+              </div>
+              <div className="w-px bg-gray-600 mx-2"></div>
+              <div className="flex-1">
+                <p className="text-sm font-bold" style={{ color: '#DEB88E' }}>По ячейкам</p>
+                <p className="text-[8px] text-gray-400 mt-0.5">Перемещение товаров<br/>между ячейками</p>
+                <span className="text-lg text-gray-500 block mt-1">1</span>
+              </div>
             </div>
-          </button>
-        </div>
-      )}
+          </div>
+        </button>
+      </div>
 
-      {/* Additional tiles with cycling accent colors */}
+      {/* Остальные операции второстепенными мелкими кнопками */}
       {(secondaryTiles.length > 0 || tertiaryTiles.length > 0) && (
-        <div className="grid grid-cols-2 gap-1.5 md:gap-2 mt-3">
-            {[...secondaryTiles, ...tertiaryTiles].map((docType, index) => {
-              // Cycling through accent colors: cyan, green, yellow, orange, pink
-              const accentColors = [
-                'var(--color-accent-cyan)',    // #4dd0e1
-                'var(--color-accent-green)',   // #7ed321
-                'var(--color-accent-yellow)',  // #e0b536
-                'var(--color-brand-secondary)', // #d89668 orange
-                'var(--color-brand-tertiary)',  // #f0a58a pink
-              ];
-              const accentColor = accentColors[index % accentColors.length];
+        <div className="grid grid-cols-2 gap-1.5 mt-1.5">
+          {[...secondaryTiles, ...tertiaryTiles]
+            .filter(d => !['PrihodNaSklad', 'PodborZakaza', 'Inventarizaciya'].includes(d.uni))
+            .slice(0, 6)
+            .map((docType, index) => {
+              const colors = ['#4dd0e1', '#7ed321', '#e0b536', '#d89668', '#f0a58a', '#91EDC1'];
+              const color = colors[index % colors.length];
               
               return (
                 <button
                   key={docType.uni}
                   onClick={() => navigateToModule(docType.uni)}
-                  className="tile-secondary tone-medium tile-outline bg-surface-secondary border-borders-default"
+                  className="rounded-lg p-2.5 border border-gray-600 bg-surface-primary shadow-sm text-left"
+                  style={{ minHeight: '48px' }}
                 >
-                  <div>
-                    <h2 className="tile-title-sm" style={{ color: accentColor }}>{docType.displayName}</h2>
-                    <p className="tile-subtext text-content-secondary">{docType.description}</p>
+                  <h3 className="text-xs font-bold mb-1" style={{ color }}>{docType.displayName}</h3>
+                  <div className="flex justify-between items-end">
+                    <p className="text-[7px] text-gray-400 leading-tight">{docType.description?.slice(0, 30)}...</p>
+                    <span className="text-sm text-gray-500">{docType.docsCount || 0}</span>
                   </div>
                 </button>
               );

@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, isDemo } = useAuth();
   const isConfigured = configService.isConfigured();
   const location = useLocation();
 
@@ -27,8 +27,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  // Redirect to setup if not configured
-  if (!isConfigured) {
+  // Redirect to setup if not configured and not in demo mode
+  if (!isConfigured && !isDemo) {
     console.warn('⚠️ Not configured, redirecting to /setup');
     return <Navigate to="/setup" replace />;
   }
