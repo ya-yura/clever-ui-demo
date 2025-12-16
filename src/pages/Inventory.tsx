@@ -139,6 +139,12 @@ const Inventory: React.FC = () => {
   useEffect(() => {
     if (documentId) {
       loadDocument();
+    } else {
+      // Если нет id — показываем стартовый экран
+      setDocument(null);
+      setLines([]);
+      setCurrentCell(null);
+      setScannedCells([]);
     }
   }, [documentId]);
 
@@ -158,10 +164,20 @@ const Inventory: React.FC = () => {
         // Восстанавливаем список ячеек
         const cells = [...new Set(docLines.map((l: any) => l.cell))];
         setScannedCells(cells);
+      } else {
+        // Не нашли документ — показываем старт
+        setDocument(null);
+        setLines([]);
+        setCurrentCell(null);
+        setScannedCells([]);
       }
     } catch (err: any) {
       console.error(err);
       feedback.error(`Ошибка загрузки: ${err.message}`);
+      setDocument(null);
+      setLines([]);
+      setCurrentCell(null);
+      setScannedCells([]);
     } finally {
       setLoading(false);
     }
@@ -196,6 +212,10 @@ const Inventory: React.FC = () => {
       navigate(`/docs/Inventarizaciya/${newDocId}`, { replace: true });
     } catch (err: any) {
       feedback.error(`Ошибка создания документа: ${err.message}`);
+      setDocument(null);
+      setLines([]);
+      setCurrentCell(null);
+      setScannedCells([]);
     }
   };
 
