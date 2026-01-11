@@ -40,7 +40,7 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5180,
+    port: 8080,
     host: true,
     open: false,
     // Proxy to bypass CORS in development
@@ -63,10 +63,4 @@ export default defineConfig({
       },
     },
   },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
-    setupFiles: ['src/test/setup.ts'],
-  }
 });
