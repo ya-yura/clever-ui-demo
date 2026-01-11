@@ -389,7 +389,7 @@ export class MetricsCollector {
         errorRate,
       },
       ux: {
-        backNavigationCount: data.totalBackNavigations,
+        backNavigationsCount: data.totalBackNavigations,
         hintsShownCount: data.totalHintsShown,
         hintsPerItem,
         efficiencyScore: calculateEfficiencyScore(data),
@@ -511,8 +511,8 @@ export class MetricsCollector {
 
   // Private methods
 
-  private saveToIndexedDB(event: MetricEvent): Promise<void> {
-    return db.metrics.add(event as any);
+  private async saveToIndexedDB(event: MetricEvent): Promise<void> {
+    await db.metrics.add(event as any);
   }
 
   private startFlushTimer(): void {

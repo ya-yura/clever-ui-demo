@@ -149,11 +149,11 @@ export const PartnerSelection: React.FC<PartnerSelectionProps> = ({
             return (
               <Card
                 key={partner.id}
-                variant={isSelected ? 'highlighted' : 'interactive'}
+                variant="interactive"
                 onClick={() => onSelect(partner.id)}
                 className={`p-4 transition-all ${
                   isLastPartner ? 'ring-2 ring-brand-primary/50' : ''
-                } ${isSelected ? 'bg-brand-primary/10' : ''}`}
+                } ${isSelected ? 'bg-brand-primary/10 border-brand-primary' : ''}`}
               >
                 <div className="flex items-center gap-4">
                   {/* Avatar */}

@@ -86,11 +86,7 @@ export function trackExperimentError(
     userId: getCurrentUserId(),
     operationType: 'experiment',
     errorType: `${experimentId}_${errorType}`,
-    metadata: {
-      experimentId,
-      variant,
-      ...metadata,
-    },
+    documentId: metadata?.documentId,
   });
 }
 

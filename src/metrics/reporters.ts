@@ -206,12 +206,12 @@ function calculateTrends(
   const err1 = aggregateErrors(firstHalf);
   const err2 = aggregateErrors(secondHalf);
 
-  const performanceChange = perf1.itemsPerHour > 0
-    ? ((perf2.itemsPerHour - perf1.itemsPerHour) / perf1.itemsPerHour) * 100
+  const performanceChange = (perf1.itemsPerHour ?? 0) > 0
+    ? (((perf2.itemsPerHour ?? 0) - (perf1.itemsPerHour ?? 0)) / (perf1.itemsPerHour ?? 1)) * 100
     : 0;
 
-  const errorRate1 = err1.validationErrors + err1.networkErrors;
-  const errorRate2 = err2.validationErrors + err2.networkErrors;
+  const errorRate1 = (err1.validationErrors ?? 0) + (err1.networkErrors ?? 0);
+  const errorRate2 = (err2.validationErrors ?? 0) + (err2.networkErrors ?? 0);
   const errorRateChange = errorRate1 > 0
     ? ((errorRate2 - errorRate1) / errorRate1) * 100
     : 0;

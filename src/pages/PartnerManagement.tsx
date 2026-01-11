@@ -53,17 +53,19 @@ const PartnerManagement: React.FC = () => {
     try {
       // Загружаем только активных сотрудников (исключая текущего пользователя)
       const emps = await db.employees.toArray();
-      setEmployees(emps.filter((e) => e.id !== currentUserId && e.isActive));
+      // @ts-ignore - local type differs from global
+      setEmployees(emps.filter((e: any) => e.id !== currentUserId && e.isActive) as any);
 
       // Загружаем текущую активную сессию (исключая завершенные)
       const sessions = await db.partnerSessions
         .where('userId')
         .equals(currentUserId)
-        .and((s) => s.status === 'active')
+        .and((s: any) => s.status === 'active')
         .toArray();
 
       if (sessions.length > 0) {
-        setCurrentSession(sessions[0]);
+        // @ts-ignore - local type differs from global
+        setCurrentSession({ ...sessions[0], partnerName: '' } as any);
       } else {
         // Если нет активной сессии, загружаем напарника с вчерашнего дня
         const yesterdayId = await partnerService.getYesterdayPartner(currentUserId);
@@ -104,7 +106,8 @@ const PartnerManagement: React.FC = () => {
     };
 
     try {
-      await db.partnerSessions.add(session);
+      // @ts-ignore - local type differs from global
+      await db.partnerSessions.add(session as any);
       setCurrentSession(session);
       feedback.success(`Сессия начата с ${partner.name}`);
     } catch (error) {

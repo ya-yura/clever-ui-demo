@@ -83,7 +83,7 @@ export class UserPreferencesService {
       this.preferences = { ...DEFAULT_PREFERENCES };
     }
 
-    return this.preferences;
+    return this.preferences ?? DEFAULT_PREFERENCES;
   }
 
   /**

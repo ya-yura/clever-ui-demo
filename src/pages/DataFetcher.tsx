@@ -2,7 +2,6 @@
 // Страница для загрузки данных с сервера
 
 import React, { useState } from 'react';
-import Layout from '@/components/Layout';
 import { Card } from '@/design/components/Card';
 import { Button } from '@/design/components/Button';
 import { Checkbox } from '@/design/components/Checkbox';
@@ -59,82 +58,76 @@ export const DataFetcher: React.FC = () => {
   };
 
   return (
-    <Layout>
-      <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
-        <h1 style={{ marginBottom: '24px' }}>Загрузка данных с сервера</h1>
+    <div className="p-6 max-w-3xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">Загрузка данных с сервера</h1>
 
-        <Card style={{ marginBottom: '24px' }}>
-          <h2 style={{ marginBottom: '16px' }}>Настройки загрузки</h2>
+        <Card className="mb-6">
+          <h2 className="text-lg font-bold mb-4">Настройки загрузки</h2>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="flex flex-col gap-3">
             <Checkbox
               checked={options.includeProducts ?? true}
-              onChange={(checked) => setOptions({ ...options, includeProducts: checked })}
-            >
-              Загрузить товары
-            </Checkbox>
+              onChange={(e) => setOptions({ ...options, includeProducts: e.target.checked })}
+              label="Загрузить товары"
+            />
             
             <Checkbox
               checked={options.includeCells ?? true}
-              onChange={(checked) => setOptions({ ...options, includeCells: checked })}
-            >
-              Загрузить ячейки
-            </Checkbox>
+              onChange={(e) => setOptions({ ...options, includeCells: e.target.checked })}
+              label="Загрузить ячейки"
+            />
             
             <Checkbox
               checked={options.includePartners ?? true}
-              onChange={(checked) => setOptions({ ...options, includePartners: checked })}
-            >
-              Загрузить контрагентов
-            </Checkbox>
+              onChange={(e) => setOptions({ ...options, includePartners: e.target.checked })}
+              label="Загрузить контрагентов"
+            />
             
             <Checkbox
               checked={options.includeEmployees ?? true}
-              onChange={(checked) => setOptions({ ...options, includeEmployees: checked })}
-            >
-              Загрузить сотрудников
-            </Checkbox>
+              onChange={(e) => setOptions({ ...options, includeEmployees: e.target.checked })}
+              label="Загрузить сотрудников"
+            />
             
             <Checkbox
               checked={options.includeWarehouses ?? true}
-              onChange={(checked) => setOptions({ ...options, includeWarehouses: checked })}
-            >
-              Загрузить склады
-            </Checkbox>
+              onChange={(e) => setOptions({ ...options, includeWarehouses: e.target.checked })}
+              label="Загрузить склады"
+            />
           </div>
 
           <Button
             onClick={handleFetch}
             disabled={isLoading}
-            style={{ marginTop: '24px', width: '100%' }}
+            className="mt-6 w-full"
           >
             {isLoading ? 'Загрузка...' : 'Загрузить данные'}
           </Button>
         </Card>
 
         {isLoading && (
-          <Card style={{ marginBottom: '24px' }}>
-            <h3 style={{ marginBottom: '12px' }}>Прогресс загрузки</h3>
+          <Card className="mb-6">
+            <h3 className="font-bold mb-3">Прогресс загрузки</h3>
             <ProgressBar value={progress} max={100} />
-            <p style={{ marginTop: '8px', fontSize: '14px', color: '#666' }}>
+            <p className="mt-2 text-sm text-content-secondary">
               {progressMessage}
             </p>
           </Card>
         )}
 
         {error && (
-          <Alert variant="error" style={{ marginBottom: '24px' }}>
+          <Alert variant="error" className="mb-6">
             <strong>Ошибка:</strong> {error}
           </Alert>
         )}
 
         {result && result.success && (
           <Card>
-            <h3 style={{ marginBottom: '16px' }}>✅ Данные успешно загружены!</h3>
+            <h3 className="font-bold mb-4">✅ Данные успешно загружены!</h3>
             
-            <div style={{ marginBottom: '16px' }}>
-              <h4 style={{ marginBottom: '8px' }}>Статистика:</h4>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
+            <div className="mb-4">
+              <h4 className="font-semibold mb-2">Статистика:</h4>
+              <ul className="space-y-1 text-sm">
                 <li>📋 Типов документов: {result.stats?.docTypes || 0}</li>
                 <li>📄 Документов: {result.stats?.documents || 0}</li>
                 <li>📦 Товаров: {result.stats?.products || 0}</li>
@@ -147,42 +140,25 @@ export const DataFetcher: React.FC = () => {
 
             <Alert variant="success">
               Данные сохранены в виде JSON файлов и в localStorage для демо-режима.
-              <br />
-              Скопируйте скачанные файлы в папку <code>src/data/demo/</code>
+              Скопируйте скачанные файлы в папку <code className="bg-surface-tertiary px-1 rounded">src/data/demo/</code>
             </Alert>
           </Card>
         )}
 
-        <Card style={{ marginTop: '24px', padding: '16px', backgroundColor: '#f5f5f5' }}>
-          <h3 style={{ marginBottom: '12px' }}>ℹ️ Инструкция</h3>
-          <ol style={{ fontSize: '14px', lineHeight: '1.6' }}>
+        <Card className="mt-6 bg-surface-tertiary">
+          <h3 className="font-bold mb-3">ℹ️ Инструкция</h3>
+          <ol className="text-sm space-y-1 list-decimal list-inside">
             <li>Убедитесь, что сервер MobileSMARTS запущен и доступен</li>
             <li>Выберите нужные опции загрузки</li>
             <li>Нажмите "Загрузить данные"</li>
             <li>Дождитесь завершения загрузки</li>
             <li>JSON файлы будут автоматически скачаны</li>
-            <li>Скопируйте скачанные файлы в папку <code>src/data/demo/</code></li>
+            <li>Скопируйте скачанные файлы в папку <code className="bg-surface-secondary px-1 rounded">src/data/demo/</code></li>
             <li>Перезапустите приложение для применения новых данных</li>
           </ol>
         </Card>
       </div>
-    </Layout>
   );
 };
 
 export default DataFetcher;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

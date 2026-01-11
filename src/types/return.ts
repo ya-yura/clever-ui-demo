@@ -14,6 +14,7 @@ export type ReturnReason =
 
 export interface ReturnDocument extends BaseDocument {
   type: ReturnType;
+  operationType?: ReturnType;
   sourceDocumentId?: string;
   totalLines: number;
   responsible?: string;
@@ -25,4 +26,5 @@ export interface ReturnLine extends BaseLine {
   photos?: string[];
   signature?: string;
   addedAt?: number;
+  timestamp?: number;
 }

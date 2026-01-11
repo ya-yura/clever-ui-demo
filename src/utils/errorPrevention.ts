@@ -97,7 +97,7 @@ export function showError(
 
   // Vibration feedback
   if (enableVibration && error.vibration) {
-    vibratePattern(error.vibration);
+    vibrate('error');
   }
 
   // Sound feedback

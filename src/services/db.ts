@@ -106,8 +106,11 @@ export class WarehouseDatabase extends Dexie {
   odataDocuments!: Table<ODataDocument, string>;
   cacheMetadata!: Table<CacheMetadata, string>;
 
-  // Activity tracking
-  activityEvents!: Table<ActivityEvent, string>;
+  // Metrics table for analytics
+  metrics!: Table<any, string>;
+
+  // Picking problems tracking
+  pickingProblems!: Table<any, number>;
 
   constructor() {
     super('WarehouseDB');
@@ -175,6 +178,12 @@ export class WarehouseDatabase extends Dexie {
     // Version 5 - Activity tracking events
     this.version(5).stores({
       activityEvents: 'id, eventType, status, timestamp, userId',
+    });
+
+    // Version 6 - Added metrics and picking problems
+    this.version(6).stores({
+      metrics: 'id, timestamp, category, userId',
+      pickingProblems: '++id, lineId, type, timestamp',
     });
   }
 }
