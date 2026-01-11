@@ -210,12 +210,12 @@ const DocumentDetails: React.FC = () => {
   const getStatusBadge = () => {
     if (!document) return null;
     if (document.finished) {
-      return <span className="px-2 py-1 bg-green-600/80 text-white text-[10px] rounded-full uppercase tracking-wide">Завершён</span>;
+      return <span className="px-2 py-1 bg-success/80 text-white text-[10px] rounded-full uppercase tracking-wide">Завершён</span>;
     }
     if (document.inProcess) {
       return <span className="px-2 py-1 bg-brand-primary/80 text-white text-[10px] rounded-full uppercase tracking-wide">В работе</span>;
     }
-    return <span className="px-2 py-1 bg-gray-500/80 text-white text-[10px] rounded-full uppercase tracking-wide">Новый</span>;
+    return <span className="px-2 py-1 bg-surface-tertiary/80 text-content-primary text-[10px] rounded-full uppercase tracking-wide">Новый</span>;
   };
 
   // Merge declared and current items for display
@@ -410,7 +410,7 @@ const DocumentDetails: React.FC = () => {
             )}
             <button
               onClick={() => navigate(`/docs/${docTypeUni}`)}
-              className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors"
+              className="btn-secondary px-6 py-3"
             >
               Назад к списку
             </button>

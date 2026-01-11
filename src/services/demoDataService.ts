@@ -3,7 +3,8 @@
 
 import demoDocTypes from '@/data/demo/doctypes.json';
 import demoDocuments from '@/data/demo/documents.json';
-import { ODataDocumentType, ODataDocument } from '@/types/odata';
+import demoDocumentsFull from '@/data/demo/documents-full.json';
+import { ODataDocumentType, ODataDocument, ODataDocumentItem } from '@/types/odata';
 
 /**
  * Сервис для работы с демо-данными
@@ -12,6 +13,7 @@ import { ODataDocumentType, ODataDocument } from '@/types/odata';
 class DemoDataService {
   private docTypes: ODataDocumentType[] = [];
   private documents: Record<string, ODataDocument[]> = {};
+  private documentsFull: Record<string, Array<ODataDocument & { lines?: any[] }>> = {};
   private products: any[] = [];
   private cells: any[] = [];
   private partners: any[] = [];
@@ -55,6 +57,12 @@ class DemoDataService {
         });
         
         console.log('📊 [DEMO] Всего документов:', totalDocs);
+      }
+
+      // Загрузить полные документы со строками
+      if (demoDocumentsFull && (demoDocumentsFull as any).documents) {
+        this.documentsFull = (demoDocumentsFull as any).documents as Record<string, Array<ODataDocument & { lines?: any[] }>>;
+        console.log('📦 [DEMO] Загружены полные документы со строками');
       }
 
       // Загрузить дополнительные данные (если есть)
@@ -138,31 +146,87 @@ class DemoDataService {
   }
 
   /**
+   * Нормализация ключа типа документа (UI alias → OData/demo key)
+   */
+  private normalizeDocTypeKey(docTypeUni: string): string {
+    const map: Record<string, string> = {
+      placement: 'RazmeshhenieVYachejki',
+      receiving: 'Priemka',
+      picking: 'PodborZakaza',
+      shipping: 'Otgruzka',
+      inventory: 'Inventarizaciya',
+      returns: 'Vozvrat',
+      writeoff: 'Vozvrat',
+      barcodes: 'SborShtrihkodov',
+    };
+    return map[docTypeUni] || docTypeUni;
+  }
+
+  /**
    * Получить количество документов по типу
    */
   getDocumentsCount(docTypeUni: string): number {
-    return this.documents[docTypeUni]?.length || 0;
+    const key = this.normalizeDocTypeKey(docTypeUni);
+    return this.documents[key]?.length || 0;
   }
 
   /**
    * Получить документ по ID
    */
   getDocumentById(docTypeUni: string, docId: string): ODataDocument | null {
-    const docs = this.documents[docTypeUni] || [];
+    const key = this.normalizeDocTypeKey(docTypeUni);
+    const docs = this.documents[key] || [];
     return docs.find(doc => doc.id === docId) || null;
   }
 
   /**
    * Получить документ по ID с items (для детализации)
-   * Генерирует mock items на основе products
+   * Использует полные данные из documents-full.json, если доступны
    */
   getDocumentWithItems(docTypeUni: string, docId: string, baseDoc?: Partial<ODataDocument>): any | null {
-    let doc = this.getDocumentById(docTypeUni, docId);
+    const key = this.normalizeDocTypeKey(docTypeUni);
+
+    // Сначала проверяем полные документы со строками
+    const fullDocs = this.documentsFull[key];
+    if (fullDocs) {
+      const fullDoc = fullDocs.find(d => d.id === docId);
+      if (fullDoc) {
+        // Конвертируем строки в формат OData
+        const declaredItems: ODataDocumentItem[] = (fullDoc.lines || []).map((line: any, index: number) => ({
+          uid: line.id,
+          createdBy: 'Server' as const,
+          productId: line.productId,
+          declaredQuantity: line.quantityPlan,
+          currentQuantity: line.quantityFact,
+          currentQuantityWithBinding: line.quantityFact,
+          productName: line.productName,
+          productSku: line.productSku,
+          productBarcode: line.barcode,
+          registeredDate: fullDoc.createDate,
+          registrationDate: fullDoc.createDate,
+          index: index + 1,
+          expiredDate: line.expiryDate ? new Date(line.expiryDate).toISOString() : '',
+          firstCellId: line.cellId || undefined,
+          firstStorageId: line.cellId || undefined,
+          firstStorageBarcode: line.cellId || undefined,
+        }));
+
+        return {
+          ...fullDoc,
+          declaredItems,
+          currentItems: declaredItems.filter(item => item.currentQuantity > 0),
+          combinedItems: declaredItems,
+        } as ODataDocument;
+      }
+    }
+
+    // Fallback к старому методу генерации
+    let doc = this.getDocumentById(key, docId);
     if (!doc) {
       if (baseDoc) {
-        doc = this.createMockDocumentFromBase(docTypeUni, docId, baseDoc);
+        doc = this.createMockDocumentFromBase(key, docId, baseDoc);
       } else {
-        doc = this.createMockDocumentFromBase(docTypeUni, docId);
+        doc = this.createMockDocumentFromBase(key, docId);
       }
     }
     if (!doc) return null;

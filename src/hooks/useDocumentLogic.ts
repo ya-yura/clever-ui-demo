@@ -16,6 +16,8 @@ export type DocLine = {
   quantityPlan: number;
   quantityFact: number;
   status: 'pending' | 'partial' | 'completed' | 'over';
+  cellId?: string;
+  cellName?: string;
 };
 
 interface UseDocumentLogicProps {
@@ -91,6 +93,8 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
               quantityPlan,
               quantityFact,
               status: quantityFact >= quantityPlan ? 'completed' : quantityFact > 0 ? 'partial' : 'pending',
+              cellId: item.firstCellId || item.firstStorageId || item.firstStorageBarcode || undefined,
+              cellName: item.firstCellId || item.firstStorageId || item.firstStorageBarcode || undefined,
             };
           });
           
@@ -140,6 +144,8 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
                   quantityPlan,
                   quantityFact,
                   status: quantityFact >= quantityPlan ? 'completed' : quantityFact > 0 ? 'partial' : 'pending',
+                  cellId: item.firstCellId || item.firstStorageId || item.firstStorageBarcode || undefined,
+                  cellName: item.firstCellId || item.firstStorageId || item.firstStorageBarcode || undefined,
                 };
               });
               

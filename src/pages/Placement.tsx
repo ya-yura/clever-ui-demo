@@ -189,7 +189,7 @@ const Placement: React.FC = () => {
     }
 
     // Ищем товар в строках документа
-    const line = lines.find(l => l.barcode === code || l.productSku === code);
+    const line = safeLines.find(l => l.barcode === code || l.productSku === code);
     
     if (!line) {
       feedback.error('Товар не найден в документе');
@@ -235,7 +235,7 @@ const Placement: React.FC = () => {
       setCurrentStep('cell');
 
       // Проверка автозавершения
-      const allCompleted = lines.every(l => 
+      const allCompleted = safeLines.every(l => 
         l.id === line.id ? newQuantity >= line.quantityPlan : l.status === 'completed'
       );
       
@@ -253,7 +253,7 @@ const Placement: React.FC = () => {
     }
 
     const lastAction = actionHistory[actionHistory.length - 1];
-    const line = lines.find(l => l.id === lastAction.lineId);
+    const line = safeLines.find(l => l.id === lastAction.lineId);
     
     if (line && line.quantityFact > 0) {
       await updateQuantity(line.id, -lastAction.quantity);
@@ -300,33 +300,16 @@ const Placement: React.FC = () => {
     handleFinish();
   };
 
-  // Рендер загрузки
-  if (loading) {
-    return (
-      <div className="p-10 text-center">
-        <div className="animate-spin h-8 w-8 border-4 border-brand-primary rounded-full border-t-transparent mx-auto"></div>
-      </div>
-    );
-  }
-
-  if (!document) {
-    return (
-      <div className="p-10 text-center">
-        <div className="text-error mb-4">Документ не найден</div>
-        <Button onClick={() => navigate('/docs/RazmeshhenieVYachejki')}>
-          Вернуться к списку
-        </Button>
-      </div>
-    );
-  }
+  // ВСЕ ХУКИ ДО РАННЕГО ВОЗВРАТА!
+  const safeLines = lines || [];
 
   // Интеллектуальная сортировка строк
   const sortedLines = useMemo(() => {
     if (!operatorZone && !scannedCell) {
-      return lines;
+      return safeLines;
     }
 
-    return [...lines].sort((a, b) => {
+    return [...safeLines].sort((a, b) => {
       // Сначала незавершённые
       if (a.status === 'completed' && b.status !== 'completed') return 1;
       if (a.status !== 'completed' && b.status === 'completed') return -1;
@@ -353,7 +336,7 @@ const Placement: React.FC = () => {
 
       return 0;
     });
-  }, [lines, operatorZone, scannedCell, lastScannedCells]);
+  }, [safeLines, operatorZone, scannedCell, lastScannedCells]);
 
   // Фильтрация строк по зоне (если включено автоопределение)
   const visibleLines = useMemo(() => {
@@ -381,6 +364,26 @@ const Placement: React.FC = () => {
     if (distance <= 10) return 'yellow'; // Средне (4-10 ячеек)
     return 'gray'; // Далеко
   };
+
+  // Ранний возврат только после ВСЕХ хуков
+  if (loading) {
+    return (
+      <div className="p-10 text-center">
+        <div className="animate-spin h-8 w-8 border-4 border-brand-primary rounded-full border-t-transparent mx-auto"></div>
+      </div>
+    );
+  }
+
+  if (!document) {
+    return (
+      <div className="p-10 text-center">
+        <div className="text-error mb-4">Документ не найден</div>
+        <Button onClick={() => navigate('/docs/RazmeshhenieVYachejki')}>
+          Вернуться к списку
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -523,11 +526,11 @@ const Placement: React.FC = () => {
           <div className="bg-surface-secondary rounded-lg p-4 space-y-3">
             <div className="flex justify-between items-center">
               <h3 className="font-bold">Прогресс размещения</h3>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+              <span className={`status-badge ${
                 document.status === 'completed'
-                  ? 'bg-success-light text-success-dark'
+                  ? 'status-badge-completed'
                   : document.status === 'in_progress'
-                  ? 'bg-warning-light text-warning-dark'
+                  ? 'status-badge-warning'
                   : 'bg-surface-tertiary text-content-secondary'
               }`}>
                 {document.status === 'completed' ? 'ЗАВЕРШЁН' : document.status === 'in_progress' ? 'В РАБОТЕ' : 'НОВЫЙ'}
@@ -552,13 +555,13 @@ const Placement: React.FC = () => {
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-sm text-content-tertiary uppercase">
                 Товары к размещению
-                {operatorZone && visibleLines.length !== lines.length && (
+                {operatorZone && visibleLines.length !== safeLines.length && (
                   <span className="ml-2 text-brand-primary">
                     ({visibleLines.length} в зоне {operatorZone})
                   </span>
                 )}
               </h3>
-              {operatorZone && visibleLines.length !== lines.length && (
+              {operatorZone && visibleLines.length !== safeLines.length && (
                 <button
                   onClick={() => setOperatorZone(null)}
                   className="text-xs text-brand-primary hover:underline"
@@ -595,11 +598,11 @@ const Placement: React.FC = () => {
                       </div>
                       <p className="text-xs text-content-tertiary font-mono">{line.barcode}</p>
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    <div className={`status-badge ${
                       line.status === 'completed'
-                        ? 'bg-success-light text-success-dark'
+                        ? 'status-badge-completed'
                         : line.status === 'partial'
-                        ? 'bg-warning-light text-warning-dark'
+                        ? 'status-badge-warning'
                         : 'bg-surface-tertiary text-content-secondary'
                     }`}>
                       {line.quantityFact} / {line.quantityPlan}
@@ -683,7 +686,7 @@ const Placement: React.FC = () => {
           }}
           onQuantityChange={(lineId, delta) => {
             updateQuantity(lineId, delta);
-            const updatedLine = lines.find(l => l.id === lineId);
+            const updatedLine = safeLines.find(l => l.id === lineId);
             if (updatedLine) setSelectedLine(updatedLine);
           }}
         />

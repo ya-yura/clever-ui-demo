@@ -25,7 +25,7 @@ export const PartnerStatus: React.FC<PartnerStatusProps> = ({
   const isPaused = session.status === 'paused';
 
   return (
-    <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white shadow-lg">
+    <div className="bg-gradient-to-r from-info to-info-dark rounded-lg p-4 text-white shadow-lg">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -67,7 +67,7 @@ export const PartnerStatus: React.FC<PartnerStatusProps> = ({
 
       {/* Status */}
       {isPaused && (
-        <div className="bg-yellow-400 bg-opacity-90 text-yellow-900 rounded px-3 py-2 mb-3 text-sm font-medium text-center">
+        <div className="bg-warning/90 text-warning-dark rounded px-3 py-2 mb-3 text-sm font-medium text-center">
           ⏸️ На паузе
         </div>
       )}
@@ -93,7 +93,7 @@ export const PartnerStatus: React.FC<PartnerStatusProps> = ({
         {onEnd && (
           <button
             onClick={onEnd}
-            className="flex-1 bg-white hover:bg-opacity-90 hover:text-blue-600 rounded py-2 px-4 font-medium transition-all"
+            className="flex-1 bg-white hover:bg-opacity-90 hover:text-info rounded py-2 px-4 font-medium transition-all"
           >
             Завершить
           </button>

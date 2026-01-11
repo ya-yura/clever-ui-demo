@@ -241,9 +241,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               Загружено {displayCount} из {documents.length}
             </div>
             <div className="mt-2 animate-pulse">
-              <div className="inline-block w-2 h-2 bg-blue-500 rounded-full mx-1"></div>
-              <div className="inline-block w-2 h-2 bg-blue-500 rounded-full mx-1"></div>
-              <div className="inline-block w-2 h-2 bg-blue-500 rounded-full mx-1"></div>
+              <div className="inline-block w-2 h-2 bg-info rounded-full mx-1"></div>
+              <div className="inline-block w-2 h-2 bg-info rounded-full mx-1"></div>
+              <div className="inline-block w-2 h-2 bg-info rounded-full mx-1"></div>
             </div>
           </div>
         )}

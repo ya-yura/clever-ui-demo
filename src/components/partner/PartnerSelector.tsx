@@ -123,15 +123,15 @@ export const PartnerSelector: React.FC<PartnerSelectorProps> = ({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-white">
+      <div className="p-4 border-b border-borders-default bg-surface-secondary">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-xl font-bold text-content-primary">
             Выбор напарника
           </h2>
           {onCancel && (
             <button
               onClick={onCancel}
-              className="text-gray-500 hover:text-gray-700 text-2xl"
+              className="text-content-tertiary hover:text-content-primary text-2xl"
             >
               ✕
             </button>
@@ -145,7 +145,7 @@ export const PartnerSelector: React.FC<PartnerSelectorProps> = ({
             placeholder="Найти"
             value={filter.searchQuery || ''}
             onChange={(e) => setFilter({ ...filter, searchQuery: e.target.value })}
-            className="w-full px-4 py-3 pl-10 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input-field w-full px-4 py-3 pl-10 text-base"
           />
           {!filter.searchQuery && (
             <span className="absolute left-3 top-3.5 text-xl pointer-events-none">🔍</span>
@@ -153,7 +153,7 @@ export const PartnerSelector: React.FC<PartnerSelectorProps> = ({
           {filter.searchQuery && (
             <button
               onClick={() => setFilter({ ...filter, searchQuery: '' })}
-              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-3 text-content-tertiary hover:text-content-primary"
             >
               ✕
             </button>
@@ -167,8 +167,8 @@ export const PartnerSelector: React.FC<PartnerSelectorProps> = ({
               onClick={() => setView('recent')}
               className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
                 view === 'recent'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-brand-primary text-brand-dark'
+                  : 'bg-surface-tertiary text-content-primary hover:bg-surface-tertiary/80'
               }`}
             >
               Недавние ({recentPartners.length})
@@ -177,8 +177,8 @@ export const PartnerSelector: React.FC<PartnerSelectorProps> = ({
               onClick={() => setView('all')}
               className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
                 view === 'all'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-brand-primary text-brand-dark'
+                  : 'bg-surface-tertiary text-content-primary hover:bg-surface-tertiary/80'
               }`}
             >
               Все ({filteredEmployees.length})

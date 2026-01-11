@@ -31,16 +31,16 @@ export const RouteVisualization: React.FC<RouteVisualizationProps> = ({
   const progress = route.length > 0 ? ((currentStepIndex + 1) / route.length) * 100 : 0;
 
   return (
-    <div className="bg-surface-secondary rounded-lg p-4 space-y-4">
+    <div className="bg-surface-secondary rounded-lg p-2 space-y-2">
       {/* Заголовок и прогресс */}
       <div>
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="font-bold">Карта маршрута</h3>
-          <span className="text-sm font-mono">
+        <div className="flex justify-between items-center mb-1">
+          <h3 className="font-bold text-xs">Карта маршрута</h3>
+          <span className="text-xs font-mono">
             {currentStepIndex + 1} / {route.length}
           </span>
         </div>
-        <div className="h-2 bg-surface-tertiary rounded-full overflow-hidden">
+        <div className="h-1 bg-surface-tertiary rounded-full overflow-hidden">
           <div
             className="h-full bg-brand-primary transition-all duration-300"
             style={{ width: `${progress}%` }}
@@ -51,9 +51,9 @@ export const RouteVisualization: React.FC<RouteVisualizationProps> = ({
       {/* Линейная карта маршрута */}
       <div className="relative">
         {/* Линия маршрута */}
-        <div className="absolute top-6 left-0 right-0 h-1 bg-surface-tertiary" />
+        <div className="absolute top-4 left-0 right-0 h-0.5 bg-surface-tertiary" />
         <div
-          className="absolute top-6 left-0 h-1 bg-brand-primary transition-all duration-500"
+          className="absolute top-4 left-0 h-0.5 bg-brand-primary transition-all duration-500"
           style={{ width: `${progress}%` }}
         />
 
@@ -74,9 +74,9 @@ export const RouteVisualization: React.FC<RouteVisualizationProps> = ({
               >
                 {/* Точка на линии */}
                 <div
-                  className={`w-12 h-12 rounded-full border-4 flex items-center justify-center transition-all z-10 ${
+                  className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all z-10 ${
                     isCurrent
-                      ? 'border-brand-primary bg-brand-primary shadow-lg scale-125'
+                      ? 'border-brand-primary bg-brand-primary shadow-md scale-110'
                       : isCompleted
                       ? 'border-success bg-success'
                       : isSkipped
@@ -87,24 +87,24 @@ export const RouteVisualization: React.FC<RouteVisualizationProps> = ({
                   }`}
                 >
                   {isCompleted ? (
-                    <CheckCircle size={20} className="text-white" />
+                    <CheckCircle size={14} className="text-white" />
                   ) : isSkipped ? (
-                    <Circle size={20} className="text-white" />
+                    <Circle size={14} className="text-white" />
                   ) : isCurrent ? (
-                    <MapPin size={20} className="text-white" />
+                    <MapPin size={14} className="text-white" />
                   ) : (
-                    <span className="text-xs font-bold text-content-tertiary">{index + 1}</span>
+                    <span className="text-[10px] font-bold text-content-tertiary">{index + 1}</span>
                   )}
                 </div>
 
                 {/* Название ячейки */}
-                <div className="mt-2 text-center max-w-20">
-                  <div className={`font-bold text-sm truncate ${
+                <div className="mt-1 text-center max-w-16">
+                  <div className={`font-bold text-xs truncate ${
                     isCurrent ? 'text-brand-primary' : isCompleted ? 'text-success' : ''
                   }`}>
                     {step.cellName}
                   </div>
-                  <div className="text-xs text-content-tertiary">
+                  <div className="text-[10px] text-content-tertiary">
                     {step.products.length} шт
                   </div>
                 </div>

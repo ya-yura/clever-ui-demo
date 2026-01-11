@@ -50,11 +50,11 @@ const MenuItem: React.FC<MenuItemProps> = ({
         className={`
           w-full flex items-center justify-between
           ${paddingLeft} pr-4 py-4
-          text-left text-gray-100
+          text-left text-content-primary
           transition-all duration-150
-          ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-700/50 active:bg-gray-700'}
-          ${isPressed ? 'bg-gray-700' : ''}
-          ${level > 0 ? 'border-l-2 border-gray-600' : ''}
+          ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-tertiary/50 active:bg-surface-tertiary'}
+          ${isPressed ? 'bg-surface-tertiary' : ''}
+          ${level > 0 ? 'border-l-2 border-border-default' : ''}
           touch-manipulation
         `}
         onClick={handleClick}
@@ -68,9 +68,9 @@ const MenuItem: React.FC<MenuItemProps> = ({
       >
         <div className="flex items-center gap-4 min-h-[40px]">
           <Icon 
-            className={`w-6 h-6 flex-shrink-0 ${isDisabled ? 'text-gray-500' : 'text-blue-400'}`} 
+            className={`w-6 h-6 flex-shrink-0 ${isDisabled ? 'text-content-disabled' : 'text-brand-primary'}`} 
           />
-          <span className={`text-base font-medium ${isDisabled ? 'text-gray-500' : ''}`}>
+          <span className={`text-base font-medium ${isDisabled ? 'text-content-disabled' : 'text-content-primary'}`}>
             {item.label}
           </span>
         </div>
@@ -80,7 +80,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown className="w-5 h-5 text-gray-400" />
+            <ChevronDown className="w-5 h-5 text-content-secondary" />
           </motion.div>
         )}
       </motion.button>
@@ -93,7 +93,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
-            className="overflow-hidden bg-gray-800/50"
+            className="overflow-hidden bg-surface-secondary/50"
           >
             {item.children!.map((child) => (
               <MenuItem

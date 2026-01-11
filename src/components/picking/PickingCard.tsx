@@ -11,14 +11,18 @@ interface Props {
 }
 
 const PickingCard: React.FC<Props> = ({ line, isActive, routeOrder }) => {
-  const statusClass =
-    line.status === 'completed'
-      ? 'border-success bg-success-light'
-      : line.status === 'partial'
-      ? 'border-warning bg-warning-light'
-      : isActive
-      ? 'border-info bg-info-light'
-      : 'border-borders-default bg-surface-secondary';
+  const getStatusClass = () => {
+    if (line.status === 'completed') {
+      return 'card-status card-status-completed';
+    }
+    if (line.status === 'partial') {
+      return 'card-status card-status-partial';
+    }
+    if (isActive) {
+      return 'card-status border-info bg-info/20';
+    }
+    return 'card-status card-status-default';
+  };
 
   const statusIcon =
     line.status === 'completed' ? '✅' :
@@ -30,7 +34,7 @@ const PickingCard: React.FC<Props> = ({ line, isActive, routeOrder }) => {
 
   return (
     <div 
-      className={`card border-2 ${statusClass} transition-all ${
+      className={`${getStatusClass()} transition-all rounded-lg shadow-md p-4 ${
         isActive ? 'ring-2 ring-brand-primary scale-105' : ''
       }`}
     >
@@ -57,29 +61,29 @@ const PickingCard: React.FC<Props> = ({ line, isActive, routeOrder }) => {
           <div className="mt-3">
             <div className="flex items-center space-x-2 text-sm">
               <span className="text-content-secondary">Ячейка:</span>
-              <span className="font-bold text-lg text-info-dark bg-info-light px-3 py-1 rounded">
+              <span className="font-bold text-lg text-info-dark bg-info/20 px-3 py-1 rounded">
                 📍 {line.cellName}
               </span>
             </div>
           </div>
 
           {/* Quantity */}
-          <div className="grid grid-cols-3 gap-2 text-center mt-4">
-            <div className="bg-surface-tertiary border border-borders-default rounded p-2">
+          <div className="grid grid-cols-3 gap-1 text-center mt-4">
+            <div className="atom-chip p-1">
               <div className="text-xs text-content-secondary">План</div>
-              <div className="text-lg font-bold text-content-primary">
+              <div className="text-base font-bold text-content-primary leading-tight">
                 {line.quantityPlan}
               </div>
             </div>
-            <div className="bg-surface-tertiary border border-borders-default rounded p-2">
+            <div className="atom-chip p-1">
               <div className="text-xs text-content-secondary">Подобрано</div>
-              <div className="text-lg font-bold text-success">
+              <div className="text-base font-bold text-success leading-tight">
                 {line.quantityFact}
               </div>
             </div>
-            <div className="bg-surface-tertiary border border-borders-default rounded p-2">
+            <div className="atom-chip p-1">
               <div className="text-xs text-content-secondary">Осталось</div>
-              <div className="text-lg font-bold text-info">
+              <div className="text-base font-bold text-info leading-tight">
                 {remaining}
               </div>
             </div>
@@ -100,7 +104,7 @@ const PickingCard: React.FC<Props> = ({ line, isActive, routeOrder }) => {
       )}
 
       {isActive && (
-        <div className="mt-3 p-2 bg-info-light border border-info rounded text-center">
+        <div className="mt-3 p-2 bg-info/20 border border-info rounded text-center">
           <p className="text-sm font-semibold text-info-dark">
             👆 Отсканируйте товар из этой ячейки
           </p>

@@ -7,10 +7,15 @@ interface Props {
 }
 
 export const PlacementCard: React.FC<Props> = ({ line, onAdjust }) => {
+  const getStatusClass = () => {
+    if (line.status === 'completed') {
+      return 'card-status card-status-completed border-l-4 border-success';
+    }
+    return 'card-status card-status-default border-l-4 border-brand-primary';
+  };
+
   return (
-    <div className={`card p-4 border-l-4 ${
-        line.status === 'completed' ? 'border-success' : 'border-brand-primary'
-    }`}>
+    <div className={`${getStatusClass()} p-4 rounded-lg shadow-md`}>
       <div className="flex justify-between">
         <div>
           <h3 className="font-bold">{line.productName}</h3>

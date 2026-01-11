@@ -140,7 +140,7 @@ export const WorkspaceWidget: React.FC = () => {
         </div>
         <button
           onClick={() => navigate('/docs')}
-          className="w-full p-4 bg-white hover:bg-gray-50 rounded-xl transition-colors flex items-center justify-between font-medium"
+          className="w-full p-4 bg-surface-secondary hover:bg-surface-tertiary rounded-xl transition-colors flex items-center justify-between font-medium"
         >
           <span>Выбрать документ</span>
           <ArrowRight size={20} />
@@ -245,6 +245,13 @@ export const WorkspaceWidget: React.FC = () => {
     </div>
   );
 };
+
+
+
+
+
+
+
 
 
 

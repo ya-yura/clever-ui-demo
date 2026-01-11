@@ -133,22 +133,22 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
         {isOpen && (
           <motion.div
             {...swipeHandlers}
-            className="fixed top-0 left-0 h-full w-[85vw] max-w-[400px] bg-gray-900/95 backdrop-blur-md shadow-2xl shadow-gray-800/50 z-50 flex flex-col"
+            className="fixed top-0 left-0 h-full w-[85vw] max-w-[400px] bg-surface-overlay backdrop-blur-md shadow-2xl z-50 flex flex-col border-r border-border-default"
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'tween', duration: 0.2, ease: 'easeInOut' }}
           >
             {/* Header with status */}
-            <div className="flex-shrink-0 px-4 py-6 border-b border-gray-700/50 bg-gradient-to-b from-gray-800/50 to-transparent">
+            <div className="flex-shrink-0 px-4 py-6 border-b border-border-default bg-gradient-to-b from-surface-secondary/50 to-transparent">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                    <User className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 bg-brand-primary rounded-full flex items-center justify-center">
+                    <User className="w-6 h-6 text-content-inverse" />
                   </div>
                   <div>
-                    <p className="text-gray-100 font-semibold text-base">{userName}</p>
-                    <p className="text-gray-400 text-sm">{appMetadata.name}</p>
+                    <p className="text-content-primary font-semibold text-base">{userName}</p>
+                    <p className="text-content-secondary text-sm">{appMetadata.name}</p>
                   </div>
                 </div>
               </div>
@@ -157,13 +157,13 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
               <div className="flex items-center gap-2">
                 {isOnline ? (
                   <>
-                    <Wifi className="w-4 h-4 text-green-400" />
-                    <span className="text-sm text-green-400 font-medium">Онлайн</span>
+                    <Wifi className="w-4 h-4 text-success" />
+                    <span className="text-sm text-success font-medium">Онлайн</span>
                   </>
                 ) : (
                   <>
-                    <WifiOff className="w-4 h-4 text-red-400" />
-                    <span className="text-sm text-red-400 font-medium">Оффлайн</span>
+                    <WifiOff className="w-4 h-4 text-error" />
+                    <span className="text-sm text-error font-medium">Оффлайн</span>
                   </>
                 )}
               </div>
@@ -184,12 +184,12 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
             </div>
 
             {/* Footer with app info */}
-            <div className="flex-shrink-0 px-4 py-4 border-t border-gray-700/50 bg-gray-800/30">
+            <div className="flex-shrink-0 px-4 py-4 border-t border-border-default bg-surface-secondary/30">
               <div className="text-center">
-                <p className="text-gray-400 text-xs">
+                <p className="text-content-secondary text-xs">
                   {appMetadata.vendor} · Версия {appMetadata.version}
                 </p>
-                <p className="text-gray-500 text-xs mt-1">
+                <p className="text-content-tertiary text-xs mt-1">
                   Сборка {appMetadata.build}
                 </p>
               </div>
@@ -202,18 +202,18 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
       {showModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div 
-            className="absolute inset-0 bg-black/60" 
+            className="absolute inset-0 bg-surface-overlay" 
             onClick={() => setShowModal(null)}
           />
-          <div className="relative bg-gray-800 rounded-2xl p-6 max-w-md w-full shadow-2xl">
-            <h2 className="text-xl font-bold text-gray-100 mb-4">
+          <div className="relative bg-surface-secondary rounded-2xl p-6 max-w-md w-full shadow-2xl border border-border-default">
+            <h2 className="text-xl font-bold text-content-primary mb-4">
               {showModal}
             </h2>
-            <p className="text-gray-300 mb-6">
+            <p className="text-content-secondary mb-6">
               Модальное окно для: {showModal}
             </p>
             <button
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              className="w-full py-3 bg-brand-primary hover:bg-brand-primary/90 text-content-inverse rounded-lg font-medium transition-colors"
               onClick={() => setShowModal(null)}
             >
               Закрыть

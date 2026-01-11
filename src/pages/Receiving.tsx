@@ -508,11 +508,11 @@ const Receiving: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <div
-                          className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          className={`status-badge ${
                             doc.status === 'completed'
-                              ? 'bg-success-light text-success-dark'
+                              ? 'status-badge-completed'
                               : doc.status === 'in_progress'
-                              ? 'bg-warning-light text-warning-dark'
+                              ? 'status-badge-warning'
                               : 'bg-surface-tertiary text-content-secondary'
                           }`}
                         >
@@ -677,11 +677,11 @@ const Receiving: React.FC = () => {
                   style={{ width: `${document.totalLines > 0 ? (document.completedLines / document.totalLines) * 100 : 0}%` }}
                 />
               </div>
-              <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
+              <span className={`status-badge text-[10px] ${
                 document.status === 'completed'
-                  ? 'bg-success-light text-success-dark'
+                  ? 'status-badge-completed'
                   : document.status === 'in_progress'
-                  ? 'bg-warning-light text-warning-dark'
+                  ? 'status-badge-warning'
                   : 'bg-surface-tertiary text-content-secondary'
               }`}>
                 {document.status === 'completed' ? 'ЗАВЕРШЁН' : document.status === 'in_progress' ? 'В РАБОТЕ' : 'НОВЫЙ'}

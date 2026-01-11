@@ -5,9 +5,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { configService } from '@/services/configService';
 import { Logo } from '@/components/Logo';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Setup: React.FC = () => {
   const navigate = useNavigate();
+  const { loginDemo } = useAuth();
   const [serverUrl, setServerUrl] = useState('http://localhost:9000/MobileSMARTS/api/v1');
   const [error, setError] = useState('');
   const [isValidating, setIsValidating] = useState(false);
@@ -77,6 +79,13 @@ const Setup: React.FC = () => {
     } finally {
       setIsValidating(false);
     }
+  };
+
+  const handleDemoMode = () => {
+    loginDemo();
+    setTimeout(() => {
+      navigate('/');
+    }, 100);
   };
 
   return (
@@ -163,6 +172,23 @@ const Setup: React.FC = () => {
               className="w-full py-3 px-4 bg-surface-secondary hover:bg-surface-tertiary text-content-primary border border-borders-default font-medium rounded-lg transition-colors disabled:bg-surface-disabled disabled:text-content-disabled disabled:cursor-not-allowed"
             >
               Проверить соединение
+            </button>
+
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-borders-default"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-2 bg-surface-primary text-content-tertiary">или</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleDemoMode}
+              className="w-full py-3 px-4 bg-brand-secondary hover:bg-brand-secondary/80 text-content-primary border border-borders-default font-medium rounded-lg transition-colors"
+            >
+              🎭 Продолжить без сервера (демо-режим)
             </button>
           </div>
         </form>

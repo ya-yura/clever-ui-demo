@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '@/services/db';
 import { useDocumentHeader } from '@/contexts/DocumentHeaderContext';
 import { useScanner } from '@/hooks/useScanner';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 import { useSwipe } from '@/hooks/useSwipe';
+import { demoDataService } from '@/services/demoDataService';
+import { odataAPI } from '@/services/odata-api';
 import ScannerInput from '@/components/ScannerInput';
 import { InventoryTypeSelector } from '@/components/inventory/InventoryTypeSelector';
 import { DiscrepancyCard } from '@/components/inventory/DiscrepancyCard';
@@ -81,6 +83,138 @@ const Inventory: React.FC = () => {
   const [streamMode, setStreamMode] = useState(false);
   const [expectedProducts, setExpectedProducts] = useState<any[]>([]);
 
+  // US VI.2: Сканирование ячейки
+  const handleCellScan = useCallback((cellCode: string) => {
+    if (!document) return;
+    
+    // Проверка: входит ли ячейка в область инвентаризации
+    if (document.inventoryType === 'cell' || document.inventoryType === 'partial') {
+      if (
+        document.targetCells &&
+        document.targetCells.length > 0 &&
+        !document.targetCells.includes(cellCode)
+      ) {
+        feedback.error(`Ячейка ${cellCode} не входит в область инвентаризации`);
+        return;
+      }
+    }
+
+    setCurrentCell(cellCode);
+    setScannedCells((prev) => {
+      if (!prev.includes(cellCode)) {
+        return [...prev, cellCode];
+      }
+      return prev;
+    });
+    feedback.success(`Ячейка: ${cellCode}`);
+    analytics.track(EventType.SCAN_SUCCESS, { cell: cellCode, module: 'inventory' });
+  }, [document]);
+
+  // US VI.3: Сканирование товара в ячейке
+  const handleProductScan = useCallback(async (barcode: string) => {
+    if (!currentCell) {
+      feedback.error('Сначала отсканируйте ячейку');
+      playScanSound('extra');
+      return;
+    }
+
+    analytics.track(EventType.SCAN_SUCCESS, { barcode, cell: currentCell, module: 'inventory' });
+
+    // Поиск товара в справочнике
+    const products = await db.products.where('barcode').equals(barcode).toArray();
+    const product = products[0];
+
+    // Проверка: есть ли товар в ожидаемом списке (для звука)
+    const isExpected = expectedProducts.some(p => p.barcode === barcode);
+    
+    setLines(prev => {
+      const existingLine = prev.find(l => l.barcode === barcode && l.cell === currentCell);
+      
+      if (!product) {
+        // Неизвестный товар
+        playScanSound('notListed');
+        if (!streamMode) {
+          feedback.warning(`Товар не найден в справочнике: ${barcode}`);
+        }
+        
+        const unknownProduct = {
+          id: `UNKNOWN-${barcode}`,
+          name: `Неизвестный товар (${barcode})`,
+          barcode,
+          sku: barcode,
+        };
+        db.products.add(unknownProduct).catch(() => {});
+        
+        if (existingLine) {
+          return prev.map(l => 
+            l.id === existingLine.id 
+              ? { ...l, quantityActual: l.quantityActual + 1, scans: l.scans + 1, lastScanAt: Date.now() }
+              : l
+          );
+        }
+        return [...prev, {
+          id: `line-${Date.now()}`,
+          productId: unknownProduct.id,
+          productName: unknownProduct.name,
+          barcode: unknownProduct.barcode,
+          cell: currentCell,
+          quantityExpected: 0,
+          quantityActual: 1,
+          difference: 1,
+          scans: 1,
+          lastScanAt: Date.now(),
+        }];
+      }
+
+      // Определяем тип звука
+      if (isExpected || existingLine) {
+        playScanSound('found');
+      } else if (expectedProducts.length > 0) {
+        playScanSound('extra');
+      } else {
+        playScanSound('found');
+      }
+
+      if (existingLine) {
+        return prev.map(l => 
+          l.id === existingLine.id 
+            ? { ...l, quantityActual: l.quantityActual + 1, scans: l.scans + 1, lastScanAt: Date.now() }
+            : l
+        );
+      }
+      return [...prev, {
+        id: `line-${Date.now()}`,
+        productId: product.id,
+        productName: product.name,
+        barcode: product.barcode,
+        cell: currentCell,
+        quantityExpected: 0,
+        quantityActual: 1,
+        difference: 1,
+        scans: 1,
+        lastScanAt: Date.now(),
+      }];
+    });
+  }, [currentCell, expectedProducts, streamMode]);
+
+  // US VI.2 + VI.3: Общая обработка сканирования
+  const handleScan = useCallback(async (code: string) => {
+    if (!document) {
+      feedback.error('Сначала создайте документ инвентаризации');
+      setShowTypeSelector(true);
+      return;
+    }
+
+    // Проверяем, это ячейка или товар
+    const isCell = /^[A-Z]\d+-\d+$/i.test(code); // Формат: A1-01
+
+    if (isCell) {
+      handleCellScan(code.toUpperCase());
+    } else {
+      await handleProductScan(code);
+    }
+  }, [document, handleCellScan, handleProductScan]);
+
   // Сканер
   const { handleScan: onScan } = useScanner({
     mode: 'keyboard',
@@ -136,25 +270,86 @@ const Inventory: React.FC = () => {
   }, [documentId, document, lines, scannedCells, setDocumentInfo, setListInfo]);
 
   // Загрузка документа
-  useEffect(() => {
-    if (documentId) {
-      loadDocument();
-    } else {
-      // Если нет id — показываем стартовый экран
-      setDocument(null);
-      setLines([]);
-      setCurrentCell(null);
-      setScannedCells([]);
-    }
-  }, [documentId]);
-
-  const loadDocument = async () => {
+  const loadDocument = useCallback(async () => {
+    if (!documentId) return;
+    
     setLoading(true);
     try {
-      const doc = await db.inventoryDocuments.get(documentId!);
-      const docLines = doc
-        ? await db.inventoryLines.where('documentId').equals(documentId!).toArray()
-        : [];
+      // Сначала пробуем из IndexedDB
+      let doc = await db.inventoryDocuments.get(documentId);
+      let docLines: any[] = [];
+      
+      if (doc) {
+        docLines = await db.inventoryLines.where('documentId').equals(documentId).toArray();
+      } else {
+        // Пробуем загрузить из OData API или демо-данных
+        try {
+          const odataDoc = await odataAPI.getDocument('Inventarizaciya', documentId);
+          if (odataDoc && odataDoc.declaredItems) {
+            // Конвертируем OData документ в формат инвентаризации
+            doc = {
+              id: odataDoc.id,
+              inventoryType: (odataDoc as any).inventoryType || 'cell',
+              status: odataDoc.finished ? 'completed' : odataDoc.inProcess ? 'in_progress' : 'new',
+              createdAt: new Date(odataDoc.createDate).getTime(),
+              updatedAt: new Date(odataDoc.lastChangeDate).getTime(),
+              currentCell: null,
+            };
+            
+            // Конвертируем строки
+            docLines = odataDoc.declaredItems.map((item: any) => ({
+              id: item.uid,
+              documentId: documentId,
+              productId: item.productId,
+              productName: item.productName || item.productId,
+              barcode: item.productBarcode || item.productId,
+              cell: item.firstCellId || item.firstStorageId || '',
+              quantityExpected: item.declaredQuantity,
+              quantityActual: item.currentQuantity,
+              difference: item.currentQuantity - item.declaredQuantity,
+              scans: 0,
+              lastScanAt: Date.now(),
+            }));
+            
+            // Сохраняем в IndexedDB
+            await db.inventoryDocuments.put(doc);
+            await db.inventoryLines.bulkPut(docLines);
+          } else {
+            // Пробуем демо-данные
+            const demoDoc = demoDataService.getDocumentWithItems('Inventarizaciya', documentId);
+            if (demoDoc && demoDoc.declaredItems) {
+              doc = {
+                id: demoDoc.id,
+                inventoryType: (demoDoc as any).inventoryType || 'cell',
+                status: demoDoc.finished ? 'completed' : demoDoc.inProcess ? 'in_progress' : 'new',
+                createdAt: new Date(demoDoc.createDate).getTime(),
+                updatedAt: new Date(demoDoc.lastChangeDate).getTime(),
+                currentCell: null,
+              };
+              
+              docLines = demoDoc.declaredItems.map((item: any) => ({
+                id: item.uid,
+                documentId: documentId,
+                productId: item.productId,
+                productName: item.productName || item.productId,
+                barcode: item.productBarcode || item.productId,
+                cell: item.firstCellId || item.firstStorageId || '',
+                quantityExpected: item.declaredQuantity,
+                quantityActual: item.currentQuantity,
+                difference: item.currentQuantity - item.declaredQuantity,
+                scans: 0,
+                lastScanAt: Date.now(),
+              }));
+              
+              // Сохраняем в IndexedDB
+              await db.inventoryDocuments.put(doc);
+              await db.inventoryLines.bulkPut(docLines);
+            }
+          }
+        } catch (apiError) {
+          console.warn('Failed to load from API/demo:', apiError);
+        }
+      }
 
       if (doc) {
         setDocument(doc);
@@ -162,7 +357,7 @@ const Inventory: React.FC = () => {
         setCurrentCell(doc.currentCell || null);
         
         // Восстанавливаем список ячеек
-        const cells = [...new Set(docLines.map((l: any) => l.cell))];
+        const cells = [...new Set(docLines.map((l: any) => l.cell).filter(Boolean))];
         setScannedCells(cells);
       } else {
         // Не нашли документ — показываем старт
@@ -181,7 +376,19 @@ const Inventory: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [documentId]);
+
+  useEffect(() => {
+    if (documentId) {
+      loadDocument();
+    } else {
+      // Если нет id — показываем стартовый экран
+      setDocument(null);
+      setLines([]);
+      setCurrentCell(null);
+      setScannedCells([]);
+    }
+  }, [documentId, loadDocument]);
 
   // US VI.1: Создание документа после выбора типа
   const handleTypeSelect = async (
@@ -219,98 +426,6 @@ const Inventory: React.FC = () => {
     }
   };
 
-  // US VI.2 + VI.3: Общая обработка сканирования
-  async function handleScan(code: string) {
-    if (!document) {
-      feedback.error('Сначала создайте документ инвентаризации');
-      setShowTypeSelector(true);
-      return;
-    }
-
-    // Проверяем, это ячейка или товар
-    const isCell = /^[A-Z]\d+-\d+$/i.test(code); // Формат: A1-01
-
-    if (isCell) {
-      handleCellScan(code.toUpperCase());
-    } else {
-      handleProductScan(code);
-    }
-  }
-
-  // US VI.2: Сканирование ячейки
-  const handleCellScan = (cellCode: string) => {
-    // Проверка: входит ли ячейка в область инвентаризации
-    if (document.inventoryType === 'cell' || document.inventoryType === 'partial') {
-      if (
-        document.targetCells &&
-        document.targetCells.length > 0 &&
-        !document.targetCells.includes(cellCode)
-      ) {
-        feedback.error(`Ячейка ${cellCode} не входит в область инвентаризации`);
-        return;
-      }
-    }
-
-    setCurrentCell(cellCode);
-    if (!scannedCells.includes(cellCode)) {
-      setScannedCells((prev) => [...prev, cellCode]);
-    }
-    feedback.success(`Ячейка: ${cellCode}`);
-    analytics.track(EventType.SCAN_SUCCESS, { cell: cellCode, module: 'inventory' });
-  };
-
-  // US VI.3: Сканирование товара в ячейке
-  const handleProductScan = async (barcode: string) => {
-    if (!currentCell) {
-      feedback.error('Сначала отсканируйте ячейку');
-      playScanSound('extra');
-      return;
-    }
-
-    analytics.track(EventType.SCAN_SUCCESS, { barcode, cell: currentCell, module: 'inventory' });
-
-    // Поиск товара в справочнике
-    const products = await db.products.where('barcode').equals(barcode).toArray();
-    const product = products[0];
-
-    // Проверка: есть ли товар в ожидаемом списке (для звука)
-    const isExpected = expectedProducts.some(p => p.barcode === barcode);
-    const existingLine = lines.find(l => l.barcode === barcode && l.cell === currentCell);
-
-    if (!product) {
-      // Неизвестный товар - "не учтён"
-      playScanSound('notListed');
-      
-      const unknownProduct = {
-        id: `UNKNOWN-${barcode}`,
-        name: `Неизвестный товар (${barcode})`,
-        barcode,
-        sku: barcode,
-      };
-      await db.products.add(unknownProduct);
-      
-      if (!streamMode) {
-        feedback.warning(`Товар не найден в справочнике: ${barcode}`);
-      }
-      
-      await addOrUpdateLine(unknownProduct, currentCell);
-      return;
-    }
-
-    // Определяем тип звука
-    if (isExpected || existingLine) {
-      // Товар найден в списке или уже сканировался - "найден"
-      playScanSound('found');
-    } else if (expectedProducts.length > 0) {
-      // Есть список ожидаемых, но товара там нет - "лишний"
-      playScanSound('extra');
-    } else {
-      // Нет списка ожидаемых - обычное сканирование
-      playScanSound('found');
-    }
-
-    await addOrUpdateLine(product, currentCell);
-  };
 
   // Добавление или обновление строки
   const addOrUpdateLine = async (product: any, cell: string) => {
@@ -425,6 +540,25 @@ const Inventory: React.FC = () => {
     difference: line.difference,
   }));
 
+  // Группировка по ячейкам (ВСЕ ХУКИ ДО РАННЕГО ВОЗВРАТА!)
+  const linesByCell = useMemo(() => {
+    const grouped: Record<string, InventoryLine[]> = {};
+    lines.forEach((line) => {
+      if (!grouped[line.cell]) {
+        grouped[line.cell] = [];
+      }
+      grouped[line.cell].push(line);
+    });
+    return grouped;
+  }, [lines]);
+
+  // Подсчет оставшихся товаров (если есть ожидаемый список)
+  const remainingProducts = useMemo(() => {
+    if (expectedProducts.length === 0) return 0;
+    const scannedBarcodes = lines.map(l => l.barcode);
+    return expectedProducts.filter(p => !scannedBarcodes.includes(p.barcode)).length;
+  }, [expectedProducts, lines]);
+
   // US VI.7: Завершение инвентаризации
   const handleFinish = async () => {
     if (lines.length === 0) {
@@ -465,6 +599,7 @@ const Inventory: React.FC = () => {
     }
   };
 
+  // Ранний возврат только после ВСЕХ хуков
   if (loading) {
     return (
       <div className="p-10 text-center">
@@ -473,38 +608,19 @@ const Inventory: React.FC = () => {
     );
   }
 
-  // Группировка по ячейкам
-  const linesByCell = useMemo(() => {
-    const grouped: Record<string, InventoryLine[]> = {};
-    lines.forEach((line) => {
-      if (!grouped[line.cell]) {
-        grouped[line.cell] = [];
-      }
-      grouped[line.cell].push(line);
-    });
-    return grouped;
-  }, [lines]);
-
-  // Подсчет оставшихся товаров (если есть ожидаемый список)
-  const remainingProducts = useMemo(() => {
-    if (expectedProducts.length === 0) return 0;
-    const scannedBarcodes = lines.map(l => l.barcode);
-    return expectedProducts.filter(p => !scannedBarcodes.includes(p.barcode)).length;
-  }, [expectedProducts, lines]);
-
   return (
     <>
       <div ref={containerRef} className="flex flex-col h-[calc(100vh-var(--header-height))]">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
+        <div className="flex-1 overflow-y-auto p-1.5 space-y-1.5 pb-16">
           {/* Создание документа */}
           {!document && (
-            <div className="bg-surface-secondary rounded-lg p-6 text-center">
-              <ClipboardCheck size={48} className="mx-auto mb-4 text-brand-primary" />
-              <h2 className="text-xl font-bold mb-2">Начать инвентаризацию</h2>
-              <p className="text-sm text-content-secondary mb-4">
+            <div className="bg-surface-secondary rounded-lg p-3 text-center">
+              <ClipboardCheck size={32} className="mx-auto mb-2 text-brand-primary" />
+              <h2 className="text-lg font-bold mb-1">Начать инвентаризацию</h2>
+              <p className="text-xs text-content-secondary mb-2">
                 Выберите тип инвентаризации
               </p>
-              <Button onClick={() => setShowTypeSelector(true)}>
+              <Button size="sm" onClick={() => setShowTypeSelector(true)}>
                 Выбрать тип
               </Button>
             </div>
@@ -513,12 +629,12 @@ const Inventory: React.FC = () => {
           {document && (
             <>
               {/* Заголовок документа */}
-              <div className="bg-surface-secondary rounded-lg p-4 border-2 border-brand-primary">
-                <div className="flex items-center gap-3 mb-2">
-                  <Warehouse size={28} className="text-brand-primary" />
+              <div className="doc-header">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Warehouse size={22} className="text-brand-primary" />
                   <div>
-                    <h2 className="text-lg font-bold">{document.id}</h2>
-                    <p className="text-sm text-content-secondary">
+                    <h2 className="text-sm font-bold leading-tight">{document.id}</h2>
+                    <p className="text-[11px] text-content-secondary leading-tight">
                       {document.inventoryType === 'full'
                         ? 'Полная инвентаризация'
                         : document.inventoryType === 'partial'
@@ -528,10 +644,10 @@ const Inventory: React.FC = () => {
                   </div>
                 </div>
                 <div
-                  className={`px-3 py-2 rounded-lg text-center font-bold ${
+                  className={`status-badge ${
                     document.status === 'completed'
-                      ? 'bg-success-light text-success-dark'
-                      : 'bg-warning-light text-warning-dark'
+                      ? 'status-badge-completed'
+                      : 'status-badge-warning'
                   }`}
                 >
                   {document.status === 'completed' ? 'ЗАВЕРШЕНА' : 'В РАБОТЕ'}
@@ -540,11 +656,11 @@ const Inventory: React.FC = () => {
 
               {/* Режим потокового сканирования */}
               {document.status !== 'completed' && (
-                <div className="bg-surface-secondary rounded-lg p-4 border border-borders-default">
+                <div className="bg-surface-secondary rounded-lg p-2 border border-borders-default">
                   <label className="flex items-center justify-between cursor-pointer">
-                    <div className="flex items-center gap-2">
-                      <Zap size={20} className={streamMode ? 'text-warning' : 'text-content-tertiary'} />
-                      <span className="font-semibold">Потоковое сканирование</span>
+                    <div className="flex items-center gap-1.5">
+                      <Zap size={16} className={streamMode ? 'text-warning' : 'text-content-tertiary'} />
+                      <span className="text-xs font-semibold">Потоковое сканирование</span>
                     </div>
                     <div className="relative">
                       <input
@@ -554,19 +670,19 @@ const Inventory: React.FC = () => {
                         className="sr-only"
                       />
                       <div
-                        className={`w-14 h-8 rounded-full transition-colors ${
+                        className={`w-11 h-6 rounded-full transition-colors ${
                           streamMode ? 'bg-warning' : 'bg-surface-tertiary'
                         }`}
                       >
                         <div
-                          className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform ${
-                            streamMode ? 'translate-x-6' : 'translate-x-0'
+                          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                            streamMode ? 'translate-x-5' : 'translate-x-0'
                           }`}
                         />
                       </div>
                     </div>
                   </label>
-                  <p className="text-xs text-content-tertiary mt-2">
+                  <p className="text-[11px] text-content-tertiary mt-1">
                     Быстрое сканирование без промежуточных экранов. Свайп влево/вправо для смены ячейки.
                   </p>
                 </div>
@@ -574,32 +690,32 @@ const Inventory: React.FC = () => {
 
               {/* Плашка с остатком товаров */}
               {streamMode && remainingProducts > 0 && (
-                <div className="bg-gradient-to-r from-brand-primary to-brand-secondary rounded-lg p-4 text-white shadow-lg animate-pulse">
+                <div className="bg-gradient-to-r from-brand-primary to-brand-secondary rounded-lg p-2.5 text-white shadow-md animate-pulse">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-sm opacity-90">Осталось просканировать:</div>
-                      <div className="text-3xl font-bold">{remainingProducts} товаров</div>
+                      <div className="text-xs opacity-90">Осталось просканировать:</div>
+                      <div className="text-xl font-bold">{remainingProducts} товаров</div>
                     </div>
-                    <Package size={40} className="opacity-80" />
+                    <Package size={28} className="opacity-80" />
                   </div>
                 </div>
               )}
 
               {/* Статистика */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-brand-primary/10 rounded-lg p-3 text-center">
-                  <div className="text-xs text-brand-primary mb-1">Ячеек</div>
-                  <div className="text-2xl font-bold text-brand-primary">
+              <div className="grid grid-cols-3 gap-1.5">
+                <div className="stat-chip stat-chip-brand">
+                  <div className="text-[10px] mb-0.5">Ячеек</div>
+                  <div className="text-lg font-bold leading-tight">
                     {scannedCells.length}
                   </div>
                 </div>
-                <div className="bg-success-light rounded-lg p-3 text-center">
-                  <div className="text-xs text-success-dark mb-1">Позиций</div>
-                  <div className="text-2xl font-bold text-success">{lines.length}</div>
+                <div className="stat-chip stat-chip-success">
+                  <div className="text-[10px] mb-0.5">Позиций</div>
+                  <div className="text-lg font-bold leading-tight">{lines.length}</div>
                 </div>
-                <div className="bg-warning-light rounded-lg p-3 text-center">
-                  <div className="text-xs text-warning-dark mb-1">Расхождений</div>
-                  <div className="text-2xl font-bold text-warning">
+                <div className="stat-chip stat-chip-warning">
+                  <div className="text-[10px] mb-0.5">Расхождений</div>
+                  <div className="text-lg font-bold leading-tight">
                     {discrepancies.length}
                   </div>
                 </div>
@@ -607,27 +723,27 @@ const Inventory: React.FC = () => {
 
               {/* Текущая ячейка */}
               {currentCell && (
-                <div className="bg-brand-primary/10 rounded-lg p-4 relative">
+                <div className="context-highlight">
                   {streamMode && scannedCells.length > 1 && (
                     <>
                       <div className="absolute left-2 top-1/2 -translate-y-1/2 text-brand-primary/30 animate-pulse">
-                        <ChevronLeft size={24} />
+                        <ChevronLeft size={18} />
                       </div>
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 text-brand-primary/30 animate-pulse">
-                        <ChevronRight size={24} />
+                        <ChevronRight size={18} />
                       </div>
                     </>
                   )}
                   <div className="flex items-center justify-between">
                     <div className="flex-1 text-center">
-                      <div className="text-sm text-brand-primary font-medium mb-1">
+                      <div className="text-xs text-brand-primary font-medium mb-0.5">
                         Текущая ячейка:
                       </div>
-                      <div className="text-3xl font-bold text-brand-primary">
+                      <div className="text-2xl font-bold text-brand-primary leading-tight">
                         {currentCell}
                       </div>
                       {streamMode && scannedCells.length > 1 && (
-                        <div className="text-xs text-brand-primary/60 mt-1">
+                        <div className="text-[10px] text-brand-primary/60 mt-0.5">
                           Свайп ← → для смены ({scannedCells.indexOf(currentCell) + 1} из {scannedCells.length})
                         </div>
                       )}
@@ -635,9 +751,9 @@ const Inventory: React.FC = () => {
                     {!streamMode && (
                       <button
                         onClick={() => setCurrentCell(null)}
-                        className="p-2 hover:bg-brand-primary/20 rounded-lg transition-colors"
+                        className="p-1.5 hover:bg-brand-primary/20 rounded-lg transition-colors"
                       >
-                        <RefreshCcw size={20} className="text-brand-primary" />
+                        <RefreshCcw size={16} className="text-brand-primary" />
                       </button>
                     )}
                   </div>
@@ -646,9 +762,9 @@ const Inventory: React.FC = () => {
 
               {/* Сканирование */}
               {document.status !== 'completed' && (
-                <div className="bg-surface-secondary rounded-lg p-4">
-                  <h3 className="font-bold mb-3 flex items-center gap-2">
-                    <Package size={20} />
+                <div className="bg-surface-secondary rounded-lg p-2">
+                  <h3 className="font-bold text-sm mb-2 flex items-center gap-1.5">
+                    <Package size={16} />
                     Сканирование
                   </h3>
                   <ScannerInput
@@ -660,7 +776,7 @@ const Inventory: React.FC = () => {
                     }
                     autoFocus
                   />
-                  <p className="text-xs text-content-tertiary mt-2">
+                  <p className="text-[11px] text-content-tertiary mt-1">
                     {currentCell
                       ? 'Сканируйте товары в ячейке или сканируйте другую ячейку'
                       : 'Начните с сканирования ячейки (формат: A1-01)'}
@@ -670,20 +786,20 @@ const Inventory: React.FC = () => {
 
               {/* Список по ячейкам */}
               {Object.keys(linesByCell).length > 0 && !streamMode && (
-                <div className="space-y-3">
-                  <h3 className="font-bold text-sm text-content-tertiary uppercase">
+                <div className="space-y-1.5">
+                  <h3 className="font-bold text-xs text-content-tertiary uppercase">
                     Отсканировано ({lines.length} позиций в {scannedCells.length} ячейках)
                   </h3>
 
                   {Object.entries(linesByCell).map(([cell, cellLines]) => (
-                    <div key={cell} className="bg-surface-secondary rounded-lg p-4 space-y-2">
+                    <div key={cell} className="bg-surface-secondary rounded-lg p-2 space-y-1.5">
                       {/* Заголовок ячейки */}
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <Warehouse size={20} className="text-brand-primary" />
-                          <span className="font-bold text-lg">{cell}</span>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <Warehouse size={16} className="text-brand-primary" />
+                          <span className="font-bold text-sm">{cell}</span>
                         </div>
-                        <span className="text-sm text-content-secondary">
+                        <span className="text-xs text-content-secondary">
                           {cellLines.length} {cellLines.length === 1 ? 'товар' : 'товаров'}
                         </span>
                       </div>
@@ -697,22 +813,22 @@ const Inventory: React.FC = () => {
                         return (
                           <div
                             key={line.id}
-                            className={`p-3 rounded-lg border-2 ${
+                            className={`item-card-base ${
                               hasDiscrepancy
                                 ? isOver
-                                  ? 'border-success bg-success/10'
-                                  : 'border-error bg-error/10'
-                                : 'border-separator'
+                                  ? 'item-card-success'
+                                  : 'item-card-error'
+                                : ''
                             }`}
                           >
-                            <div className="flex justify-between items-start mb-2">
+                            <div className="flex justify-between items-start mb-1.5">
                               <div className="flex-1">
-                                <div className="font-bold text-sm">{line.productName}</div>
-                                <div className="text-xs text-content-tertiary font-mono">
+                                <div className="font-bold text-xs leading-tight">{line.productName}</div>
+                                <div className="text-[11px] text-content-tertiary font-mono leading-tight">
                                   {line.barcode}
                                 </div>
                                 {line.scans > 1 && (
-                                  <div className="text-xs text-brand-primary mt-1">
+                                  <div className="text-[11px] text-brand-primary mt-0.5">
                                     Сканирований: {line.scans}
                                   </div>
                                 )}
@@ -720,12 +836,12 @@ const Inventory: React.FC = () => {
                               {hasDiscrepancy && (
                                 <div className="flex items-center gap-1">
                                   {isOver ? (
-                                    <TrendingUp size={16} className="text-success" />
+                                    <TrendingUp size={14} className="text-success" />
                                   ) : (
-                                    <TrendingDown size={16} className="text-error" />
+                                    <TrendingDown size={14} className="text-error" />
                                   )}
                                   <span
-                                    className={`text-sm font-bold ${
+                                    className={`text-xs font-bold ${
                                       isOver ? 'text-success' : 'text-error'
                                     }`}
                                   >
@@ -738,7 +854,7 @@ const Inventory: React.FC = () => {
 
                             {/* Количество */}
                             <div className="flex items-center justify-between">
-                              <div className="text-sm">
+                              <div className="text-xs">
                                 {line.quantityExpected > 0 && (
                                   <span className="text-content-secondary">
                                     План: {line.quantityExpected} /{' '}
@@ -748,19 +864,19 @@ const Inventory: React.FC = () => {
                               </div>
 
                               {document.status !== 'completed' && (
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5">
                                   <button
                                     onClick={() => handleQuantityChange(line.id, -1)}
                                     disabled={line.quantityActual <= 0}
                                     className="p-1 bg-surface-tertiary hover:bg-surface-primary rounded disabled:opacity-50"
                                   >
-                                    <Minus size={16} />
+                                    <Minus size={14} />
                                   </button>
                                   <button
                                     onClick={() => handleQuantityChange(line.id, 1)}
                                     className="p-1 bg-surface-tertiary hover:bg-surface-primary rounded"
                                   >
-                                    <Plus size={16} />
+                                    <Plus size={14} />
                                   </button>
                                 </div>
                               )}
@@ -775,22 +891,22 @@ const Inventory: React.FC = () => {
 
               {/* Режим потокового сканирования - компактный список последних сканирований */}
               {streamMode && lines.length > 0 && (
-                <div className="bg-surface-secondary rounded-lg p-4">
-                  <h3 className="font-bold text-sm text-content-tertiary uppercase mb-3">
+                <div className="bg-surface-secondary rounded-lg p-2">
+                  <h3 className="font-bold text-xs text-content-tertiary uppercase mb-1.5">
                     Последние сканирования ({lines.length})
                   </h3>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
                     {lines
                       .sort((a, b) => b.lastScanAt - a.lastScanAt)
                       .slice(0, 10)
                       .map((line) => (
                         <div
                           key={line.id}
-                          className="flex items-center justify-between p-2 bg-surface-primary rounded-lg text-sm"
+                          className="flex items-center justify-between p-1.5 bg-surface-primary rounded-lg text-xs"
                         >
                           <div className="flex-1 truncate">
                             <span className="font-medium">{line.productName}</span>
-                            <span className="text-content-tertiary ml-2">• {line.cell}</span>
+                            <span className="text-content-tertiary ml-1.5">• {line.cell}</span>
                           </div>
                           <div className="text-brand-primary font-bold">
                             ×{line.quantityActual}
@@ -800,7 +916,7 @@ const Inventory: React.FC = () => {
                   </div>
                   <button
                     onClick={() => setStreamMode(false)}
-                    className="w-full mt-3 text-sm text-brand-primary hover:underline"
+                    className="w-full mt-2 text-xs text-brand-primary hover:underline"
                   >
                     Показать полный список →
                   </button>
@@ -824,8 +940,8 @@ const Inventory: React.FC = () => {
 
         {/* Кнопка завершения */}
         {document && document.status !== 'completed' && lines.length > 0 && (
-          <div className="p-4 border-t border-separator bg-surface-primary fixed bottom-0 w-full max-w-3xl">
-            <Button onClick={handleFinish} className="w-full" size="lg">
+          <div className="bottom-action-bar">
+            <Button onClick={handleFinish} className="w-full py-2 text-sm">
               <CheckCircle className="mr-2" />
               Завершить инвентаризацию
             </Button>

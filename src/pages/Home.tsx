@@ -452,13 +452,13 @@ const Home: React.FC = () => {
             </button>
             <button
               onClick={() => window.open('http://localhost:9000/MobileSMARTS/api/v1/DocTypes', '_blank')}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors"
+              className="btn-secondary px-6 py-3"
             >
               Проверить API в браузере
             </button>
             <button
               onClick={() => navigate('/diagnostics')}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors"
+              className="btn-secondary px-6 py-3"
             >
               Диагностика
             </button>
@@ -536,13 +536,13 @@ const Home: React.FC = () => {
               <button
                 key={docType.uni}
                 onClick={() => navigateToModule(docType.uni)}
-                className="rounded p-1.5 border border-gray-700 bg-surface-primary text-left overflow-hidden"
+                className="rounded p-1.5 border border-borders-default bg-surface-primary text-left overflow-hidden"
                 style={{ minHeight: '48px' }}
               >
                 <h3 className="text-sm font-bold mb-0.5 leading-tight truncate" style={{ color }}>{docType.displayName}</h3>
                 <div className="flex justify-between items-end gap-1">
-                  <p className="text-[9px] text-gray-400 leading-tight flex-1 line-clamp-1">{docType.description}</p>
-                  <span className="text-sm text-gray-500 shrink-0">{docType.docsCount || 0}</span>
+                  <p className="text-[9px] text-content-tertiary leading-tight flex-1 line-clamp-1">{docType.description}</p>
+                  <span className="text-sm text-content-secondary shrink-0">{docType.docsCount || 0}</span>
                 </div>
               </button>
             );

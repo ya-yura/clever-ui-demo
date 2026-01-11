@@ -300,7 +300,7 @@ const DocumentsByType: React.FC = () => {
             </button>
             <button
               onClick={() => navigate('/')}
-              className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors"
+              className="btn-secondary px-6 py-3"
             >
               На главную
             </button>

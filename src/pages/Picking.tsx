@@ -10,6 +10,7 @@ import { LineCard } from '@/components/LineCard';
 import { AutoCompletePrompt } from '@/components/AutoCompletePrompt';
 import { DiscrepancyAlert } from '@/components/DiscrepancyAlert';
 import { RouteVisualization } from '@/components/picking/RouteVisualization';
+import { PickingInstructions } from '@/components/picking/PickingInstructions';
 import { MapPin, Package, CheckCircle, SkipForward, AlertTriangle, XCircle, Zap, Navigation } from 'lucide-react';
 import { Button } from '@/design/components';
 import { feedback } from '@/utils/feedback';
@@ -386,40 +387,44 @@ const Picking: React.FC = () => {
 
   const currentCell = route[currentCellIndex];
   const currentCellProducts = currentCell?.products.map(p => lines.find(l => l.id === p.id)).filter(Boolean) || [];
+  const completedInCurrentCell = currentCellProducts.filter((l: any) => l.quantityFact >= l.quantityPlan).length;
 
   const nextCell = route[currentCellIndex + 1];
+  
+  // Если нет маршрута, показываем начальную инструкцию
+  const showInitialInstructions = route.length === 0 && !loading && document;
 
   return (
     <>
       <div className="flex flex-col h-[calc(100vh-var(--header-height))]">
         {/* STICKY ПЛАШКА: Сейчас + Следующая ячейка */}
-        <div className="sticky top-0 z-20 bg-gradient-to-r from-brand-primary to-brand-secondary text-white p-4 shadow-lg">
-          <div className="flex items-center justify-between gap-4">
+        <div className="sticky top-0 z-20 bg-gradient-to-r from-brand-primary to-brand-secondary text-white p-1.5 shadow-lg">
+          <div className="flex items-center justify-between gap-2">
             {/* Текущая ячейка */}
-            <div className="flex-1">
-              <div className="text-xs opacity-80 mb-1">СЕЙЧАС</div>
-              <div className="flex items-center gap-2">
-                <MapPin size={20} />
-                <span className="text-2xl font-bold">
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] opacity-80 mb-0.5 leading-tight">СЕЙЧАС</div>
+              <div className="flex items-center gap-1.5">
+                <MapPin size={14} className="flex-shrink-0" />
+                <span className="text-base font-bold truncate">
                   {currentCell?.cellName || '—'}
                 </span>
               </div>
               {scannedCell && (
-                <div className="text-xs opacity-90 mt-1">Отсканирована</div>
+                <div className="text-[10px] opacity-90 mt-0.5 leading-tight">Отсканирована</div>
               )}
             </div>
 
             {/* Стрелка */}
             {nextCell && (
               <>
-                <Navigation size={24} className="opacity-60" />
+                <Navigation size={16} className="opacity-60 flex-shrink-0" />
                 
                 {/* Следующая ячейка */}
-                <div className="flex-1">
-                  <div className="text-xs opacity-80 mb-1">СЛЕДУЮЩАЯ</div>
-                  <div className="flex items-center gap-2">
-                    <MapPin size={16} className="opacity-80" />
-                    <span className="text-lg font-bold opacity-90">
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px] opacity-80 mb-0.5 leading-tight">СЛЕДУЮЩАЯ</div>
+                  <div className="flex items-center gap-1.5">
+                    <MapPin size={12} className="opacity-80 flex-shrink-0" />
+                    <span className="text-sm font-bold opacity-90 truncate">
                       {nextCell.cellName}
                     </span>
                   </div>
@@ -429,7 +434,7 @@ const Picking: React.FC = () => {
           </div>
 
           {/* Прогресс */}
-          <div className="mt-3 h-1 bg-white/20 rounded-full overflow-hidden">
+          <div className="mt-1.5 h-0.5 bg-white/20 rounded-full overflow-hidden">
             <div
               className="h-full bg-white transition-all duration-300"
               style={{ width: `${route.length > 0 ? ((currentCellIndex + 1) / route.length) * 100 : 0}%` }}
@@ -438,15 +443,33 @@ const Picking: React.FC = () => {
         </div>
 
         {/* Главный экран */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-2 pb-16">
+        <div className="flex-1 overflow-y-auto p-1.5 space-y-1.5 pb-16">
+          {/* Начальная инструкция, если нет маршрута */}
+          {showInitialInstructions && (
+            <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 mb-2">
+              <div className="flex items-start gap-2">
+                <AlertTriangle size={16} className="text-warning flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <div className="font-bold text-xs text-warning-dark mb-1">
+                    Маршрут не построен
+                  </div>
+                  <div className="text-[10px] text-content-secondary leading-relaxed">
+                    В документе нет товаров с указанными ячейками хранения. 
+                    Проверьте данные документа или обратитесь к администратору.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Настройки режима */}
-          <div className="bg-surface-secondary rounded-lg p-3 space-y-2">
-            <h3 className="font-bold text-sm">Режимы работы</h3>
+          <div className="bg-surface-secondary rounded-lg p-2 space-y-1.5">
+            <h3 className="font-bold text-xs">Режимы работы</h3>
             
-            <label className="flex items-center justify-between cursor-pointer p-2 bg-surface-primary rounded-lg">
-              <div className="flex items-center gap-2">
-                <Zap size={18} className={autoNextMode ? 'text-warning' : 'text-content-tertiary'} />
-                <span className="text-sm font-medium">Автоматический переход</span>
+            <label className="flex items-center justify-between cursor-pointer p-1.5 bg-surface-primary rounded-lg">
+              <div className="flex items-center gap-1.5">
+                <Zap size={14} className={autoNextMode ? 'text-warning' : 'text-content-tertiary'} />
+                <span className="text-xs font-medium">Автоматический переход</span>
               </div>
               <div className="relative">
                 <input
@@ -479,6 +502,16 @@ const Picking: React.FC = () => {
             }}
           />
 
+          {/* Инструкции для пользователя */}
+          {currentCell && route.length > 0 && (
+            <PickingInstructions
+              currentStep={!scannedCell ? 'scanCell' : 'scanProducts'}
+              currentCellName={currentCell.cellName}
+              productsCount={currentCellProducts.length}
+              scannedProductsCount={completedInCurrentCell}
+            />
+          )}
+
           {/* Поле сканирования */}
           <ScannerInput
             onScan={onScanWithFeedback}
@@ -490,39 +523,43 @@ const Picking: React.FC = () => {
             autoFocus
           />
 
-          {/* Текущая ячейка и инструкции */}
+          {/* Текущая ячейка - статус */}
           {currentCell && (
-            <div className={`rounded-lg p-3 border transition-all ${
+            <div className={`rounded-lg p-2 border transition-all ${
               scannedCell
                 ? 'border-success bg-success/10'
                 : 'border-brand-primary bg-brand-primary/10'
             }`}>
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <MapPin size={18} className="text-brand-primary" />
-                    <h3 className="font-bold text-base leading-tight">{currentCell.cellName}</h3>
+              <div className="flex items-start justify-between mb-1.5">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <MapPin size={14} className={scannedCell ? 'text-success' : 'text-brand-primary'} />
+                    <h3 className="font-bold text-sm leading-tight truncate">{currentCell.cellName}</h3>
+                    {scannedCell && (
+                      <CheckCircle size={14} className="text-success flex-shrink-0 ml-1" />
+                    )}
                   </div>
-                  <p className="text-xs text-content-secondary leading-tight">
-                    {!scannedCell
-                      ? '1️⃣ Отсканируйте ячейку'
-                      : '2️⃣ Отсканируйте товары из списка ниже'}
-                  </p>
+                  <div className="text-[10px] text-content-secondary leading-tight">
+                    {!scannedCell ? (
+                      <span className="text-warning-dark">⏳ Ожидание сканирования ячейки</span>
+                    ) : (
+                      <span className="text-success-dark">
+                        ✅ Ячейка подтверждена • Товаров к подбору: {currentCellProducts.length}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                {scannedCell && (
-                  <CheckCircle size={20} className="text-success" />
-                )}
               </div>
 
               {/* Действия с ячейкой */}
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-2 gap-1">
                 {/* СУПЕР-КНОПКА: Нет в ячейке */}
                 {scannedCell && (
                   <button
                     onClick={handleNotInCell}
-                    className="col-span-2 py-2.5 bg-error hover:brightness-110 text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2 text-sm shadow-md"
+                    className="col-span-2 py-1.5 bg-error hover:brightness-110 text-white rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 text-xs shadow-md"
                   >
-                    <XCircle size={18} />
+                    <XCircle size={14} />
                     НЕТ В ЯЧЕЙКЕ
                   </button>
                 )}
@@ -530,11 +567,11 @@ const Picking: React.FC = () => {
                 {/* Кнопка пропуска */}
                 <button
                   onClick={handleSkipCell}
-                  className={`py-2 bg-warning-light hover:bg-warning text-warning-dark rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-2 ${
+                  className={`py-1.5 bg-warning-light hover:bg-warning text-warning-dark rounded-lg text-[10px] font-semibold transition-colors flex items-center justify-center gap-1 ${
                     scannedCell ? 'col-span-1' : 'col-span-2'
                   }`}
                 >
-                  <SkipForward size={14} />
+                  <SkipForward size={12} />
                   Пропустить
                 </button>
 
@@ -542,7 +579,7 @@ const Picking: React.FC = () => {
                 {scannedCell && nextCell && (
                   <button
                     onClick={handleNextCell}
-                    className="col-span-1 py-2 bg-brand-primary hover:brightness-110 text-white rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2"
+                    className="col-span-1 py-1.5 bg-brand-primary hover:brightness-110 text-white rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1"
                   >
                     Далее →
                   </button>
@@ -553,34 +590,39 @@ const Picking: React.FC = () => {
 
           {/* Товары текущей ячейки */}
           {scannedCell && currentCellProducts.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="font-bold text-sm text-content-tertiary uppercase flex items-center gap-2">
-                <Package size={16} />
-                Товары к подбору ({currentCellProducts.length})
-              </h3>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-xs text-content-tertiary uppercase flex items-center gap-1.5">
+                  <Package size={14} />
+                  Товары к подбору
+                </h3>
+                <div className="text-[10px] text-content-secondary">
+                  {completedInCurrentCell} / {currentCellProducts.length} готово
+                </div>
+              </div>
               {currentCellProducts.map((line: any) => (
                 <div
                   key={line.id}
                   onClick={() => handleLineClick(line)}
-                  className="card p-3 cursor-pointer hover:border-brand-primary transition-colors"
+                  className="bg-surface-secondary border border-borders-default rounded-lg p-2 cursor-pointer hover:border-brand-primary transition-colors"
                 >
-                  <div className="flex justify-between items-start mb-1.5">
-                    <div className="flex-1">
-                      <h4 className="font-bold text-sm leading-tight">{line.productName}</h4>
-                      <p className="text-[11px] text-content-tertiary font-mono leading-tight">{line.barcode}</p>
+                  <div className="flex justify-between items-start mb-1">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-xs leading-tight truncate">{line.productName}</h4>
+                      <p className="text-[10px] text-content-tertiary font-mono leading-tight">{line.barcode}</p>
                     </div>
-                    <div className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                    <div className={`status-badge text-[10px] ml-1.5 flex-shrink-0 ${
                       line.quantityFact >= line.quantityPlan
-                        ? 'bg-success-light text-success-dark'
+                        ? 'status-badge-completed'
                         : line.quantityFact > 0
-                        ? 'bg-warning-light text-warning-dark'
+                        ? 'status-badge-warning'
                         : 'bg-surface-tertiary text-content-secondary'
                     }`}>
                       {line.quantityFact} / {line.quantityPlan}
                     </div>
                   </div>
 
-                  <div className="mt-1.5 h-1 bg-surface-tertiary rounded-full overflow-hidden">
+                  <div className="mt-1 h-0.5 bg-surface-tertiary rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all ${
                         line.quantityFact >= line.quantityPlan ? 'bg-success' : 'bg-warning'
@@ -590,13 +632,13 @@ const Picking: React.FC = () => {
                   </div>
 
                   {/* Быстрые действия */}
-                  <div className="mt-2 flex gap-1.5">
+                  <div className="mt-1.5 flex gap-1">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         updateQuantity(line.id, 1);
                       }}
-                      className="flex-1 py-1.5 bg-brand-primary hover:brightness-110 text-white rounded text-sm font-semibold transition-all"
+                      className="flex-1 py-1 bg-brand-primary hover:brightness-110 text-white rounded text-xs font-semibold transition-all"
                     >
                       +1
                     </button>
@@ -609,7 +651,7 @@ const Picking: React.FC = () => {
                         }
                       }}
                       disabled={line.quantityFact >= line.quantityPlan}
-                      className="flex-1 py-1.5 bg-success hover:brightness-110 text-white rounded text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 py-1 bg-success hover:brightness-110 text-white rounded text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Всё ({line.quantityPlan - line.quantityFact})
                     </button>
@@ -620,25 +662,25 @@ const Picking: React.FC = () => {
           )}
 
           {/* Статус документа */}
-          <div className="bg-surface-secondary rounded-lg p-4 space-y-3">
+          <div className="bg-surface-secondary rounded-lg p-2 space-y-1.5">
             <div className="flex justify-between items-center">
-              <h3 className="font-bold">Общий прогресс</h3>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+              <h3 className="font-bold text-xs">Общий прогресс</h3>
+              <span className={`status-badge text-[10px] ${
                 document.status === 'completed'
-                  ? 'bg-success-light text-success-dark'
+                  ? 'status-badge-completed'
                   : document.status === 'in_progress'
-                  ? 'bg-warning-light text-warning-dark'
+                  ? 'status-badge-warning'
                   : 'bg-surface-tertiary text-content-secondary'
               }`}>
                 {document.status === 'completed' ? 'ЗАВЕРШЁН' : document.status === 'in_progress' ? 'В РАБОТЕ' : 'НОВЫЙ'}
               </span>
             </div>
             <div>
-              <div className="flex justify-between text-sm mb-1">
+              <div className="flex justify-between text-xs mb-0.5">
                 <span>Подобрано строк</span>
                 <span className="font-mono">{document.completedLines} / {document.totalLines}</span>
               </div>
-              <div className="h-2 bg-surface-tertiary rounded-full overflow-hidden">
+              <div className="h-1 bg-surface-tertiary rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-brand-primary transition-all duration-300"
                   style={{ width: `${document.totalLines > 0 ? (document.completedLines / document.totalLines) * 100 : 0}%` }}
@@ -649,10 +691,10 @@ const Picking: React.FC = () => {
         </div>
 
         {/* Кнопка завершения */}
-        <div className="p-4 border-t border-separator bg-surface-primary fixed bottom-0 w-full max-w-3xl">
+        <div className="p-2 border-t border-separator bg-surface-primary fixed bottom-0 w-full max-w-3xl">
           <Button
             variant={document.status === 'completed' ? 'secondary' : 'primary'}
-            className="w-full"
+            className="w-full py-2 text-sm"
             onClick={handleFinish}
             disabled={document.status === 'completed'}
           >

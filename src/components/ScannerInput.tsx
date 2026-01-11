@@ -150,15 +150,15 @@ const ScannerInput: React.FC<ScannerInputProps> = ({
           autoCorrect="off"
           autoCapitalize="off"
           spellCheck={false}
-          className="w-full bg-surface-secondary border border-border-default rounded-lg px-4 py-3 pr-12 text-content-primary placeholder:text-content-tertiary focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent text-lg transition-all"
+          className="w-full bg-surface-secondary border border-border-default rounded-lg px-2.5 py-1.5 pr-10 text-content-primary placeholder:text-content-tertiary focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent text-sm transition-all"
         />
         {/* US VIII.3: Camera button */}
         <button
           onClick={() => setIsCameraOpen(true)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-content-tertiary hover:text-brand-primary transition-colors rounded-full hover:bg-surface-tertiary"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 text-content-tertiary hover:text-brand-primary transition-colors rounded-full hover:bg-surface-tertiary"
           title="Открыть камеру"
         >
-          <Camera size={24} />
+          <Camera size={18} />
         </button>
       </div>
 
