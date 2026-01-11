@@ -277,6 +277,7 @@ class ApiService {
   async post<T = any>(url: string, data?: any): Promise<ApiResponse<T>> {
     const start = Date.now();
     try {
+      this.updateBaseURL(); // Ensure baseURL is current
       const response = await this.client.post(url, data);
       
       analytics.track(EventType.API_CALL, {
@@ -305,6 +306,7 @@ class ApiService {
   async put<T = any>(url: string, data?: any): Promise<ApiResponse<T>> {
     const start = Date.now();
     try {
+      this.updateBaseURL(); // Ensure baseURL is current
       const response = await this.client.put(url, data);
       
       analytics.track(EventType.API_CALL, {
@@ -330,9 +332,39 @@ class ApiService {
     }
   }
 
+  async patch<T = any>(url: string, data?: any): Promise<ApiResponse<T>> {
+    const start = Date.now();
+    try {
+      this.updateBaseURL(); // Ensure baseURL is current
+      const response = await this.client.patch(url, data);
+      
+      analytics.track(EventType.API_CALL, {
+        method: 'PATCH',
+        endpoint: url,
+        status: response.status,
+        duration_ms: Date.now() - start,
+        success: true
+      });
+
+      return { success: true, data: response.data };
+    } catch (error: any) {
+      analytics.track(EventType.API_CALL, {
+        method: 'PATCH',
+        endpoint: url,
+        status: error.response?.status || 0,
+        error: error.message,
+        duration_ms: Date.now() - start,
+        success: false
+      });
+
+      return { success: false, error: error.message };
+    }
+  }
+
   async delete<T = any>(url: string): Promise<ApiResponse<T>> {
     const start = Date.now();
     try {
+      this.updateBaseURL(); // Ensure baseURL is current
       const response = await this.client.delete(url);
       
       analytics.track(EventType.API_CALL, {

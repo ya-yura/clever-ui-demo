@@ -278,8 +278,26 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
     await linesTable.update(lineId, updatedLine);
     await addSyncAction('update_line', updatedLine);
 
+    // Синхронизация с реальным API (если не демо-режим)
+    try {
+      const { serverHealth } = await import('@/services/serverHealth');
+      const shouldUseDemo = await serverHealth.shouldUseDemoMode();
+      
+      if (!shouldUseDemo && document) {
+        // Обновляем строку документа на сервере
+        const odataTypeName = odataAPI.mapInternalToODataType(docType);
+        await odataAPI.updateDocumentItem(lineId, {
+          currentQuantity: updatedLine.quantityFact,
+        });
+        console.log(`✅ [LOGIC] Synced line ${lineId} to server`);
+      }
+    } catch (error: any) {
+      console.warn(`⚠️ [LOGIC] Failed to sync line to server:`, error.message);
+      // Не блокируем UI, если синхронизация не удалась
+    }
+
     // Проверки завершения... (упрощено для краткости)
-  }, [lines, docType, activeLine, addSyncAction]);
+  }, [lines, docType, activeLine, addSyncAction, document]);
 
   const updateQuantity = (lineId: string, delta: number, absolute?: boolean) => {
       // Блокируем повторные клики в течение 1 секунды после достижения плана
@@ -343,6 +361,23 @@ export const useDocumentLogic = ({ docType, docId, onComplete }: UseDocumentLogi
 
     await docTable.update(document.id, updatedDoc);
     await addSyncAction('complete_doc', updatedDoc);
+    
+    // Синхронизация с реальным API (если не демо-режим)
+    try {
+      const { serverHealth } = await import('@/services/serverHealth');
+      const shouldUseDemo = await serverHealth.shouldUseDemoMode();
+      
+      if (!shouldUseDemo) {
+        // Завершаем документ на сервере
+        const odataTypeName = odataAPI.mapInternalToODataType(docType);
+        await odataAPI.finishDocument(odataTypeName, document.id);
+        console.log(`✅ [LOGIC] Finished document ${document.id} on server`);
+      }
+    } catch (error: any) {
+      console.warn(`⚠️ [LOGIC] Failed to finish document on server:`, error.message);
+      feedback.warning('Документ завершен локально, но не синхронизирован с сервером');
+      // Не блокируем завершение, если синхронизация не удалась
+    }
     
     setDocument(updatedDoc);
     setShowDiscrepancyAlert(false);

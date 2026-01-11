@@ -6,6 +6,7 @@
 
 import { api } from './api';
 import { demoDataService } from './demoDataService';
+import { serverHealth } from './serverHealth';
 
 const BASE_URL = '/MobileSMARTS/api/v1';
 
@@ -68,16 +69,33 @@ export interface ODataCell {
 
 class ODataAPIService {
   /**
+   * Check if we should use demo mode
+   */
+  private async shouldUseDemo(): Promise<boolean> {
+    return await serverHealth.shouldUseDemoMode();
+  }
+
+  /**
    * Получить список типов документов
    * GET /api/v1/DocTypes
    */
   async getDocTypes(): Promise<ODataDocType[]> {
+    // Check if we should use demo mode
+    if (await this.shouldUseDemo()) {
+      console.log('🎭 [ODATA] Using demo data for DocTypes');
+      return demoDataService.getDocTypes();
+    }
+
     try {
       const response = await api.get(`${BASE_URL}/DocTypes`);
-      return response.data.value || [];
-    } catch (error) {
-      console.error('Failed to fetch DocTypes:', error);
-      throw error;
+      if (response.success && response.data?.value) {
+        return response.data.value;
+      }
+      throw new Error('Invalid response format');
+    } catch (error: any) {
+      console.error('❌ [ODATA] Failed to fetch DocTypes from API:', error.message);
+      console.log('🎭 [ODATA] Falling back to demo data');
+      return demoDataService.getDocTypes();
     }
   }
 
@@ -87,6 +105,13 @@ class ODataAPIService {
    * Например: /api/v1/Docs/PrihodNaSklad
    */
   async getDocumentsByType(docTypeName: string): Promise<ODataDocument[]> {
+    // Check if we should use demo mode
+    if (await this.shouldUseDemo()) {
+      console.log(`🎭 [ODATA] Using demo data for documents of type ${docTypeName}`);
+      const demoData = demoDataService.getDocuments(docTypeName);
+      return demoData.value || [];
+    }
+
     try {
       const response = await api.get(`${BASE_URL}/Docs/${docTypeName}`, {
         params: {
@@ -94,10 +119,16 @@ class ODataAPIService {
           $orderby: 'createDate desc',
         },
       });
-      return response.data.value || [];
-    } catch (error) {
-      console.error(`Failed to fetch documents for ${docTypeName}:`, error);
-      throw error;
+      
+      if (response.success && response.data?.value) {
+        return response.data.value;
+      }
+      throw new Error('Invalid response format');
+    } catch (error: any) {
+      console.error(`❌ [ODATA] Failed to fetch documents for ${docTypeName}:`, error.message);
+      console.log(`🎭 [ODATA] Falling back to demo data for ${docTypeName}`);
+      const demoData = demoDataService.getDocuments(docTypeName);
+      return demoData.value || [];
     }
   }
 
@@ -106,16 +137,38 @@ class ODataAPIService {
    * GET /api/v1/Docs/{DocTypeName}('{id}')
    */
   async getDocument(docTypeName: string, id: string): Promise<ODataDocument & { declaredItems?: ODataDocumentItem[]; currentItems?: ODataDocumentItem[] }> {
+    // Check if we should use demo mode
+    if (await this.shouldUseDemo()) {
+      console.log(`🎭 [ODATA] Using demo data for document ${docTypeName}(${id})`);
+      const demoDoc = demoDataService.getDocumentWithItems(docTypeName, id);
+      if (demoDoc) {
+        return demoDoc as any;
+      }
+      throw new Error(`Document ${id} not found in demo data`);
+    }
+
     try {
       const response = await api.get(`${BASE_URL}/Docs/${docTypeName}('${id}')`, {
         params: {
           $expand: 'declaredItems,currentItems',
         },
       });
-      return response.data;
-    } catch (error) {
-      console.error(`Failed to fetch document ${id}:`, error);
-      throw error;
+      
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error('Invalid response format');
+    } catch (error: any) {
+      console.error(`❌ [ODATA] Failed to fetch document ${id}:`, error.message);
+      console.log(`🎭 [ODATA] Falling back to demo data for document ${id}`);
+      
+      // Try demo data as fallback
+      const demoDoc = demoDataService.getDocumentWithItems(docTypeName, id);
+      if (demoDoc) {
+        return demoDoc as any;
+      }
+      
+      throw error; // Re-throw if demo data also not found
     }
   }
 
@@ -124,10 +177,19 @@ class ODataAPIService {
    * PATCH /api/v1/Docs/{DocTypeName}('{id}')
    */
   async updateDocument(docTypeName: string, id: string, data: Partial<ODataDocument>): Promise<void> {
+    // In demo mode, updates are saved locally only
+    if (await this.shouldUseDemo()) {
+      console.log(`🎭 [ODATA] Demo mode: update document ${id} saved locally only`);
+      return; // In demo mode, we don't actually update the server
+    }
+
     try {
-      await api.patch(`${BASE_URL}/Docs/${docTypeName}('${id}')`, data);
-    } catch (error) {
-      console.error(`Failed to update document ${id}:`, error);
+      const response = await api.patch(`${BASE_URL}/Docs/${docTypeName}('${id}')`, data);
+      if (!response.success) {
+        throw new Error(response.error || 'Update failed');
+      }
+    } catch (error: any) {
+      console.error(`❌ [ODATA] Failed to update document ${id}:`, error.message);
       throw error;
     }
   }
@@ -137,10 +199,19 @@ class ODataAPIService {
    * PATCH /api/v1/DocumentItem('{uid}')
    */
   async updateDocumentItem(uid: string, data: Partial<ODataDocumentItem>): Promise<void> {
+    // In demo mode, updates are saved locally only
+    if (await this.shouldUseDemo()) {
+      console.log(`🎭 [ODATA] Demo mode: update document item ${uid} saved locally only`);
+      return; // In demo mode, we don't actually update the server
+    }
+
     try {
-      await api.patch(`${BASE_URL}/DocumentItem('${uid}')`, data);
-    } catch (error) {
-      console.error(`Failed to update document item ${uid}:`, error);
+      const response = await api.patch(`${BASE_URL}/DocumentItem('${uid}')`, data);
+      if (!response.success) {
+        throw new Error(response.error || 'Update failed');
+      }
+    } catch (error: any) {
+      console.error(`❌ [ODATA] Failed to update document item ${uid}:`, error.message);
       throw error;
     }
   }
@@ -150,10 +221,19 @@ class ODataAPIService {
    * POST /api/v1/Docs/{DocTypeName}('{id}')/Default.EndUpdate
    */
   async finishDocument(docTypeName: string, id: string): Promise<void> {
+    // In demo mode, finish is simulated locally
+    if (await this.shouldUseDemo()) {
+      console.log(`🎭 [ODATA] Demo mode: finish document ${id} simulated locally`);
+      return; // In demo mode, we don't actually call the server
+    }
+
     try {
-      await api.post(`${BASE_URL}/Docs/${docTypeName}('${id}')/Default.EndUpdate`);
-    } catch (error) {
-      console.error(`Failed to finish document ${id}:`, error);
+      const response = await api.post(`${BASE_URL}/Docs/${docTypeName}('${id}')/Default.EndUpdate`);
+      if (!response.success) {
+        throw new Error(response.error || 'Finish failed');
+      }
+    } catch (error: any) {
+      console.error(`❌ [ODATA] Failed to finish document ${id}:`, error.message);
       throw error;
     }
   }
@@ -163,6 +243,23 @@ class ODataAPIService {
    * GET /api/v1/Products
    */
   async getProducts(filter?: string): Promise<ODataProduct[]> {
+    // Check if we should use demo mode
+    if (await this.shouldUseDemo()) {
+      console.log('🎭 [ODATA] Using demo data for products');
+      const demoProductsResult = demoDataService.getProducts();
+      const demoProducts = demoProductsResult.value || [];
+      // Apply filter if provided
+      if (filter) {
+        // Simple filter implementation for demo
+        return demoProducts.filter((p: any) => {
+          // This is a simplified filter - in production, OData handles this
+          return p.name?.toLowerCase().includes(filter.toLowerCase()) ||
+                 p.barcode?.includes(filter);
+        });
+      }
+      return demoProducts;
+    }
+
     try {
       const response = await api.get(`${BASE_URL}/Products`, {
         params: {
@@ -170,10 +267,16 @@ class ODataAPIService {
           $top: 100,
         },
       });
-      return response.data.value || [];
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
-      throw error;
+      
+      if (response.success && response.data?.value) {
+        return response.data.value;
+      }
+      throw new Error('Invalid response format');
+    } catch (error: any) {
+      console.error('❌ [ODATA] Failed to fetch products:', error.message);
+      console.log('🎭 [ODATA] Falling back to demo data');
+      const demoProductsResult = demoDataService.getProducts();
+      return demoProductsResult.value || [];
     }
   }
 
@@ -182,6 +285,15 @@ class ODataAPIService {
    * GET /api/v1/Products?$filter=barcode eq '{barcode}'
    */
   async getProductByBarcode(barcode: string): Promise<ODataProduct | null> {
+    // Check if we should use demo mode
+    if (await this.shouldUseDemo()) {
+      console.log(`🎭 [ODATA] Using demo data to find product by barcode ${barcode}`);
+      const demoProductsResult = demoDataService.getProducts();
+      const demoProducts = demoProductsResult.value || [];
+      const product = demoProducts.find((p: any) => p.barcode === barcode);
+      return product || null;
+    }
+
     try {
       const response = await api.get(`${BASE_URL}/Products`, {
         params: {
@@ -189,11 +301,19 @@ class ODataAPIService {
           $top: 1,
         },
       });
-      const products = response.data.value || [];
-      return products.length > 0 ? products[0] : null;
-    } catch (error) {
-      console.error(`Failed to fetch product by barcode ${barcode}:`, error);
-      return null;
+      
+      if (response.success && response.data?.value) {
+        const products = response.data.value;
+        return products.length > 0 ? products[0] : null;
+      }
+      throw new Error('Invalid response format');
+    } catch (error: any) {
+      console.error(`❌ [ODATA] Failed to fetch product by barcode ${barcode}:`, error.message);
+      console.log(`🎭 [ODATA] Falling back to demo data`);
+      const demoProductsResult = demoDataService.getProducts();
+      const demoProducts = demoProductsResult.value || [];
+      const product = demoProducts.find((p: any) => p.barcode === barcode);
+      return product || null;
     }
   }
 
@@ -202,16 +322,34 @@ class ODataAPIService {
    * GET /api/v1/Cells
    */
   async getCells(warehouseId?: string): Promise<ODataCell[]> {
+    // Check if we should use demo mode
+    if (await this.shouldUseDemo()) {
+      console.log('🎭 [ODATA] Using demo data for cells');
+      const demoCellsResult = demoDataService.getCells();
+      const demoCells = demoCellsResult.value || [];
+      // Apply warehouse filter if provided
+      if (warehouseId) {
+        return demoCells.filter((c: any) => c.warehouseId === warehouseId);
+      }
+      return demoCells;
+    }
+
     try {
       const response = await api.get(`${BASE_URL}/Cells`, {
         params: {
           $filter: warehouseId ? `warehouseId eq '${warehouseId}'` : undefined,
         },
       });
-      return response.data.value || [];
-    } catch (error) {
-      console.error('Failed to fetch cells:', error);
-      throw error;
+      
+      if (response.success && response.data?.value) {
+        return response.data.value;
+      }
+      throw new Error('Invalid response format');
+    } catch (error: any) {
+      console.error('❌ [ODATA] Failed to fetch cells:', error.message);
+      console.log('🎭 [ODATA] Falling back to demo data');
+      const demoCellsResult = demoDataService.getCells();
+      return demoCellsResult.value || [];
     }
   }
 

@@ -31,7 +31,19 @@ const Setup: React.FC = () => {
       // Save configuration
       configService.setServerUrl(serverUrl.trim().replace(/\/+$/, ''));
       
+      // Clear demo mode flag when connecting to real server
+      localStorage.removeItem('demo_mode');
+      
+      // Clear server health cache to force re-check
+      const { serverHealth } = await import('@/services/serverHealth');
+      serverHealth.clearCache();
+      
+      // Update API baseURL
+      const { api } = await import('@/services/api');
+      api.updateBaseURL();
+      
       console.log('✅ Server URL configured:', serverUrl);
+      console.log('✅ Demo mode cleared, will use real API');
       
       // Navigate to login page
       setTimeout(() => {
@@ -51,27 +63,33 @@ const Setup: React.FC = () => {
       const validation = configService.validateServerUrl(serverUrl);
       if (!validation.valid) {
         setError(validation.error || 'Некорректный URL');
+        setIsValidating(false);
         return;
       }
 
-      // Try to fetch DocTypes from server
-      const testUrl = `${serverUrl.trim().replace(/\/+$/, '')}/DocTypes`;
-      console.log('🔍 Testing connection to:', testUrl);
+      // Temporarily set server URL for testing
+      const tempUrl = serverUrl.trim().replace(/\/+$/, '');
+      configService.setServerUrl(tempUrl);
       
-      const response = await fetch(testUrl, {
-        method: 'GET',
-        mode: 'cors',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Server response:', data);
-        alert(`✅ Соединение с сервером успешно установлено!\nНайдено типов документов: ${data.value?.length || 0}`);
+      // Update API baseURL
+      const { api } = await import('@/services/api');
+      api.updateBaseURL();
+      
+      // Clear server health cache
+      const { serverHealth } = await import('@/services/serverHealth');
+      serverHealth.clearCache();
+      
+      // Try to fetch DocTypes from server using API service
+      console.log('🔍 Testing connection to:', tempUrl);
+      
+      const response = await api.get('/DocTypes');
+      
+      if (response.success && response.data?.value) {
+        const docTypesCount = response.data.value.length;
+        console.log('✅ Server response:', response.data);
+        alert(`✅ Соединение с сервером успешно установлено!\nНайдено типов документов: ${docTypesCount}`);
       } else {
-        setError(`Сервер вернул ошибку: ${response.status} ${response.statusText}`);
+        setError(`Сервер вернул ошибку: ${response.error || 'Неизвестная ошибка'}`);
       }
     } catch (err: any) {
       console.error('❌ Connection test failed:', err);
