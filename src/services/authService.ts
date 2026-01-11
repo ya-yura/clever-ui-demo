@@ -3,6 +3,7 @@
 
 import { configService } from './configService';
 import { LoginCredentials } from '@/types/auth';
+import { logger } from '@/utils/logger';
 
 export interface OAuthTokenResponse {
   access_token: string;
@@ -55,7 +56,7 @@ class AuthService {
       // Non-404 errors treated as auth required
       return { requiresAuth: true };
     } catch (error) {
-      console.warn('⚠️ Failed to determine authentication requirement:', error);
+      logger.warn('⚠️ Failed to determine authentication requirement:', error);
       return { requiresAuth: true };
     }
   }
@@ -79,7 +80,7 @@ class AuthService {
   }
 
   private async loginDemo(credentials: LoginCredentials) {
-    console.log('🔐 [DEMO MODE] Login attempt:', credentials.username);
+    logger.debug('🔐 [DEMO MODE] Login attempt:', credentials.username);
 
     if (!credentials.username || !credentials.password) {
       return {
@@ -196,7 +197,7 @@ class AuthService {
         },
       };
     } catch (error: any) {
-      console.error('❌ OAuth login error:', error);
+      logger.error('❌ OAuth login error:', error);
       return {
         success: false,
         error: error.message || 'Ошибка подключения к серверу',
@@ -214,7 +215,7 @@ class AuthService {
     user?: any;
     error?: string;
   }> {
-    console.log('🔑 Temp token login attempt');
+    logger.debug('🔑 Temp token login attempt');
 
     // Use special username with temp token as password
     return this.login({
@@ -243,7 +244,7 @@ class AuthService {
     }
 
     try {
-      console.log('🔄 Refreshing access token');
+      logger.debug('🔄 Refreshing access token');
 
       const requestBody = new URLSearchParams({
         scope: 'refresh_token offline_access',
@@ -277,14 +278,14 @@ class AuthService {
         this.setRefreshToken(data.refresh_token);
       }
 
-      console.log('✅ Token refreshed successfully');
+      logger.debug('✅ Token refreshed successfully');
 
       return {
         success: true,
         token: data.access_token
       };
     } catch (error: any) {
-      console.error('❌ Token refresh error:', error);
+      logger.error('❌ Token refresh error:', error);
       return {
         success: false,
         error: error.message || 'Failed to refresh token'
@@ -308,7 +309,7 @@ class AuthService {
       );
       return JSON.parse(jsonPayload);
     } catch (error) {
-      console.error('❌ JWT parse error:', error);
+      logger.error('❌ JWT parse error:', error);
       return null;
     }
   }
@@ -385,7 +386,7 @@ class AuthService {
    */
   logout(): void {
     this.clearTokens();
-    console.log('✅ Logout successful');
+    logger.debug('✅ Logout successful');
   }
 }
 

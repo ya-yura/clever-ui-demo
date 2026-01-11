@@ -4,6 +4,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { configService } from './configService';
 import analytics, { EventType } from '@/lib/analytics';
+import { logger } from '@/utils/logger';
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -17,7 +18,7 @@ class ApiService {
   private token: string | null = null;
 
   constructor() {
-    console.log('🔧 [API] Initializing ApiService...');
+    logger.debug('🔧 [API] Initializing ApiService...');
     
     this.client = axios.create({
       timeout: 30000,
@@ -29,7 +30,7 @@ class ApiService {
     // Update baseURL dynamically
     this.updateBaseURL();
     
-    console.log('🔧 [API] ApiService initialized with baseURL:', this.client.defaults.baseURL);
+    logger.debug('🔧 [API] ApiService initialized with baseURL:', this.client.defaults.baseURL);
 
     // Request interceptor
     this.client.interceptors.request.use(
@@ -53,7 +54,7 @@ class ApiService {
           originalRequest._retry = true;
 
           try {
-            console.log('🔄 401 Unauthorized - attempting token refresh');
+            logger.debug('🔄 401 Unauthorized - attempting token refresh');
             
             // Dynamic import to avoid circular dependency
             const { authService } = await import('./authService');
@@ -66,11 +67,11 @@ class ApiService {
               return this.client(originalRequest);
             }
           } catch (refreshError) {
-            console.error('❌ Token refresh failed:', refreshError);
+            logger.error('❌ Token refresh failed:', refreshError);
           }
 
           // If refresh failed, trigger logout
-          console.warn('⚠️ Token refresh failed - clearing auth');
+          logger.warn('⚠️ Token refresh failed - clearing auth');
           this.clearToken();
           window.dispatchEvent(new CustomEvent('auth:unauthorized'));
         }
@@ -103,12 +104,12 @@ class ApiService {
 
           if (this.shouldUseDevProxy(sanitized)) {
             this.client.defaults.baseURL = '/MobileSMARTS/api/v1';
-            console.log('✅ [API] baseURL via Vite proxy (local dev detected):', this.client.defaults.baseURL);
+            logger.debug('✅ [API] baseURL via Vite proxy (local dev detected):', this.client.defaults.baseURL);
             return;
           }
 
           this.client.defaults.baseURL = sanitized;
-          console.log('✅ [API] baseURL from config:', this.client.defaults.baseURL);
+          logger.debug('✅ [API] baseURL from config:', this.client.defaults.baseURL);
           return;
         }
       }
@@ -117,15 +118,15 @@ class ApiService {
       const devBaseUrl = this.getDevProxyBaseUrl();
       if (devBaseUrl) {
         this.client.defaults.baseURL = devBaseUrl;
-        console.log('✅ [API] Dev proxy baseURL:', this.client.defaults.baseURL);
+        logger.debug('✅ [API] Dev proxy baseURL:', this.client.defaults.baseURL);
         return;
       }
 
       // 3. Final safety fallback — direct connection to default Mobile SMARTS server
       this.client.defaults.baseURL = 'http://localhost:9000/MobileSMARTS/api/v1';
-      console.warn('⚠️ [API] Using default Mobile SMARTS URL:', this.client.defaults.baseURL);
+      logger.warn('⚠️ [API] Using default Mobile SMARTS URL:', this.client.defaults.baseURL);
     } catch (error) {
-      console.error('❌ [API] Failed to update baseURL:', error);
+      logger.error('❌ [API] Failed to update baseURL:', error);
       this.client.defaults.baseURL = this.client.defaults.baseURL || 'http://localhost:9000/MobileSMARTS/api/v1';
     }
   }
@@ -183,7 +184,7 @@ class ApiService {
       // If ports differ (e.g., frontend 5173, backend 9000) — use proxy.
       return currentPort !== targetPort;
     } catch (error) {
-      console.warn('⚠️ [API] Failed to parse configured URL, skipping proxy detection:', error);
+      logger.warn('⚠️ [API] Failed to parse configured URL, skipping proxy detection:', error);
       return false;
     }
   }
@@ -244,7 +245,7 @@ class ApiService {
       }
       
       const fullUrl = `${this.client.defaults.baseURL}${url}${queryString ? '?' + queryString : ''}`;
-      console.log(`🌐 [API] GET ${fullUrl}`);
+      logger.debug(`🌐 [API] GET ${fullUrl}`);
       
       const response = await this.client.get(url, { params });
       
@@ -256,9 +257,9 @@ class ApiService {
         success: true
       });
       
-      console.log(`✅ [API] Response status: ${response.status}`);
-      console.log(`📦 [API] Response data type:`, Array.isArray(response.data) ? 'Array' : typeof response.data);
-      console.log(`📦 [API] Response data:`, response.data);
+      logger.debug(`✅ [API] Response status: ${response.status}`);
+      logger.debug(`📦 [API] Response data type:`, Array.isArray(response.data) ? 'Array' : typeof response.data);
+      logger.debug(`📦 [API] Response data:`, response.data);
       
       return { success: true, data: response.data };
     } catch (error: any) {
@@ -271,10 +272,10 @@ class ApiService {
         success: false
       });
       
-      console.error(`❌ [API] GET ${url} failed:`, error.message);
+      logger.error(`❌ [API] GET ${url} failed:`, error.message);
       if (error.response) {
-        console.error(`❌ [API] Response status: ${error.response.status}`);
-        console.error(`❌ [API] Response data:`, error.response.data);
+        logger.error(`❌ [API] Response status: ${error.response.status}`);
+        logger.debug(`❌ [API] Response data:`, error.response.data);
       }
       return { success: false, error: error.message };
     }
@@ -507,7 +508,7 @@ class ApiService {
 
       return { success: true, data: count };
     } catch (error: any) {
-      console.error(`❌ [API] Failed to fetch docs count for ${docTypeUni}:`, error?.message || error);
+      logger.error(`❌ [API] Failed to fetch docs count for ${docTypeUni}:`, error?.message || error);
       return { success: false, error: error.message };
     }
   }
@@ -536,41 +537,41 @@ class ApiService {
    * @param docTypeUni - Document type unique identifier
    */
   async getDocsByType(docTypeUni: string) {
-    console.log(`🔍 [API] Trying to get documents for type: ${docTypeUni}`);
+    logger.debug(`🔍 [API] Trying to get documents for type: ${docTypeUni}`);
     
     // Approach 1: Try specialized EntitySet (e.g. /Docs/PrihodNaSklad)
-    console.log(`🔍 [API] Approach 1: /Docs/${docTypeUni}`);
+    logger.debug(`🔍 [API] Approach 1: /Docs/${docTypeUni}`);
     let response = await this.get(`/Docs/${docTypeUni}`);
     
     if (response.success && response.data) {
-      console.log(`✅ [API] Approach 1 succeeded`);
+      logger.debug(`✅ [API] Approach 1 succeeded`);
       return response;
     }
     
     // Approach 2: Try with $filter on documentTypeName
-    console.log(`🔍 [API] Approach 2: /Docs with $filter=documentTypeName eq '${docTypeUni}'`);
+    logger.debug(`🔍 [API] Approach 2: /Docs with $filter=documentTypeName eq '${docTypeUni}'`);
     response = await this.get('/Docs', {
       $filter: `documentTypeName eq '${docTypeUni}'`
     });
     
     if (response.success && response.data) {
-      console.log(`✅ [API] Approach 2 succeeded`);
+      logger.debug(`✅ [API] Approach 2 succeeded`);
       return response;
     }
     
     // Approach 3: Get all docs and filter client-side
-    console.log(`🔍 [API] Approach 3: /Docs (get all, filter client-side)`);
+    logger.debug(`🔍 [API] Approach 3: /Docs (get all, filter client-side)`);
     response = await this.get('/Docs');
     
     if (response.success && response.data) {
-      console.log(`✅ [API] Approach 3 succeeded (will filter client-side)`);
+      logger.debug(`✅ [API] Approach 3 succeeded (will filter client-side)`);
       // Add marker for client-side filtering
       (response as any).needsClientFilter = true;
       (response as any).filterType = docTypeUni;
       return response;
     }
     
-    console.error(`❌ [API] All approaches failed for ${docTypeUni}`);
+    logger.error(`❌ [API] All approaches failed for ${docTypeUni}`);
     return { success: false, error: 'Failed to fetch documents' };
   }
 

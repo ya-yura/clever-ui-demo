@@ -10,6 +10,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { configService } from '@/services/configService';
+import { logger } from '@/utils/logger';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -34,13 +35,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   // Redirect to setup if not configured and not in demo mode
   if (!isConfigured && !isDemo) {
-    console.warn('⚠️ Not configured, redirecting to /setup');
+    logger.warn('⚠️ Not configured, redirecting to /setup');
     return <Navigate to="/setup" replace />;
   }
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    console.warn('⚠️ Not authenticated, redirecting to /login');
+    logger.warn('⚠️ Not authenticated, redirecting to /login');
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
