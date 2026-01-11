@@ -83,7 +83,8 @@ class ODataAPIService {
     // Check if we should use demo mode
     if (await this.shouldUseDemo()) {
       console.log('🎭 [ODATA] Using demo data for DocTypes');
-      return demoDataService.getDocTypes();
+      const demoResult = demoDataService.getDocTypes();
+      return demoResult.value || [];
     }
 
     try {
@@ -95,7 +96,8 @@ class ODataAPIService {
     } catch (error: any) {
       console.error('❌ [ODATA] Failed to fetch DocTypes from API:', error.message);
       console.log('🎭 [ODATA] Falling back to demo data');
-      return demoDataService.getDocTypes();
+      const demoResult = demoDataService.getDocTypes();
+      return demoResult.value || [];
     }
   }
 

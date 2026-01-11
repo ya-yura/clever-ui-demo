@@ -209,6 +209,7 @@ class DemoDataService {
           firstCellId: line.cellId || undefined,
           firstStorageId: line.cellId || undefined,
           firstStorageBarcode: line.cellId || undefined,
+          packingUnitsQuantity: 1,
         }));
 
         return {
@@ -292,7 +293,7 @@ class DemoDataService {
     return {
       id: docId,
       documentTypeName: docTypeUni,
-      name: baseDoc.name || baseDoc.deliveryNumber || `Документ ${docId}`,
+      name: baseDoc.name || (baseDoc as any)?.deliveryNumber || `Документ ${docId}`,
       description: baseDoc.description || '',
       finished,
       inProcess: finished ? false : inProcess,
@@ -300,12 +301,17 @@ class DemoDataService {
       lastChangeDate: baseDoc.lastChangeDate || baseDoc.createDate || now,
       userName: baseDoc.userName || (baseDoc as any)?.supplier || 'Демо оператор',
       userId: baseDoc.userId || 'demo-user',
-      barcode: baseDoc.barcode || baseDoc.deliveryNumber || docId,
+      barcode: baseDoc.barcode || (baseDoc as any)?.deliveryNumber || docId,
       warehouseId: baseDoc.warehouseId || 'DEMO-WH',
-      partnerName: baseDoc.partnerName || (baseDoc as any)?.supplier || 'Демо партнёр',
       appointment: baseDoc.appointment || (baseDoc as any)?.operator || 'demo-user',
       priority: baseDoc.priority || 1,
-      states: [],
+      createdOnPDA: false,
+      modified: false,
+      distributeByBarcode: false,
+      autoAppointed: false,
+      serverHosted: false,
+      licenseStatus: 0,
+      notOpenedYet: false,
       ...baseDoc,
     } as ODataDocument;
   }
