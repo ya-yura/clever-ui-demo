@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Wifi, WifiOff, RefreshCw, AlertCircle, Clock } from 'lucide-react';
+import { Wifi, WifiOff, RefreshCw, AlertCircle, Clock, CheckCircle } from 'lucide-react';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 import { useSync } from '@/hooks/useSync';
 
@@ -39,7 +39,10 @@ export const ConnectionIndicator: React.FC<ConnectionIndicatorProps> = ({
   className = '',
 }) => {
   const { isOnline, pendingSyncActions } = useOfflineStorage(module);
-  const { isSyncing, syncError, sync } = useSync({ module });
+  const { isSyncing, syncError, sync } = useSync({ 
+    module, 
+    syncEndpoint: '/api/sync' 
+  });
   const [showDropdown, setShowDropdown] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
@@ -268,9 +271,3 @@ export const ConnectionIndicator: React.FC<ConnectionIndicatorProps> = ({
     </div>
   );
 };
-
-
-
-
-
-
