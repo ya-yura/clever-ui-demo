@@ -1,5 +1,10 @@
 // === 📁 src/components/ProtectedRoute.tsx ===
 // Protected route wrapper for authenticated routes
+//
+// SECURITY NOTE: This component provides UX-only protection.
+// Real security is enforced server-side by the Cleverence Mobile SMARTS OAuth2 server.
+// The server validates JWT tokens and user roles on every API request.
+// Client-side checks here are for better UX (hiding UI elements) but can be bypassed.
 
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';

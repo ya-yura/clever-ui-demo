@@ -188,6 +188,12 @@ class ApiService {
     }
   }
 
+  /**
+   * Set authentication token
+   * 
+   * SECURITY NOTE: Token stored in localStorage (standard SPA pattern).
+   * Security enforced server-side - server validates token on every request.
+   */
   setToken(token: string) {
     this.token = token;
     localStorage.setItem('auth_token', token);

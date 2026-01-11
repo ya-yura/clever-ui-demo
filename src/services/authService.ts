@@ -345,6 +345,14 @@ class AuthService {
 
   /**
    * Set auth token in storage
+   * 
+   * SECURITY NOTE: Tokens are stored in localStorage (standard SPA pattern).
+   * Security is enforced by:
+   * 1. Server-side validation on every API request
+   * 2. Token expiration and refresh mechanism
+   * 3. XSS mitigations (React auto-escaping, fixed innerHTML vulnerabilities)
+   * 
+   * Alternative (httpOnly cookies) would require backend changes to external OAuth2 server.
    */
   setToken(token: string): void {
     localStorage.setItem(this.STORAGE_KEY_AUTH, token);
