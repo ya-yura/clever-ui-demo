@@ -22,6 +22,9 @@ export const vibrate = (type: VibrationType) => {
   }
 };
 
+// Alias for backwards compatibility
+export const vibratePattern = vibrate;
+
 export const setVibrationEnabled = (value: boolean) => {
   enabled = value;
   localStorage.setItem('vibrationEnabled', String(value));

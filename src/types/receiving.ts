@@ -9,6 +9,8 @@ export interface ReceivingDocument extends BaseDocument {
   expectedDate?: number;
   totalLines: number;
   completedLines: number;
+  priority?: 'low' | 'normal' | 'high' | 'urgent';
+  assignedTo?: string;
 }
 
 export interface ReceivingLine extends BaseLine {

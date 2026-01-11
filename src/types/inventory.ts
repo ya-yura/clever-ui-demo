@@ -5,8 +5,11 @@ import { BaseDocument, BaseLine } from './common';
 
 export interface InventoryDocument extends BaseDocument {
   type?: 'full' | 'partial' | 'cycle';
+  inventoryType?: 'full' | 'partial' | 'cell';
   zone?: string;
   warehouseZone?: string;
+  zones?: string[];
+  targetCells?: string[];
   totalLines: number;
   completedLines: number;
   discrepanciesCount: number;
