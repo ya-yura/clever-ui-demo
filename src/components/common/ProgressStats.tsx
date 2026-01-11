@@ -60,7 +60,6 @@ export const ProgressStats: React.FC<ProgressStatsProps> = ({
           value={percentage}
           variant={percentage === 100 ? 'success' : 'primary'}
           size="sm"
-          showPercentage={false}
         />
       </div>
     );
@@ -80,7 +79,6 @@ export const ProgressStats: React.FC<ProgressStatsProps> = ({
           value={percentage}
           variant={percentage === 100 ? 'success' : 'primary'}
           size="md"
-          showPercentage={false}
         />
         <div className="flex items-center justify-between text-xs text-content-tertiary mt-1">
           <span>{data.completed} из {data.total}</span>
@@ -156,5 +154,3 @@ export const ProgressStats: React.FC<ProgressStatsProps> = ({
     </div>
   );
 };
-
-

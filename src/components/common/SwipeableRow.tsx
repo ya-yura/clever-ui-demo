@@ -2,7 +2,6 @@
 // Swipeable row component with reveal actions
 
 import React, { useRef, useState } from 'react';
-import { useSwipe } from '@/hooks/useSwipe';
 
 interface SwipeAction {
   icon: React.ReactNode;
@@ -30,18 +29,27 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [actionTriggered, setActionTriggered] = useState<'left' | 'right' | null>(null);
   const rowRef = useRef<HTMLDivElement>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const maxSwipe = 100;
 
-  const handleSwipeMove = (deltaX: number) => {
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStart.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
     setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart.current) return;
     
-    // Limit swipe distance
+    const deltaX = e.touches[0].clientX - touchStart.current.x;
     const newOffset = Math.max(-maxSwipe, Math.min(maxSwipe, deltaX));
     setOffset(newOffset);
   };
 
-  const handleSwipeEnd = () => {
+  const handleTouchEnd = () => {
     setIsDragging(false);
 
     // Check if threshold reached for action
@@ -53,6 +61,8 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
       // Reset to center
       setOffset(0);
     }
+    
+    touchStart.current = null;
   };
 
   const triggerAction = (direction: 'left' | 'right') => {
@@ -70,14 +80,6 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
       setActionTriggered(null);
     }, 300);
   };
-
-  const { onTouchStart, onTouchMove, onTouchEnd } = useSwipe({
-    onSwipeLeft: () => {},
-    onSwipeRight: () => {},
-    threshold: 10,
-    onSwipeMove: handleSwipeMove,
-    onSwipeEnd: handleSwipeEnd,
-  });
 
   const getActionColor = (color: SwipeAction['color']) => {
     switch (color) {
@@ -149,9 +151,9 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
       {/* Main Content */}
       <div
         ref={rowRef}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         className={`relative transition-transform ${
           isDragging ? 'duration-0' : 'duration-300'
         } ${actionTriggered ? 'opacity-0' : 'opacity-100'}`}
@@ -164,5 +166,3 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
     </div>
   );
 };
-
-

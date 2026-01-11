@@ -1,10 +1,10 @@
 // === 📁 src/components/SpotlightSearch.tsx ===
 // Spotlight-style global search (Ctrl+K / Cmd+K)
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '@/services/db';
-import { Search, FileText, Package, MapPin, Clock, TrendingUp } from 'lucide-react';
+import { Search, FileText, Package, MapPin, Clock } from 'lucide-react';
 
 interface SearchResult {
   id: string;
@@ -76,19 +76,19 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({ isOpen, onClos
   const loadRecents = async () => {
     setLoading(true);
     try {
-      // Load recent documents
-      const docs = await db.universalDocuments
-        .orderBy('updatedAt')
+      // Load recent documents from odataDocuments table
+      const docs = await db.odataDocuments
+        .orderBy('createDate')
         .reverse()
         .limit(5)
         .toArray();
 
-      const recentResults: SearchResult[] = docs.map(doc => ({
+      const recentResults: SearchResult[] = docs.map((doc: { id: string; documentTypeName?: string }) => ({
         id: doc.id,
-        type: 'recent',
+        type: 'recent' as const,
         title: doc.id,
-        subtitle: doc.type || 'Документ',
-        action: `/docs/${doc.type}/${doc.id}`,
+        subtitle: doc.documentTypeName || 'Документ',
+        action: `/docs/${doc.documentTypeName}/${doc.id}`,
         icon: <Clock size={20} />,
         score: 0,
       }));
@@ -107,21 +107,20 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({ isOpen, onClos
     const searchResults: SearchResult[] = [];
 
     try {
-      // Search documents
-      const docs = await db.universalDocuments.toArray();
-      docs.forEach(doc => {
+      // Search documents from odataDocuments table
+      const docs = await db.odataDocuments.toArray();
+      docs.forEach((doc: { id: string; documentTypeName?: string; finished?: boolean }) => {
         const docIdMatch = doc.id.toLowerCase().includes(normalized);
-        const typeMatch = doc.type?.toLowerCase().includes(normalized);
-        const statusMatch = doc.status?.toLowerCase().includes(normalized);
+        const typeMatch = doc.documentTypeName?.toLowerCase().includes(normalized);
 
-        if (docIdMatch || typeMatch || statusMatch) {
+        if (docIdMatch || typeMatch) {
           const score = docIdMatch ? 100 : typeMatch ? 50 : 20;
           searchResults.push({
             id: doc.id,
             type: 'document',
             title: doc.id,
-            subtitle: `${doc.type || 'Документ'} • ${doc.status || 'new'}`,
-            action: `/docs/${doc.type}/${doc.id}`,
+            subtitle: `${doc.documentTypeName || 'Документ'} • ${doc.finished ? 'completed' : 'new'}`,
+            action: `/docs/${doc.documentTypeName}/${doc.id}`,
             icon: <FileText size={20} className="text-brand-primary" />,
             score,
           });
@@ -130,7 +129,7 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({ isOpen, onClos
 
       // Search products
       const products = await db.products.toArray();
-      products.forEach(product => {
+      products.forEach((product: { id: string; name: string; barcode?: string; sku?: string }) => {
         const nameMatch = product.name.toLowerCase().includes(normalized);
         const barcodeMatch = product.barcode?.toLowerCase().includes(normalized);
         const skuMatch = product.sku?.toLowerCase().includes(normalized);
@@ -279,25 +278,3 @@ export const useSpotlight = () => {
     toggle: () => setIsOpen(prev => !prev),
   };
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

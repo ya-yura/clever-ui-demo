@@ -1,8 +1,8 @@
 // === 📁 src/behavior/microRewards.ts ===
 // Micro-rewards system for positive reinforcement
 
-import { vibrate } from '@/utils/vibration';
-import { playSound } from '@/utils/sound';
+import { vibrate, VibrationType } from '@/utils/vibration';
+import { playSound, SoundType } from '@/utils/sound';
 import { speak } from '@/utils/voice';
 
 export interface MicroReward {
@@ -46,11 +46,11 @@ export function showMicroReward(
 function showScanReward(reward: MicroReward): void {
   // Subtle feedback
   if (reward.type === 'haptic' || reward.type === 'combined') {
-    vibrate(30);
+    vibrate('light');
   }
   
   if (reward.type === 'audio' || reward.type === 'combined') {
-    playSound('scan_success');
+    playSound('scan');
   }
 
   if (reward.type === 'visual' || reward.type === 'combined') {
@@ -63,11 +63,11 @@ function showScanReward(reward: MicroReward): void {
  */
 function showLineCompleteReward(reward: MicroReward): void {
   if (reward.type === 'haptic' || reward.type === 'combined') {
-    vibrate(50);
+    vibrate('success');
   }
   
   if (reward.type === 'audio' || reward.type === 'combined') {
-    playSound('complete');
+    playSound('success');
   }
 
   if (reward.type === 'voice' || reward.type === 'combined') {
@@ -91,8 +91,7 @@ function showLineCompleteReward(reward: MicroReward): void {
  */
 function showDocumentCompleteReward(reward: MicroReward): void {
   if (reward.type === 'haptic' || reward.type === 'combined') {
-    // Pattern vibration
-    vibrate([100, 50, 100, 50, 200]);
+    vibrate('success');
   }
   
   if (reward.type === 'audio' || reward.type === 'combined') {
@@ -113,11 +112,11 @@ function showDocumentCompleteReward(reward: MicroReward): void {
  */
 function showMilestoneReward(reward: MicroReward): void {
   if (reward.type === 'haptic' || reward.type === 'combined') {
-    vibrate([50, 30, 50, 30, 100]);
+    vibrate('warning');
   }
   
   if (reward.type === 'audio' || reward.type === 'combined') {
-    playSound('milestone');
+    playSound('notification');
   }
 
   if (reward.type === 'voice' || reward.type === 'combined') {
@@ -133,6 +132,7 @@ function showMilestoneReward(reward: MicroReward): void {
 
 /**
  * Show visual feedback toast
+ * Uses textContent for XSS safety
  */
 function showVisualFeedback(
   message: string,
@@ -141,7 +141,7 @@ function showVisualFeedback(
 ): void {
   const toast = document.createElement('div');
   toast.className = `fixed top-20 left-1/2 -translate-x-1/2 px-6 py-3 bg-surface-secondary border border-surface-tertiary rounded-lg shadow-lg z-50 font-semibold ${className} animate-bounce-in`;
-  toast.textContent = message;
+  toast.textContent = message; // Safe: auto-escapes HTML
 
   document.body.appendChild(toast);
 
@@ -153,18 +153,27 @@ function showVisualFeedback(
 
 /**
  * Show celebration animation
+ * Uses DOM manipulation instead of innerHTML for XSS safety
  */
 function showCelebration(): void {
   const overlay = document.createElement('div');
   overlay.className = 'fixed inset-0 pointer-events-none z-50 flex items-center justify-center';
-  overlay.innerHTML = `
-    <div class="animate-scale-in">
-      <div class="text-8xl animate-bounce">🎉</div>
-      <div class="text-2xl font-bold text-success mt-4 text-center animate-fade-in">
-        Документ завершён!
-      </div>
-    </div>
-  `;
+  
+  // Create elements safely using DOM methods instead of innerHTML
+  const container = document.createElement('div');
+  container.className = 'animate-scale-in';
+  
+  const emoji = document.createElement('div');
+  emoji.className = 'text-8xl animate-bounce';
+  emoji.textContent = '🎉'; // Safe: auto-escapes
+  
+  const messageEl = document.createElement('div');
+  messageEl.className = 'text-2xl font-bold text-success mt-4 text-center animate-fade-in';
+  messageEl.textContent = 'Документ завершён!'; // Safe: auto-escapes
+  
+  container.appendChild(emoji);
+  container.appendChild(messageEl);
+  overlay.appendChild(container);
 
   document.body.appendChild(overlay);
 
@@ -223,5 +232,3 @@ export function showEncouragement(reason: 'slow' | 'errors' | 'idle'): void {
 
   showVisualFeedback(message, 'text-content-secondary', 2500);
 }
-
-
