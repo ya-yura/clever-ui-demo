@@ -6,7 +6,7 @@
   "description": "PWA-приложение для управления складом Cleverence - Склад-15",
   "scripts": {
     "dev": "vite --host --port 5180 --strictPort --config vite.config.ts",
-    "build": "tsc && npx vite build",
+    "build": "tsc --noEmit --skipLibCheck && npx vite build",
     "build:dev": "vite build --mode development",
     "preview": "npx vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
