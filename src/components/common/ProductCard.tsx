@@ -2,9 +2,8 @@
 // Enhanced product card with swipe actions and visual feedback
 
 import React, { useState, useRef } from 'react';
-import { Card, ProgressBar, Badge } from '@/design/components';
+import { Card, ProgressBar } from '@/design/components';
 import { ChevronRight, Plus, Minus, CheckCircle2 } from 'lucide-react';
-import { useSwipe } from '@/hooks/useSwipe';
 
 export interface ProductCardData {
   id: string;
@@ -40,6 +39,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const [swipeAction, setSwipeAction] = useState<'increment' | 'decrement' | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const longPressTimer = useRef<NodeJS.Timeout>();
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const progress = product.plannedQuantity > 0
     ? Math.round((product.actualQuantity / product.plannedQuantity) * 100)
@@ -48,28 +48,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const isCompleted = product.actualQuantity >= product.plannedQuantity;
   const isOverQuantity = product.actualQuantity > product.plannedQuantity;
 
-  // Swipe handling
-  const { onTouchStart, onTouchMove, onTouchEnd } = useSwipe({
-    onSwipeLeft: () => {
-      setSwipeAction('decrement');
-      setTimeout(() => {
-        onDecrement?.();
-        setSwipeAction(null);
-      }, 200);
-    },
-    onSwipeRight: () => {
-      setSwipeAction('increment');
-      setTimeout(() => {
-        onIncrement?.();
-        setSwipeAction(null);
-      }, 200);
-    },
-    threshold: 50,
-  });
-
-  // Long press handling
+  // Touch handling for swipe
   const handleTouchStart = (e: React.TouchEvent) => {
-    onTouchStart(e);
+    touchStart.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+    
     longPressTimer.current = setTimeout(() => {
       onLongPress?.();
       // Haptic feedback
@@ -79,11 +64,37 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     }, 500);
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    onTouchEnd(e);
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart.current) return;
+    
+    const deltaX = e.touches[0].clientX - touchStart.current.x;
+    
+    if (Math.abs(deltaX) > 50) {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
+      
+      if (deltaX > 0) {
+        setSwipeAction('increment');
+      } else {
+        setSwipeAction('decrement');
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
     }
+    
+    if (swipeAction === 'increment') {
+      onIncrement?.();
+    } else if (swipeAction === 'decrement') {
+      onDecrement?.();
+    }
+    
+    setSwipeAction(null);
+    touchStart.current = null;
   };
 
   const getStatusColor = () => {
@@ -101,7 +112,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           swipeAction === 'increment' ? 'translate-x-2' : ''
         } ${swipeAction === 'decrement' ? '-translate-x-2' : ''}`}
         onTouchStart={handleTouchStart}
-        onTouchMove={onTouchMove}
+        onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={onClick}
       >
@@ -152,7 +163,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         swipeAction === 'increment' ? 'translate-x-4' : ''
       } ${swipeAction === 'decrement' ? '-translate-x-4' : ''}`}
       onTouchStart={handleTouchStart}
-      onTouchMove={onTouchMove}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onClick={onClick}
     >
@@ -224,7 +235,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 value={Math.min(progress, 100)}
                 variant={isOverQuantity ? 'warning' : isCompleted ? 'success' : 'primary'}
                 size="md"
-                showPercentage={false}
               />
             </div>
 
@@ -289,5 +299,3 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     </div>
   );
 };
-
-

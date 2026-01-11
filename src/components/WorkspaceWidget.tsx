@@ -8,7 +8,6 @@ import { UserPreferencesService } from '@/utils/userPreferences';
 import { 
   TrendingUp, 
   Clock, 
-  CheckCircle, 
   FileText, 
   ArrowRight,
   Target
@@ -40,26 +39,29 @@ export const WorkspaceWidget: React.FC = () => {
       // Get recent documents from preferences
       const recentDocs = UserPreferencesService.getRecentDocuments(10);
       
-      // Load document details
+      // Load document details from odataDocuments
       const workDocs: WorkDocument[] = [];
       let totalProgress = 0;
 
       for (const recent of recentDocs.slice(0, 3)) {
         try {
-          const doc = await db.universalDocuments.get(recent.documentId);
-          if (doc && doc.status !== 'completed') {
-            const progress = doc.totalLines > 0 
-              ? Math.round((doc.completedLines / doc.totalLines) * 100)
+          const doc = await db.odataDocuments.get(recent.documentId);
+          if (doc && !doc.finished) {
+            // Calculate progress from lines if available
+            const totalLines = (doc as any).totalLines || 0;
+            const completedLines = (doc as any).completedLines || 0;
+            const progress = totalLines > 0 
+              ? Math.round((completedLines / totalLines) * 100)
               : 0;
 
             workDocs.push({
               id: doc.id,
-              type: doc.type || 'Документ',
-              status: doc.status || 'new',
+              type: doc.documentTypeName || 'Документ',
+              status: doc.inProcess ? 'in_progress' : 'new',
               progress,
               lastAccessedAt: recent.lastAccessedAt,
-              completedLines: doc.completedLines || 0,
-              totalLines: doc.totalLines || 0,
+              completedLines: completedLines,
+              totalLines: totalLines,
             });
 
             totalProgress += progress;
@@ -245,21 +247,3 @@ export const WorkspaceWidget: React.FC = () => {
     </div>
   );
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

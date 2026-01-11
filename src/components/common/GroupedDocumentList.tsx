@@ -66,7 +66,7 @@ export const GroupedDocumentList: React.FC<GroupedDocumentListProps> = ({
               <DocumentCard
                 key={doc.id}
                 document={doc}
-                onClick={onDocumentClick ? () => onDocumentClick(doc) : undefined}
+                onQuickView={onDocumentClick ? () => onDocumentClick(doc) : undefined}
                 onTogglePin={showPinning ? togglePin : undefined}
                 isPinned={isPinned(doc.id)}
               />
@@ -77,5 +77,3 @@ export const GroupedDocumentList: React.FC<GroupedDocumentListProps> = ({
     </div>
   );
 };
-
-
