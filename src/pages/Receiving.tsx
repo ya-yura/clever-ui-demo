@@ -466,7 +466,7 @@ const Receiving: React.FC = () => {
 
         {/* Старые фильтры */}
         <DocumentListFilter
-          onFilterChange={setFilters}
+          onFilterChange={(newFilters) => setFilters(prev => ({ ...prev, ...newFilters }))}
           supplierOptions={supplierOptions}
           showSupplier={true}
         />
