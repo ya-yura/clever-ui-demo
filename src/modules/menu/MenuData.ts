@@ -121,8 +121,8 @@ export const menuItems: MenuItem[] = [
 // App version and metadata
 export const appMetadata = {
   name: 'Склад-15',
-  version: '1.0.1',
-  build: '2025.10.31',
+  version: '2.0.0',
+  build: '2025.01.11',
   vendor: 'Cleverence',
 };
 

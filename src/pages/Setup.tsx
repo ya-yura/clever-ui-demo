@@ -214,7 +214,7 @@ const Setup: React.FC = () => {
         {/* Footer */}
         <div className="text-center text-xs text-content-tertiary">
           <p>Cleverence Mobile SMARTS</p>
-          <p className="mt-1">Версия 1.0.0</p>
+          <p className="mt-1">Версия 2.0.0</p>
         </div>
       </div>
     </div>
