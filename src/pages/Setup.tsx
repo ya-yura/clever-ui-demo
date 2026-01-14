@@ -139,12 +139,14 @@ const Setup: React.FC = () => {
                 required
                 value={serverUrl}
                 onChange={(e) => setServerUrl(e.target.value)}
-                className="w-full px-4 py-3 bg-surface-primary border border-borders-default rounded-lg text-content-primary placeholder-content-tertiary focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
-                placeholder="http://localhost:9000/MobileSMARTS/api/v1"
+                className="w-full px-4 py-3 bg-surface-primary border border-borders-default rounded-lg text-content-primary placeholder-content-tertiary focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary font-mono text-sm"
+                placeholder="http://host:port/path/api/v1"
                 disabled={isValidating}
               />
               <p className="mt-2 text-xs text-content-secondary">
-                Пример: http://localhost:9000/MobileSMARTS/api/v1
+                Примеры:<br/>
+                • http://localhost:9000/MobileSMARTS/api/v1<br/>
+                • http://192.168.1.100:10501/guid/api/v1
               </p>
             </div>
 

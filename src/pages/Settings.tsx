@@ -16,10 +16,10 @@ import { feedback } from '@/utils/feedback';
 
 interface AppSettings {
   // US X.1: Connection
-  server: string;
-  port: number;
+  server: string;  // Full server URL including path (e.g., http://host:port/guid/api/v1)
+  port: number;    // Deprecated - kept for backwards compatibility
   timeout: number;
-  useSSL: boolean;
+  useSSL: boolean; // Deprecated - kept for backwards compatibility
   
   // US X.2: User
   username: string;
@@ -39,7 +39,7 @@ interface AppSettings {
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
-  server: 'http://localhost:9000',
+  server: 'http://localhost:9000/MobileSMARTS/api/v1',
   port: 9000,
   timeout: 30,
   useSSL: false,
@@ -77,23 +77,12 @@ const Settings: React.FC = () => {
         // If no settings saved, try to restore server URL from configService
         const savedServerUrl = configService.getServerUrl();
         if (savedServerUrl) {
-          try {
-            // Parse the saved API URL to extract server and port
-            // Expected format: http://host:port/MobileSMARTS/api/v1
-            const url = new URL(savedServerUrl);
-            const baseServer = `${url.protocol}//${url.hostname}`;
-            const port = url.port ? parseInt(url.port) : (url.protocol === 'https:' ? 443 : 80);
-            
-            setSettings(prev => ({
-              ...prev,
-              server: baseServer,
-              port: port,
-              useSSL: url.protocol === 'https:',
-            }));
-            console.log('📦 [SETTINGS] Restored server settings from config:', baseServer, port);
-          } catch (e) {
-            console.warn('⚠️ [SETTINGS] Could not parse saved server URL:', savedServerUrl);
-          }
+          // Use the full URL directly
+          setSettings(prev => ({
+            ...prev,
+            server: savedServerUrl,
+          }));
+          console.log('📦 [SETTINGS] Restored server URL from config:', savedServerUrl);
         }
       }
     } catch (error) {
@@ -108,30 +97,32 @@ const Settings: React.FC = () => {
   };
 
   /**
-   * Build full server URL from settings
+   * Build full server API URL from settings
+   * User should enter full URL like: http://host:port/path/api/v1
    */
   const buildServerUrl = (): string => {
-    // If server already starts with http(s)://, use it as is
-    let baseUrl = settings.server.trim();
-    if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
-      baseUrl = settings.useSSL ? `https://${baseUrl}` : `http://${baseUrl}`;
+    let serverUrl = settings.server.trim();
+    
+    // If server doesn't start with http(s)://, add protocol
+    if (!serverUrl.startsWith('http://') && !serverUrl.startsWith('https://')) {
+      serverUrl = `http://${serverUrl}`;
     }
     
     // Remove trailing slashes
-    baseUrl = baseUrl.replace(/\/+$/, '');
+    serverUrl = serverUrl.replace(/\/+$/, '');
     
-    // Extract host and check if port is already included
-    try {
-      const url = new URL(baseUrl);
-      // If port is not in the URL and settings.port differs from default, add it
-      if (!url.port && settings.port !== (url.protocol === 'https:' ? 443 : 80)) {
-        return `${url.protocol}//${url.hostname}:${settings.port}${url.pathname}`;
+    // If URL doesn't end with /api/v1, add it
+    if (!serverUrl.includes('/api/v1')) {
+      // Check if it looks like a MobileSMARTS path
+      if (serverUrl.includes('/MobileSMARTS')) {
+        serverUrl = serverUrl + '/api/v1';
+      } else {
+        // For other servers (like with GUID paths), just add /api/v1
+        serverUrl = serverUrl + '/api/v1';
       }
-      return baseUrl;
-    } catch {
-      // If URL parsing fails, construct manually
-      return baseUrl.includes(':') ? baseUrl : `${baseUrl}:${settings.port}`;
     }
+    
+    return serverUrl;
   };
 
   // US X.1.3: Check connection
@@ -141,8 +132,7 @@ const Settings: React.FC = () => {
     setConnectionError(null);
 
     try {
-      const serverUrl = buildServerUrl();
-      const apiUrl = `${serverUrl}/MobileSMARTS/api/v1`;
+      const apiUrl = buildServerUrl();
       
       console.log('🔍 [SETTINGS] Testing connection to:', apiUrl);
 
@@ -177,7 +167,9 @@ const Settings: React.FC = () => {
       if (error.name === 'AbortError' || error.name === 'TimeoutError') {
         errorMessage = 'Превышено время ожидания ответа от сервера';
       } else if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
-        errorMessage = 'Сервер недоступен. Проверьте адрес и порт.';
+        errorMessage = 'Сервер недоступен. Проверьте адрес.';
+      } else if (error.message?.includes('Mixed Content')) {
+        errorMessage = 'Браузер блокирует HTTP-запросы с HTTPS-страницы. Откройте приложение по HTTP.';
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -197,13 +189,15 @@ const Settings: React.FC = () => {
       localStorage.setItem('app_settings', JSON.stringify(settings));
       
       // Build and save server URL to configService for API to use
-      const serverUrl = buildServerUrl();
-      const fullApiUrl = `${serverUrl}/MobileSMARTS/api/v1`;
+      const apiUrl = buildServerUrl();
       
-      console.log('💾 [SETTINGS] Saving server URL:', fullApiUrl);
+      console.log('💾 [SETTINGS] Saving server URL:', apiUrl);
       
       // Save to configService (used by api.ts and other services)
-      configService.setServerUrl(fullApiUrl);
+      configService.setServerUrl(apiUrl);
+      
+      // Clear demo mode flag
+      localStorage.removeItem('demo_mode');
       
       // Clear server health cache so next API call re-checks availability
       serverHealth.clearCache();
@@ -246,27 +240,21 @@ const Settings: React.FC = () => {
         </div>
 
         <div className="space-y-4">
-          {/* US X.1.1: Server address */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <label className="text-content-primary font-medium">Адрес сервера</label>
+          {/* US X.1.1: Server URL */}
+          <div className="flex flex-col gap-2">
+            <label className="text-content-primary font-medium">URL сервера API</label>
             <input
               type="text"
               value={settings.server}
               onChange={(e) => updateSetting('server', e.target.value)}
-              placeholder="http://localhost:9000"
-              className="bg-surface-primary text-content-primary px-4 py-2 rounded-lg w-full sm:w-80 border border-borders-default focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              placeholder="http://host:port/path"
+              className="bg-surface-primary text-content-primary px-4 py-2 rounded-lg w-full border border-borders-default focus:outline-none focus:ring-2 focus:ring-brand-primary text-sm font-mono"
             />
-          </div>
-
-          {/* US X.1.1: Port */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <label className="text-content-primary font-medium">Порт</label>
-            <input
-              type="number"
-              value={settings.port}
-              onChange={(e) => updateSetting('port', parseInt(e.target.value) || 9000)}
-              className="bg-surface-primary text-content-primary px-4 py-2 rounded-lg w-full sm:w-32 border border-borders-default focus:outline-none focus:ring-2 focus:ring-brand-primary"
-            />
+            <p className="text-xs text-content-tertiary">
+              Введите полный URL до API. Примеры:<br/>
+              • http://localhost:9000/MobileSMARTS<br/>
+              • http://192.168.1.100:10501/b50a6b82-08bf-4720-9fca-72dfc5141d52
+            </p>
           </div>
 
           {/* Timeout */}
@@ -278,23 +266,6 @@ const Settings: React.FC = () => {
               onChange={(e) => updateSetting('timeout', parseInt(e.target.value) || 30)}
               className="bg-surface-primary text-content-primary px-4 py-2 rounded-lg w-full sm:w-32 border border-borders-default focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
-          </div>
-
-          {/* US X.1.2: SSL */}
-          <div className="flex items-center justify-between gap-4">
-            <label className="text-content-primary font-medium">Использовать SSL</label>
-            <button
-              onClick={() => updateSetting('useSSL', !settings.useSSL)}
-              className={`relative w-14 h-8 rounded-full transition-colors border border-borders-default ${
-                settings.useSSL ? 'bg-brand-primary' : 'bg-surface-tertiary'
-              }`}
-            >
-              <span
-                className={`absolute top-1 left-1 w-6 h-6 bg-surface-primary rounded-full transition-transform shadow-md ${
-                  settings.useSSL ? 'translate-x-6' : ''
-                }`}
-              />
-            </button>
           </div>
 
           {/* US X.1.3: Check connection */}

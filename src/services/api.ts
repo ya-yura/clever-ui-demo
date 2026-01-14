@@ -133,6 +133,7 @@ class ApiService {
 
   /**
    * Determine base URL for local dev server (Vite proxy)
+   * Only used when NO server is configured - falls back to default MobileSMARTS path
    */
   private getDevProxyBaseUrl(): string | null {
     if (typeof window === 'undefined') {
@@ -147,6 +148,7 @@ class ApiService {
 
     const devPorts = new Set(['3000', '3001', '3002', '3003', '5173', '5174', '5175', '5176', '5180', '8080']);
     if (devPorts.has(window.location.port || '')) {
+      // Default proxy path - only used when no config is set
       return '/MobileSMARTS/api/v1';
     }
 
@@ -154,9 +156,9 @@ class ApiService {
   }
 
   /**
-   * Determine if we should route requests through Vite proxy even when config has absolute localhost URL.
-   * This helps avoid CORS issues when the API server runs on a different port (e.g. 9000) while the dev server
-   * runs on 5173/5175. In this case, we should hit /MobileSMARTS/... so that the proxy forwards the call.
+   * Determine if we should route requests through Vite proxy.
+   * Only use proxy for localhost targets with /MobileSMARTS path.
+   * For other servers (like on different IPs or with custom paths), connect directly.
    */
   private shouldUseDevProxy(configuredUrl: string): boolean {
     if (typeof window === 'undefined') {
@@ -173,11 +175,18 @@ class ApiService {
       const currentPort = window.location.port || '';
       const targetPort = target.port || (target.protocol === 'https:' ? '443' : '80');
 
+      // Only use proxy for localhost -> localhost connections
       if (!isLocalCurrent || !isLocalTarget) {
         return false;
       }
 
       if (!devPorts.has(currentPort)) {
+        return false;
+      }
+
+      // Only use proxy if the path is /MobileSMARTS (default setup)
+      // For custom paths (like GUID-based), connect directly
+      if (!target.pathname.includes('/MobileSMARTS')) {
         return false;
       }
 
