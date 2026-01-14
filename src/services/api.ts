@@ -145,7 +145,7 @@ class ApiService {
       return null;
     }
 
-    const devPorts = new Set(['3000', '3001', '3002', '3003', '5173', '5174', '5175', '5176', '5180']);
+    const devPorts = new Set(['3000', '3001', '3002', '3003', '5173', '5174', '5175', '5176', '5180', '8080']);
     if (devPorts.has(window.location.port || '')) {
       return '/MobileSMARTS/api/v1';
     }
@@ -167,7 +167,7 @@ class ApiService {
       const target = new URL(configuredUrl);
       const currentHost = window.location.hostname;
       const targetHost = target.hostname;
-      const devPorts = new Set(['3000', '3001', '3002', '3003', '5173', '5174', '5175', '5176', '5180']);
+      const devPorts = new Set(['3000', '3001', '3002', '3003', '5173', '5174', '5175', '5176', '5180', '8080']);
       const isLocalCurrent = currentHost === 'localhost' || currentHost === '127.0.0.1';
       const isLocalTarget = targetHost === 'localhost' || targetHost === '127.0.0.1';
       const currentPort = window.location.port || '';
