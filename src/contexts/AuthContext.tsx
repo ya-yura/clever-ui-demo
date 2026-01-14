@@ -11,6 +11,7 @@ import { useAnalytics } from '@/lib/analytics';
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>;
   loginDemo: () => void;
+  loginAnonymous: () => void;
   logout: () => void;
   updateUser: (user: User) => void;
   isLoading: boolean;
@@ -230,7 +231,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
-  // Demo mode login
+  // Demo mode login (uses local demo data, no server connection)
   const loginDemo = () => {
     const demoUser: User = {
       id: 'demo-user',
@@ -260,12 +261,40 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     console.log('✅ Demo mode activated - using demo data');
   };
 
+  // Anonymous login (works with real server, no authentication required)
+  const loginAnonymous = () => {
+    const anonymousUser: User = {
+      id: 'anonymous',
+      name: 'Оператор',
+      username: 'anonymous',
+      role: 'worker',
+    };
+
+    const newAuthState: AuthState = {
+      isAuthenticated: true,
+      user: anonymousUser,
+      token: 'anonymous-token',
+    };
+
+    setAuthState(newAuthState);
+    saveAuthState(newAuthState);
+    
+    analytics.setUserId(anonymousUser.id);
+
+    // NOT demo mode - keep server connection
+    setIsDemo(false);
+    localStorage.removeItem('demo_mode');
+    
+    console.log('✅ Anonymous login - using real server data without authentication');
+  };
+
   return (
     <AuthContext.Provider
       value={{
         ...authState,
         login,
         loginDemo,
+        loginAnonymous,
         logout,
         updateUser,
         isLoading,

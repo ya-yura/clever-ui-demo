@@ -11,7 +11,7 @@ import { Logo } from '@/components/Logo';
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login, loginDemo, checkNoAuth } = useAuth();
+  const { login, loginDemo, loginAnonymous, checkNoAuth } = useAuth();
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -47,6 +47,17 @@ const Login: React.FC = () => {
         // Check if authentication is required
         const noAuthRequired = await checkNoAuth();
         setRequiresAuth(!noAuthRequired);
+        
+        // Auto-login when no authentication is required (server allows anonymous access)
+        if (noAuthRequired) {
+          console.log('✅ No authentication required - auto-login as anonymous user');
+          // Create anonymous session with real server connection
+          loginAnonymous();
+          setTimeout(() => {
+            navigate('/');
+          }, 100);
+          return;
+        }
       } catch (err) {
         console.error('Auth check error:', err);
       } finally {
@@ -55,7 +66,7 @@ const Login: React.FC = () => {
     };
 
     checkAuthRequirements();
-  }, [searchParams, checkNoAuth, login, navigate]);
+  }, [searchParams, checkNoAuth, loginAnonymous, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
