@@ -47,6 +47,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     // Proxy to bypass CORS in development
     proxy: {
+      // Default MobileSMARTS path (localhost:9000)
       '/MobileSMARTS': {
         target: 'http://localhost:9000',
         changeOrigin: true,
@@ -60,6 +61,24 @@ export default defineConfig(({ mode }) => ({
           });
           proxy.on('proxyRes', (proxyRes, req, _res) => {
             console.log('✅ [PROXY]', proxyRes.statusCode, req.url);
+          });
+        },
+      },
+      // Proxy for external servers (GUID-based paths like /b50a6b82-...)
+      // This catches requests starting with a GUID pattern
+      '^/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}': {
+        target: 'http://192.168.31.118:10501',
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('❌ [PROXY-EXT] error', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            console.log('🔄 [PROXY-EXT]', req.method, req.url, '→', proxyReq.path);
+          });
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
+            console.log('✅ [PROXY-EXT]', proxyRes.statusCode, req.url);
           });
         },
       },

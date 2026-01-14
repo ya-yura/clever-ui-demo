@@ -102,9 +102,11 @@ class ApiService {
         if (configuredUrl) {
           const sanitized = configuredUrl.replace(/\/$/, '');
 
-          if (this.shouldUseDevProxy(sanitized)) {
-            this.client.defaults.baseURL = '/MobileSMARTS/api/v1';
-            logger.debug('✅ [API] baseURL via Vite proxy (local dev detected):', this.client.defaults.baseURL);
+          // Check if we should use Vite proxy (for local dev to avoid CORS)
+          const proxyPath = this.getProxyPath(sanitized);
+          if (proxyPath) {
+            this.client.defaults.baseURL = proxyPath;
+            logger.debug('✅ [API] baseURL via Vite proxy:', this.client.defaults.baseURL);
             return;
           }
 
@@ -132,6 +134,45 @@ class ApiService {
   }
 
   /**
+   * Get proxy path for Vite dev server
+   * When running on localhost, extract just the path from configured URL
+   * so that Vite proxy can forward requests to the correct server
+   */
+  private getProxyPath(configuredUrl: string): string | null {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    // Only use proxy when running on localhost dev server
+    const currentHost = window.location.hostname;
+    const isLocalhost = currentHost === 'localhost' || currentHost === '127.0.0.1';
+    if (!isLocalhost) {
+      return null;
+    }
+
+    const devPorts = new Set(['3000', '3001', '3002', '3003', '5173', '5174', '5175', '5176', '5180', '8080']);
+    if (!devPorts.has(window.location.port || '')) {
+      return null;
+    }
+
+    try {
+      const target = new URL(configuredUrl);
+      
+      // Extract path from the configured URL
+      // e.g., http://192.168.31.118:10501/b50a6b82-.../api/v1 -> /b50a6b82-.../api/v1
+      const path = target.pathname;
+      if (path && path !== '/') {
+        logger.debug('🔄 [API] Using proxy path:', path, 'for target:', target.host);
+        return path;
+      }
+    } catch (error) {
+      logger.warn('⚠️ [API] Failed to parse URL for proxy:', error);
+    }
+
+    return null;
+  }
+
+  /**
    * Determine base URL for local dev server (Vite proxy)
    * Only used when NO server is configured - falls back to default MobileSMARTS path
    */
@@ -155,48 +196,6 @@ class ApiService {
     return null;
   }
 
-  /**
-   * Determine if we should route requests through Vite proxy.
-   * Only use proxy for localhost targets with /MobileSMARTS path.
-   * For other servers (like on different IPs or with custom paths), connect directly.
-   */
-  private shouldUseDevProxy(configuredUrl: string): boolean {
-    if (typeof window === 'undefined') {
-      return false;
-    }
-
-    try {
-      const target = new URL(configuredUrl);
-      const currentHost = window.location.hostname;
-      const targetHost = target.hostname;
-      const devPorts = new Set(['3000', '3001', '3002', '3003', '5173', '5174', '5175', '5176', '5180', '8080']);
-      const isLocalCurrent = currentHost === 'localhost' || currentHost === '127.0.0.1';
-      const isLocalTarget = targetHost === 'localhost' || targetHost === '127.0.0.1';
-      const currentPort = window.location.port || '';
-      const targetPort = target.port || (target.protocol === 'https:' ? '443' : '80');
-
-      // Only use proxy for localhost -> localhost connections
-      if (!isLocalCurrent || !isLocalTarget) {
-        return false;
-      }
-
-      if (!devPorts.has(currentPort)) {
-        return false;
-      }
-
-      // Only use proxy if the path is /MobileSMARTS (default setup)
-      // For custom paths (like GUID-based), connect directly
-      if (!target.pathname.includes('/MobileSMARTS')) {
-        return false;
-      }
-
-      // If ports differ (e.g., frontend 5173, backend 9000) — use proxy.
-      return currentPort !== targetPort;
-    } catch (error) {
-      logger.warn('⚠️ [API] Failed to parse configured URL, skipping proxy detection:', error);
-      return false;
-    }
-  }
 
   /**
    * Set authentication token
