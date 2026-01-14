@@ -16,6 +16,7 @@ const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [mixedContentWarning, setMixedContentWarning] = useState<string | null>(null);
   const [isLogging, setIsLogging] = useState(false);
   const [isDemoLogging, setIsDemoLogging] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -45,11 +46,17 @@ const Login: React.FC = () => {
         }
 
         // Check if authentication is required
-        const noAuthRequired = await checkNoAuth();
-        setRequiresAuth(!noAuthRequired);
+        const authCheck = await checkNoAuth();
+        setRequiresAuth(!authCheck.noAuthRequired);
+        
+        // Show Mixed Content warning if detected
+        if (authCheck.mixedContentError) {
+          setMixedContentWarning(authCheck.mixedContentError);
+          console.warn('⚠️ Mixed Content detected:', authCheck.mixedContentError);
+        }
         
         // Auto-login when no authentication is required (server allows anonymous access)
-        if (noAuthRequired) {
+        if (authCheck.noAuthRequired) {
           console.log('✅ No authentication required - auto-login as anonymous user');
           // Create anonymous session with real server connection
           loginAnonymous();
@@ -262,6 +269,21 @@ const Login: React.FC = () => {
         {error && (
           <div className="bg-error/10 border border-error rounded-lg p-2.5 mt-3">
             <p className="text-xs text-error text-center">⚠️ {error}</p>
+          </div>
+        )}
+
+        {/* Mixed Content Warning */}
+        {mixedContentWarning && (
+          <div className="bg-warning/10 border border-warning rounded-lg p-3 mt-3">
+            <p className="text-xs text-warning font-medium mb-1">⚠️ Проблема безопасности</p>
+            <p className="text-[10px] text-content-secondary leading-relaxed">
+              Браузер блокирует HTTP-запросы с HTTPS-страницы.
+              Для работы с сервером <strong>{serverUrl?.split('/')[2]}</strong> необходимо:
+            </p>
+            <ul className="text-[10px] text-content-secondary mt-1.5 space-y-0.5 list-disc list-inside">
+              <li>Настроить HTTPS на сервере, или</li>
+              <li>Открыть приложение по HTTP</li>
+            </ul>
           </div>
         )}
 

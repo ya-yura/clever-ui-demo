@@ -15,7 +15,7 @@ interface AuthContextType extends AuthState {
   logout: () => void;
   updateUser: (user: User) => void;
   isLoading: boolean;
-  checkNoAuth: () => Promise<boolean>;
+  checkNoAuth: () => Promise<{ noAuthRequired: boolean; mixedContentError?: string }>;
   isDemo: boolean;
 }
 
@@ -89,9 +89,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [logout]);
 
   // Check if no authentication is required
-  const checkNoAuth = async (): Promise<boolean> => {
+  const checkNoAuth = async (): Promise<{ noAuthRequired: boolean; mixedContentError?: string }> => {
     const result = await authService.checkNoLogin();
-    return !result.requiresAuth;
+    return {
+      noAuthRequired: !result.requiresAuth,
+      mixedContentError: result.error,
+    };
   };
 
   const loadAuthState = () => {

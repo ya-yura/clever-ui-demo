@@ -29,35 +29,67 @@ class AuthService {
   private readonly STORAGE_KEY_REFRESH = 'refresh_token';
 
   /**
-   * Check if system requires authentication (DEV MODE - always requires auth but accepts any)
+   * Check if system requires authentication
+   * Returns requiresAuth: false when:
+   * - No server configured
+   * - Server returns 404 on openid-configuration (no OAuth)
+   * - Network error (Mixed Content, CORS, etc.) - assume no auth to allow connection
    */
-  async checkNoLogin(): Promise<{ requiresAuth: boolean }> {
+  async checkNoLogin(): Promise<{ requiresAuth: boolean; error?: string }> {
     const serverUrl = configService.getServerUrl();
     if (!serverUrl) {
       return { requiresAuth: false };
     }
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
       const response = await fetch(`${serverUrl}/.well-known/openid-configuration`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
         },
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (response.status === 404) {
+        logger.debug('✅ Server does not require authentication (404 on openid-config)');
         return { requiresAuth: false };
       }
 
       if (response.ok) {
+        logger.debug('🔐 Server requires OAuth authentication');
         return { requiresAuth: true };
       }
 
-      // Non-404 errors treated as auth required
-      return { requiresAuth: true };
-    } catch (error) {
+      // Non-404 errors - try without auth
+      logger.warn('⚠️ Unexpected auth endpoint response:', response.status);
+      return { requiresAuth: false };
+    } catch (error: any) {
+      // Network errors (Mixed Content, CORS, timeout, etc.)
+      // In these cases, assume no auth required and try to work with API directly
+      const errorMessage = error.message || String(error);
+      
+      // Check for Mixed Content or network errors
+      if (errorMessage.includes('Mixed Content') || 
+          errorMessage.includes('Failed to fetch') ||
+          errorMessage.includes('NetworkError') ||
+          errorMessage.includes('ERR_BLOCKED') ||
+          error.name === 'AbortError' ||
+          error.name === 'TypeError') {
+        logger.warn('⚠️ Cannot reach auth endpoint (likely Mixed Content or network issue)');
+        logger.debug('   Assuming no authentication required - will try API directly');
+        return { 
+          requiresAuth: false, 
+          error: 'Mixed Content: HTTPS страница не может обращаться к HTTP серверу напрямую'
+        };
+      }
+      
       logger.warn('⚠️ Failed to determine authentication requirement:', error);
-      return { requiresAuth: true };
+      return { requiresAuth: false };
     }
   }
 
