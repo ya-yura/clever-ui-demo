@@ -1,14 +1,14 @@
 /**
  * OData API Integration Service
  * Интеграция с реальным API Cleverence MobileSMARTS
- * Base URL: http://localhost:9000/MobileSMARTS/api/v1/
+ * 
+ * Note: api.ts baseURL already includes /MobileSMARTS/api/v1
+ * So all calls here should use relative paths without that prefix
  */
 
 import { api } from './api';
 import { demoDataService } from './demoDataService';
 import { serverHealth } from './serverHealth';
-
-const BASE_URL = '/MobileSMARTS/api/v1';
 
 export interface ODataDocType {
   uni: string;
@@ -77,17 +77,18 @@ class ODataAPIService {
 
   /**
    * Получить список типов документов
-   * GET /api/v1/DocTypes
+   * GET /DocTypes
    */
   async getDocTypes(): Promise<ODataDocType[]> {
     // Check if we should use demo mode
     if (await this.shouldUseDemo()) {
       console.log('🎭 [ODATA] Using demo data for DocTypes');
-      return demoDataService.getDocTypes();
+      const demoResult = demoDataService.getDocTypes();
+      return demoResult.value || [];
     }
 
     try {
-      const response = await api.get(`${BASE_URL}/DocTypes`);
+      const response = await api.get('/DocTypes');
       if (response.success && response.data?.value) {
         return response.data.value;
       }
@@ -95,14 +96,15 @@ class ODataAPIService {
     } catch (error: any) {
       console.error('❌ [ODATA] Failed to fetch DocTypes from API:', error.message);
       console.log('🎭 [ODATA] Falling back to demo data');
-      return demoDataService.getDocTypes();
+      const demoResult = demoDataService.getDocTypes();
+      return demoResult.value || [];
     }
   }
 
   /**
    * Получить список документов по типу
-   * GET /api/v1/Docs/{DocTypeName}
-   * Например: /api/v1/Docs/PrihodNaSklad
+   * GET /Docs/{DocTypeName}
+   * Например: /Docs/PrihodNaSklad
    */
   async getDocumentsByType(docTypeName: string): Promise<ODataDocument[]> {
     // Check if we should use demo mode
@@ -113,11 +115,9 @@ class ODataAPIService {
     }
 
     try {
-      const response = await api.get(`${BASE_URL}/Docs/${docTypeName}`, {
-        params: {
-          $expand: 'declaredItems,currentItems',
-          $orderby: 'createDate desc',
-        },
+      const response = await api.get(`/Docs/${docTypeName}`, {
+        $expand: 'declaredItems,currentItems',
+        $orderby: 'createDate desc',
       });
       
       if (response.success && response.data?.value) {
@@ -134,7 +134,7 @@ class ODataAPIService {
 
   /**
    * Получить конкретный документ с расширенными данными
-   * GET /api/v1/Docs/{DocTypeName}('{id}')
+   * GET /Docs/{DocTypeName}('{id}')
    */
   async getDocument(docTypeName: string, id: string): Promise<ODataDocument & { declaredItems?: ODataDocumentItem[]; currentItems?: ODataDocumentItem[] }> {
     // Check if we should use demo mode
@@ -148,10 +148,8 @@ class ODataAPIService {
     }
 
     try {
-      const response = await api.get(`${BASE_URL}/Docs/${docTypeName}('${id}')`, {
-        params: {
-          $expand: 'declaredItems,currentItems',
-        },
+      const response = await api.get(`/Docs/${docTypeName}('${id}')`, {
+        $expand: 'declaredItems,currentItems',
       });
       
       if (response.success && response.data) {
@@ -174,7 +172,7 @@ class ODataAPIService {
 
   /**
    * Обновить документ
-   * PATCH /api/v1/Docs/{DocTypeName}('{id}')
+   * PATCH /Docs/{DocTypeName}('{id}')
    */
   async updateDocument(docTypeName: string, id: string, data: Partial<ODataDocument>): Promise<void> {
     // In demo mode, updates are saved locally only
@@ -184,7 +182,7 @@ class ODataAPIService {
     }
 
     try {
-      const response = await api.patch(`${BASE_URL}/Docs/${docTypeName}('${id}')`, data);
+      const response = await api.patch(`/Docs/${docTypeName}('${id}')`, data);
       if (!response.success) {
         throw new Error(response.error || 'Update failed');
       }
@@ -196,7 +194,7 @@ class ODataAPIService {
 
   /**
    * Обновить строку документа
-   * PATCH /api/v1/DocumentItem('{uid}')
+   * PATCH /DocumentItem('{uid}')
    */
   async updateDocumentItem(uid: string, data: Partial<ODataDocumentItem>): Promise<void> {
     // In demo mode, updates are saved locally only
@@ -206,7 +204,7 @@ class ODataAPIService {
     }
 
     try {
-      const response = await api.patch(`${BASE_URL}/DocumentItem('${uid}')`, data);
+      const response = await api.patch(`/DocumentItem('${uid}')`, data);
       if (!response.success) {
         throw new Error(response.error || 'Update failed');
       }
@@ -218,7 +216,7 @@ class ODataAPIService {
 
   /**
    * Завершить документ (EndUpdate action)
-   * POST /api/v1/Docs/{DocTypeName}('{id}')/Default.EndUpdate
+   * POST /Docs/{DocTypeName}('{id}')/Default.EndUpdate
    */
   async finishDocument(docTypeName: string, id: string): Promise<void> {
     // In demo mode, finish is simulated locally
@@ -228,7 +226,7 @@ class ODataAPIService {
     }
 
     try {
-      const response = await api.post(`${BASE_URL}/Docs/${docTypeName}('${id}')/Default.EndUpdate`);
+      const response = await api.post(`/Docs/${docTypeName}('${id}')/Default.EndUpdate`);
       if (!response.success) {
         throw new Error(response.error || 'Finish failed');
       }
@@ -240,7 +238,7 @@ class ODataAPIService {
 
   /**
    * Получить список товаров
-   * GET /api/v1/Products
+   * GET /Products
    */
   async getProducts(filter?: string): Promise<ODataProduct[]> {
     // Check if we should use demo mode
@@ -261,11 +259,9 @@ class ODataAPIService {
     }
 
     try {
-      const response = await api.get(`${BASE_URL}/Products`, {
-        params: {
-          $filter: filter,
-          $top: 100,
-        },
+      const response = await api.get('/Products', {
+        $filter: filter,
+        $top: 100,
       });
       
       if (response.success && response.data?.value) {
@@ -282,7 +278,7 @@ class ODataAPIService {
 
   /**
    * Поиск товара по штрихкоду
-   * GET /api/v1/Products?$filter=barcode eq '{barcode}'
+   * GET /Products?$filter=barcode eq '{barcode}'
    */
   async getProductByBarcode(barcode: string): Promise<ODataProduct | null> {
     // Check if we should use demo mode
@@ -295,11 +291,9 @@ class ODataAPIService {
     }
 
     try {
-      const response = await api.get(`${BASE_URL}/Products`, {
-        params: {
-          $filter: `barcode eq '${barcode}'`,
-          $top: 1,
-        },
+      const response = await api.get('/Products', {
+        $filter: `barcode eq '${barcode}'`,
+        $top: 1,
       });
       
       if (response.success && response.data?.value) {
@@ -319,7 +313,7 @@ class ODataAPIService {
 
   /**
    * Получить список ячеек
-   * GET /api/v1/Cells
+   * GET /Cells
    */
   async getCells(warehouseId?: string): Promise<ODataCell[]> {
     // Check if we should use demo mode
@@ -335,10 +329,8 @@ class ODataAPIService {
     }
 
     try {
-      const response = await api.get(`${BASE_URL}/Cells`, {
-        params: {
-          $filter: warehouseId ? `warehouseId eq '${warehouseId}'` : undefined,
-        },
+      const response = await api.get('/Cells', {
+        $filter: warehouseId ? `warehouseId eq '${warehouseId}'` : undefined,
       });
       
       if (response.success && response.data?.value) {

@@ -5,6 +5,8 @@ import React, { useState, useEffect } from 'react';
 import { Wifi, User, Sliders, Repeat, Save, Check, X, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '@/design/components';
 import { api } from '@/services/api';
+import { configService } from '@/services/configService';
+import { serverHealth } from '@/services/serverHealth';
 import { feedback } from '@/utils/feedback';
 
 /**
@@ -71,6 +73,28 @@ const Settings: React.FC = () => {
       if (stored) {
         const parsed = JSON.parse(stored);
         setSettings({ ...DEFAULT_SETTINGS, ...parsed });
+      } else {
+        // If no settings saved, try to restore server URL from configService
+        const savedServerUrl = configService.getServerUrl();
+        if (savedServerUrl) {
+          try {
+            // Parse the saved API URL to extract server and port
+            // Expected format: http://host:port/MobileSMARTS/api/v1
+            const url = new URL(savedServerUrl);
+            const baseServer = `${url.protocol}//${url.hostname}`;
+            const port = url.port ? parseInt(url.port) : (url.protocol === 'https:' ? 443 : 80);
+            
+            setSettings(prev => ({
+              ...prev,
+              server: baseServer,
+              port: port,
+              useSSL: url.protocol === 'https:',
+            }));
+            console.log('📦 [SETTINGS] Restored server settings from config:', baseServer, port);
+          } catch (e) {
+            console.warn('⚠️ [SETTINGS] Could not parse saved server URL:', savedServerUrl);
+          }
+        }
       }
     } catch (error) {
       console.error('Failed to load settings:', error);
@@ -83,6 +107,33 @@ const Settings: React.FC = () => {
     setConnectionStatus('idle');
   };
 
+  /**
+   * Build full server URL from settings
+   */
+  const buildServerUrl = (): string => {
+    // If server already starts with http(s)://, use it as is
+    let baseUrl = settings.server.trim();
+    if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+      baseUrl = settings.useSSL ? `https://${baseUrl}` : `http://${baseUrl}`;
+    }
+    
+    // Remove trailing slashes
+    baseUrl = baseUrl.replace(/\/+$/, '');
+    
+    // Extract host and check if port is already included
+    try {
+      const url = new URL(baseUrl);
+      // If port is not in the URL and settings.port differs from default, add it
+      if (!url.port && settings.port !== (url.protocol === 'https:' ? 443 : 80)) {
+        return `${url.protocol}//${url.hostname}:${settings.port}${url.pathname}`;
+      }
+      return baseUrl;
+    } catch {
+      // If URL parsing fails, construct manually
+      return baseUrl.includes(':') ? baseUrl : `${baseUrl}:${settings.port}`;
+    }
+  };
+
   // US X.1.3: Check connection
   const handleCheckConnection = async () => {
     setCheckingConnection(true);
@@ -90,23 +141,50 @@ const Settings: React.FC = () => {
     setConnectionError(null);
 
     try {
-      // Test connection with configured server
-      const testUrl = settings.useSSL
-        ? `https://${settings.server}:${settings.port}`
-        : `http://${settings.server.replace('http://', '').replace('https://', '')}:${settings.port}`;
+      const serverUrl = buildServerUrl();
+      const apiUrl = `${serverUrl}/MobileSMARTS/api/v1`;
+      
+      console.log('🔍 [SETTINGS] Testing connection to:', apiUrl);
 
-      // Simple ping test (adjust based on your API)
-      await fetch(testUrl + '/MobileSMARTS/api/v1/$metadata', {
-        method: 'HEAD',
+      // Test connection by fetching DocTypes (lightweight endpoint)
+      const response = await fetch(`${apiUrl}/DocTypes?$top=1`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
         signal: AbortSignal.timeout(settings.timeout * 1000),
       });
 
-      setConnectionStatus('success');
-      feedback.success('Соединение установлено');
+      if (!response.ok) {
+        throw new Error(`Сервер вернул ошибку: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Check if response has valid OData structure
+      if (data && (data.value || data['@odata.context'])) {
+        setConnectionStatus('success');
+        feedback.success('Соединение установлено');
+        console.log('✅ [SETTINGS] Connection successful, received', data.value?.length || 0, 'doc types');
+      } else {
+        throw new Error('Неверный формат ответа от сервера');
+      }
     } catch (error: any) {
       setConnectionStatus('error');
-      setConnectionError(error.message || 'Не удалось подключиться к серверу');
+      
+      // Provide user-friendly error messages
+      let errorMessage = 'Не удалось подключиться к серверу';
+      if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+        errorMessage = 'Превышено время ожидания ответа от сервера';
+      } else if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+        errorMessage = 'Сервер недоступен. Проверьте адрес и порт.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setConnectionError(errorMessage);
       feedback.error('Ошибка подключения');
+      console.error('❌ [SETTINGS] Connection failed:', error);
     } finally {
       setCheckingConnection(false);
     }
@@ -115,7 +193,24 @@ const Settings: React.FC = () => {
   // US X: Save settings
   const handleSave = () => {
     try {
+      // Save general settings to localStorage
       localStorage.setItem('app_settings', JSON.stringify(settings));
+      
+      // Build and save server URL to configService for API to use
+      const serverUrl = buildServerUrl();
+      const fullApiUrl = `${serverUrl}/MobileSMARTS/api/v1`;
+      
+      console.log('💾 [SETTINGS] Saving server URL:', fullApiUrl);
+      
+      // Save to configService (used by api.ts and other services)
+      configService.setServerUrl(fullApiUrl);
+      
+      // Clear server health cache so next API call re-checks availability
+      serverHealth.clearCache();
+      
+      // Update API baseURL immediately
+      api.updateBaseURL();
+      
       setSaved(true);
       feedback.success('Настройки сохранены');
       
