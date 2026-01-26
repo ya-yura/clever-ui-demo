@@ -27,6 +27,10 @@ dist-ssr
 build/
 .cache/
 
+# Android wrapper
+android-wrapper/.gradle/
+android-wrapper/local.properties
+
 # Environment
 .env
 .env.local
