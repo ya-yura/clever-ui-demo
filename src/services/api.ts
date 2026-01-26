@@ -80,8 +80,8 @@ class ApiService {
       }
     );
 
-    // Load token from localStorage
-    this.token = localStorage.getItem('auth_token');
+    // Load token from localStorage (authService storage key)
+    this.token = localStorage.getItem('auth');
   }
 
   /**
@@ -205,12 +205,12 @@ class ApiService {
    */
   setToken(token: string) {
     this.token = token;
-    localStorage.setItem('auth_token', token);
+    localStorage.setItem('auth', token);
   }
 
   clearToken() {
     this.token = null;
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth');
   }
 
   /**

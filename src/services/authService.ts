@@ -33,7 +33,7 @@ class AuthService {
    * Returns requiresAuth: false when:
    * - No server configured
    * - Server returns 404 on openid-configuration (no OAuth)
-   * - Network error (Mixed Content, CORS, etc.) - assume no auth to allow connection
+   * Fallback: assume auth required for any other response.
    */
   async checkNoLogin(): Promise<{ requiresAuth: boolean; error?: string }> {
     const serverUrl = configService.getServerUrl();
@@ -65,12 +65,10 @@ class AuthService {
         return { requiresAuth: true };
       }
 
-      // Non-404 errors - try without auth
+      // Non-404 errors - require auth as fallback
       logger.warn('⚠️ Unexpected auth endpoint response:', response.status);
-      return { requiresAuth: false };
+      return { requiresAuth: true };
     } catch (error: any) {
-      // Network errors (Mixed Content, CORS, timeout, etc.)
-      // In these cases, assume no auth required and try to work with API directly
       const errorMessage = error.message || String(error);
       
       // Check for Mixed Content or network errors
@@ -81,15 +79,15 @@ class AuthService {
           error.name === 'AbortError' ||
           error.name === 'TypeError') {
         logger.warn('⚠️ Cannot reach auth endpoint (likely Mixed Content or network issue)');
-        logger.debug('   Assuming no authentication required - will try API directly');
+        logger.debug('   Authentication requirement cannot be verified');
         return { 
-          requiresAuth: false, 
+          requiresAuth: true,
           error: 'Mixed Content: HTTPS страница не может обращаться к HTTP серверу напрямую'
         };
       }
       
       logger.warn('⚠️ Failed to determine authentication requirement:', error);
-      return { requiresAuth: false };
+      return { requiresAuth: true };
     }
   }
 

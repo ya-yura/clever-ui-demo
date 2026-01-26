@@ -1,0 +1,2 @@
+rootProject.name = "Sklad15Wrapper"
+include ':app'

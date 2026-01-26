@@ -25,6 +25,12 @@ const Login: React.FC = () => {
 
   const serverUrl = configService.getServerUrl();
 
+  // Clear any previous auth when opening login page
+  useEffect(() => {
+    authService.clearTokens();
+    localStorage.removeItem('auth_state');
+  }, []);
+
   // Check for temp token in URL and no-auth mode
   useEffect(() => {
     const checkAuthRequirements = async () => {
@@ -178,9 +184,13 @@ const Login: React.FC = () => {
                   type="text"
                   required
                   autoComplete="username"
+                  autoFocus
+                  maxLength={512}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-3 py-2.5 pl-9 bg-surface-secondary border border-borders-default rounded-lg text-sm text-content-primary placeholder-content-tertiary focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-colors"
+                  className={`w-full px-3 py-2.5 pl-9 bg-surface-secondary border rounded-lg text-sm text-content-primary placeholder-content-tertiary focus:outline-none focus:ring-1 transition-colors ${
+                    error ? 'border-error focus:border-error focus:ring-error/40' : 'border-borders-default focus:border-brand-primary focus:ring-brand-primary'
+                  }`}
                   placeholder="Введите имя пользователя"
                   disabled={isLogging}
                 />
@@ -202,9 +212,13 @@ const Login: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   required
                   autoComplete="current-password"
+                  maxLength={100}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2.5 pl-9 pr-10 bg-surface-secondary border border-borders-default rounded-lg text-sm text-content-primary placeholder-content-tertiary focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-colors"
+                  onBlur={() => setTimeout(() => setShowPassword(false), 200)}
+                  className={`w-full px-3 py-2.5 pl-9 pr-10 bg-surface-secondary border rounded-lg text-sm text-content-primary placeholder-content-tertiary focus:outline-none focus:ring-1 transition-colors ${
+                    error ? 'border-error focus:border-error focus:ring-error/40' : 'border-borders-default focus:border-brand-primary focus:ring-brand-primary'
+                  }`}
                   placeholder="Введите пароль"
                   disabled={isLogging}
                 />

@@ -18,6 +18,7 @@
 | Документ | Описание |
 |----------|----------|
 | [INTEGRATION_GUIDE.md](developer/INTEGRATION_GUIDE.md) | Инструкция по интеграции модулей |
+| [ANDROID_WRAPPER.md](developer/ANDROID_WRAPPER.md) | Android-обёртка для PWA |
 | [design-system/](developer/design-system/) | Система дизайна и компоненты |
 | [modules/](developer/modules/) | Документация модулей |
 

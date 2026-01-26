@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Склад-15</string>
+    <string name="app_home_url">https://clever-ui.lovable.app/</string>
+    <string name="open_settings">URL</string>
+    <string name="settings_title">Адрес PWA</string>
+    <string name="settings_hint">https://clever-ui.lovable.app/</string>
+    <string name="settings_save">Сохранить</string>
+    <string name="settings_invalid_url">Некорректный URL. Используйте http/https.</string>
+</resources>
